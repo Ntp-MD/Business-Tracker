@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 92" role="img" aria-label="ITOPPLUS logo">
+  <rect x="2" y="14" width="64" height="64" rx="16" fill="#0f172a"/>
+  <rect x="14" y="52" width="7" height="14" rx="2" fill="#94a3b8"/>
+  <rect x="26" y="46" width="7" height="20" rx="2" fill="#cbd5e1"/>
+  <rect x="38" y="40" width="7" height="26" rx="2" fill="#ffffff"/>
+  <rect x="50" y="32" width="7" height="34" rx="2" fill="#22c55e"/>
+  <text x="82" y="54" font-family="Segoe UI, Arial, sans-serif" font-size="40" font-weight="800" letter-spacing="-1" fill="currentColor">ITOP<tspan fill="#22c55e">PLUS</tspan></text>
+  <text x="84" y="76" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="600" letter-spacing="3.4" fill="#64748b">DIGITAL MARKETING</text>
+</svg>

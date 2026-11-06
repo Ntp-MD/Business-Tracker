@@ -1,0 +1,1402 @@
+<!doctype html>
+<html lang="th" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Business · Social Tracker Analytics — ITOPPLUS</title>
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<!-- Offline localhost: ไม่มี CDN นอกเครื่อง ใช้ system font ล้วน (ก่อนหน้าใช้ Inter/Anuphan จาก Google Fonts — ตัดออกเพื่อเปิดแบบไม่มีเน็ตได้) -->
+<style>
+/* LINE Seed Sans TH — self-hosted local font (offline, ไม่พึ่ง CDN) */
+@font-face{font-family:"LINE Seed Sans TH";src:url("fonts/LINESeedSansTH-Regular.ttf") format("truetype");font-weight:400;font-display:swap}
+@font-face{font-family:"LINE Seed Sans TH";src:url("fonts/LINESeedSansTH-Bold.ttf") format("truetype");font-weight:700;font-display:swap}
+@font-face{font-family:"LINE Seed Sans TH";src:url("fonts/LINESeedSansTH-Heavy.ttf") format("truetype");font-weight:800;font-display:swap}
+/* IBM Plex Sans Thai — local woff2 (offline) Thai + Latin subsets */
+@font-face{font-family:"IBM Plex Sans Thai";src:url("fonts/ibm-plex-sans-thai-thai-400-normal.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"IBM Plex Sans Thai";src:url("fonts/ibm-plex-sans-thai-latin-400-normal.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"IBM Plex Sans Thai";src:url("fonts/ibm-plex-sans-thai-thai-500-normal.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:"IBM Plex Sans Thai";src:url("fonts/ibm-plex-sans-thai-latin-500-normal.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:"IBM Plex Sans Thai";src:url("fonts/ibm-plex-sans-thai-thai-600-normal.woff2") format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:"IBM Plex Sans Thai";src:url("fonts/ibm-plex-sans-thai-latin-600-normal.woff2") format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:"IBM Plex Sans Thai";src:url("fonts/ibm-plex-sans-thai-thai-700-normal.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:"IBM Plex Sans Thai";src:url("fonts/ibm-plex-sans-thai-latin-700-normal.woff2") format("woff2");font-weight:700;font-display:swap}
+:root{
+  --blue:#22c55e; --blue-dark:#15803d; /* Brand primary #22c55e (ชื่อตัวแปรเดิม --blue ไว้เพื่อไม่แตก) */
+  --purple:#a855f7; --green:#22c55e; --red:#ff6b6b;
+  --yellow:#ffb800; --yellow-soft:#ffd34d;
+  --font:"IBM Plex Sans Thai","LINE Seed Sans TH","Segoe UI",Arial,sans-serif; /* TH/EN: IBM Plex Sans Thai (local) → LINE Seed → Segoe */
+  --shadow:0 6px 24px rgba(15,23,42,.08);
+  --shadow-lg:0 12px 40px rgba(15,23,42,.12);
+  --radius:14px;
+}
+[data-theme="light"]{
+  --bg:#f4f6fb; --panel:#ffffff; --panel-2:#f8fafc;
+  --line:#e7ebf3; --line-2:#eef2f8;
+  --text:#0f172a; --muted:#64748b; --muted-2:#94a3b8;
+  --side-active-bg:#dcfce7; --side-active-text:#15803d;
+  --input-bg:#ffffff; --donut-track:#f1f5f9;
+  --row-green:rgba(34,197,94,.10); --row-yellow:rgba(251,191,36,.14); --row-red:rgba(255,107,107,.12);
+}
+[data-theme="dark"]{
+  --bg:#171a26; --panel:#212533; --panel-2:#1b1f2d;
+  --line:#2b3044; --line-2:#262b3d;
+  --text:#f1f5f9; --muted:#a5aec4; --muted-2:#7b84a0;
+  --side-active-bg:#22c55e; --side-active-text:#052e16;
+  --input-bg:#171a26; --donut-track:#2b3044;
+  --row-green:rgba(34,197,94,.18); --row-yellow:rgba(251,191,36,.16); --row-red:rgba(255,107,107,.18);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);
+  font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--blue-dark);outline-offset:2px;border-radius:6px}
+::selection{background:#d1fae5}
+.app{display:flex;min-height:100vh}
+
+/* ---------- sidebar ---------- */
+.sidebar{width:228px;flex:0 0 228px;background:var(--panel);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;padding:18px 14px;position:sticky;top:0;height:100vh}
+.logo{display:flex;align-items:center;gap:10px;padding:2px 8px 16px;font-weight:800;font-size:17px}
+.logo-img{width:100%;height:auto;max-height:52px;object-fit:contain;display:block;flex:0 0 auto}
+.logo small{display:block;font-weight:500;font-size:11px;color:var(--muted)}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;
+  color:var(--muted);font-weight:500;font-size:13.5px}
+.nav a svg{width:17px;height:17px;flex:0 0 17px}
+.nav a:hover{background:var(--panel-2);color:var(--text)}
+.nav a.active{background:var(--side-active-bg);color:var(--side-active-text);font-weight:600}
+.nav .divider{border:none;border-top:1px solid var(--line-2);margin:10px 4px}
+.nav .badge-n{margin-left:auto;font-size:10px;font-weight:800;background:#dcfce7;color:#15803d;
+  border-radius:999px;padding:1px 8px}
+[data-theme="dark"] .nav .badge-n{background:rgba(34,197,94,.25);color:#86efac}
+.help-card{margin-top:auto;background:var(--panel-2);border:1px solid var(--line-2);
+  border-radius:12px;padding:14px;text-align:center}
+.help-card p{margin:0 0 10px;font-size:12px;color:var(--muted);line-height:1.55}
+.help-card p b{color:var(--text);display:block;font-size:13px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid transparent;
+  border-radius:9px;padding:9px 16px;font-size:13px;font-weight:600;transition:.18s;background:transparent}
+.btn:active{transform:scale(.96)}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--blue-dark)}
+.btn-ghost{background:var(--panel);border-color:var(--line);color:var(--text)}
+.btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+.help-card .btn{width:100%;border-radius:999px}
+
+/* ---------- main ---------- */
+.main{flex:1;min-width:0;padding:22px 26px 28px}
+.topbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.topbar h1{font-size:21px;font-weight:800;margin:0;letter-spacing:-.2px}
+.topbar .page-sub{font-size:13px;color:var(--muted);width:100%;margin-top:2px}
+.date-pill{display:inline-flex;align-items:center;gap:8px;background:var(--panel);
+  border:1px solid var(--line);border-radius:9px;padding:7px 12px;font-size:12px;color:var(--muted)}
+.date-pill svg{width:15px;height:15px}
+.top-actions{margin-left:auto;display:flex;align-items:center;gap:14px}
+.theme-toggle{display:flex;align-items:center;gap:9px}
+.theme-toggle svg{width:16px;height:16px;color:var(--muted)}
+.switch{position:relative;width:48px;height:26px;border-radius:999px;background:#cbd5e1;border:none;padding:0;flex:0 0 48px}
+.switch::after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.25);transition:.25s}
+[data-theme="dark"] .switch{background:var(--blue)}
+[data-theme="dark"] .switch::after{left:25px}
+.user{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600}
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#ec4899);
+  color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700}
+
+.fetch-strip{display:flex;gap:10px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--radius);padding:12px;margin-bottom:18px;box-shadow:var(--shadow)}
+.fetch-strip input{flex:1 1 260px;min-width:0;border:1px solid var(--line);border-radius:10px;
+  padding:10px 14px;font-size:14px;font-family:inherit;background:var(--input-bg);color:var(--text);outline:none}
+.fetch-strip input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(34,197,94,.18)}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--panel);
+  font-size:12px;color:var(--muted);transition:all .15s ease}
+.chip:hover{border-color:var(--blue);color:var(--blue);transform:translateY(-1px)}
+.status{font-size:12px;color:var(--muted);min-height:18px;margin:-8px 2px 14px}
+.status.err{color:var(--red)}
+
+/* ---------- pages ---------- */
+.page{display:none}
+.page.active{display:block}
+.page-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.page-head h2{font-size:18px;font-weight:800;margin:0}
+.page-head .hint{font-size:12px;color:var(--muted)}
+
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px}
+.kpi .label{font-size:13px;font-weight:500;color:var(--muted);display:flex;justify-content:space-between;align-items:flex-start}
+.kpi .label svg{width:19px;height:19px;color:var(--muted)}
+.kpi .big{font-size:27px;font-weight:800;letter-spacing:-.4px;margin-top:4px;line-height:1.1}
+.kpi .delta{font-size:12px;margin-top:3px}
+.delta.up{color:#15803d} .delta.down{color:var(--red)}
+.delta small{color:var(--muted)}
+.kpi .donut-wrap{display:flex;align-items:center;gap:14px;margin-top:6px}
+.donut{width:86px;height:86px;border-radius:50%;flex:0 0 86px;position:relative}
+.donut::after{content:"";position:absolute;inset:14px;border-radius:50%;background:var(--panel)}
+.donut-legend{font-size:11px;color:var(--muted);display:flex;flex-direction:column;gap:5px}
+.donut-legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px}
+.donut-legend b{color:var(--text)}
+
+.mid{display:grid;grid-template-columns:2.15fr 1fr 1fr;gap:16px;margin-top:16px}
+.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.card-head h3{margin:0;font-size:13.5px;font-weight:600}
+.select-like{font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.bars{display:flex;align-items:flex-end;gap:9px;height:150px;padding:8px 2px 0}
+.bar-col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:7px;height:100%}
+.bar-track{width:100%;max-width:26px;height:100%;display:flex;align-items:flex-end;justify-content:center}
+.bar-fill{width:100%;border-radius:4px 4px 0 0;background:var(--blue);min-height:3px}
+.bar-label{font-size:10px;color:var(--muted-2);font-weight:500}
+.inv .label{font-size:12.5px;color:var(--muted);display:flex;justify-content:space-between}
+.inv .label svg{width:20px;height:20px}
+.inv .amount{font-size:21px;font-weight:800;margin-top:6px}
+.inv .sub{font-size:11px;color:var(--muted-2)}
+.ring-wrap{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex:0 0 42px;position:relative}
+.ring-wrap svg{width:42px;height:42px;transform:rotate(-90deg)}
+.ring-wrap .pct{position:absolute;font-size:10px;font-weight:800;white-space:nowrap}
+
+.bottom{display:grid;grid-template-columns:2.15fr 1fr;gap:16px;margin-top:16px}
+.line-box{height:170px}
+.line-box svg{width:100%;height:100%}
+.tbl-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:10px;flex-wrap:wrap}
+.tbl-head h3{margin:0;font-size:13.5px;font-weight:600}
+.tbl-scroll a{white-space:nowrap}
+.app .card{transition:transform .18s ease, box-shadow .18s ease}
+.app .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.chip:hover{transform:translateY(-1px)}
+a{transition:color .15s ease}
+.tbl-scroll{overflow-x:auto}
+table{width:100%;border-collapse:separate;border-spacing:0 6px;font-size:12.5px;min-width:600px}
+th{text-align:left;font-size:11px;color:var(--muted);font-weight:500;padding:2px 10px}
+td{padding:9px 10px;background:var(--panel-2)}
+tr td:first-child{border-radius:9px 0 0 9px}
+tr td:last-child{border-radius:0 9px 9px 0}
+tr.row-green td{background:var(--row-green)}
+tr.row-yellow td{background:var(--row-yellow)}
+tr.row-red td{background:var(--row-red)}
+.mini-avatar{width:24px;height:24px;border-radius:50%;display:inline-grid;place-items:center;
+  color:#fff;font-size:9px;font-weight:700;vertical-align:middle;margin-right:8px}
+.pill{display:inline-block;padding:3px 12px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}
+.pill-green{background:rgba(34,197,94,.16);color:#16a34a}
+.pill-yellow{background:rgba(251,191,36,.22);color:#b45309}
+.pill-red{background:rgba(255,107,107,.18);color:#dc2626}
+.pill-blue{background:rgba(34,197,94,.14);color:#15803d}
+.pill-gray{background:rgba(100,116,139,.16);color:#475569}
+.pill-purple{background:rgba(15,118,110,.16);color:#0f766e}
+[data-theme="dark"] .pill-gray{color:#cbd5e1}
+.extra{display:grid;grid-template-columns:1fr 1.2fr;gap:16px;margin-top:16px}
+.terms{display:flex;flex-wrap:wrap;gap:8px}
+.term{background:#dcfce7;color:#15803d;border-radius:8px;padding:6px 11px;font-size:12.5px;font-weight:500}
+[data-theme="dark"] .term{background:rgba(34,197,94,.18);color:#86efac}
+.term b{margin-left:5px;font-weight:800}
+.suggest{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.suggest li{background:var(--panel-2);border:1px solid var(--line-2);border-radius:10px;padding:10px 13px;font-size:13px}
+.empty{color:var(--muted);text-align:center;padding:28px 8px}
+.filter{border:1px solid var(--line);background:var(--input-bg);color:var(--text);
+  border-radius:9px;padding:8px 12px;font-family:inherit;font-size:12.5px;outline:none;min-width:180px}
+.filter:focus{border-color:var(--blue)}
+
+/* sources page */
+.src-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.src-card .src-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.src-logo{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px}
+.src-card h4{margin:0;font-size:14px}
+.src-card .api-note{font-size:11px;color:var(--muted-2)}
+.src-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+.src-metrics .m{background:var(--panel-2);border:1px solid var(--line-2);border-radius:9px;padding:8px 10px}
+.src-metrics .m b{display:block;font-size:17px}
+.src-metrics .m span{font-size:10.5px;color:var(--muted)}
+
+/* deep widgets (fanpagekarma + wisesight style) */
+.deep{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:16px;margin-top:16px}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.metric-grid .m{background:var(--panel-2);border:1px solid var(--line-2);border-radius:10px;padding:10px 12px}
+.metric-grid .m b{display:block;font-size:18px}
+.metric-grid .m span{font-size:11px;color:var(--muted)}
+.senti-row{display:flex;align-items:center;gap:10px;margin:9px 0;font-size:12.5px}
+.senti-row .name{width:96px;color:var(--muted)}
+.senti-track{flex:1;height:10px;background:var(--donut-track);border-radius:999px;overflow:hidden}
+.senti-fill{height:100%;border-radius:999px}
+.heatmap{border-collapse:separate;border-spacing:3px;width:100%}
+.heatmap th,.heatmap td{padding:7px 4px;text-align:center;font-size:11px;background:none}
+.heatmap td.cell{border-radius:5px;color:var(--text);font-weight:600;min-width:30px}
+.heat-scale{display:flex;gap:6px;align-items:center;font-size:11px;color:var(--muted);margin-top:6px}
+
+/* terms page */
+.rank{font-weight:800;color:var(--blue)}
+.chg-up{color:#15803d;font-weight:700;font-size:12px}
+.chg-down{color:var(--red);font-weight:700;font-size:12px}
+.term-bar{height:8px;min-width:90px;background:var(--donut-track);border-radius:999px;overflow:hidden}
+.term-bar i{display:block;height:100%;background:var(--blue);border-radius:999px}
+
+/* ideas page */
+.idea-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.idea .tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.idea h4{margin:0 0 6px;font-size:15px}
+.idea p{margin:0;color:var(--muted);font-size:13px;line-height:1.6}
+.idea .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:11.5px;color:var(--muted)}
+
+/* settings page */
+.set-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.set-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line-2)}
+.set-row:last-child{border-bottom:none}
+.set-row .t b{display:block;font-size:13.5px}
+.set-row .t span{font-size:12px;color:var(--muted)}
+.toggle{position:relative;width:44px;height:24px;border-radius:999px;background:#cbd5e1;border:none;padding:0;flex:0 0 44px}
+.toggle::after{content:"";position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.25);transition:.25s}
+.toggle.on{background:var(--blue)}
+.toggle.on::after{left:23px}
+select,input[type=text].set-input{border:1px solid var(--line);background:var(--input-bg);color:var(--text);
+  border-radius:9px;padding:8px 12px;font-family:inherit;font-size:13px;outline:none}
+
+.mobile-nav{display:none}
+@media(max-width:1440px){.main{padding:20px 22px 40px}}
+@media(max-width:1200px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .mid{grid-template-columns:1fr 1fr}
+  .mid .chart-card{grid-column:1 / -1;order:3}
+}
+@media(max-width:1100px){.deep{grid-template-columns:1fr 1fr}}
+@media(max-width:920px){
+  .sidebar{display:none}
+  .mobile-nav{display:flex;gap:6px;overflow-x:auto;padding:0 16px 12px;scrollbar-width:none}
+  .mobile-nav::-webkit-scrollbar{display:none}
+  .mobile-nav a{flex:0 0 auto;padding:10px 16px;border-radius:999px;font-size:13px;font-weight:600;
+    background:var(--panel);border:1px solid var(--line);color:var(--muted)}
+  .mobile-nav a.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+  .main{padding:16px}
+  .bottom,.extra,.set-grid,.idea-grid{grid-template-columns:1fr}
+  .src-grid{grid-template-columns:1fr 1fr}
+  .donut{width:72px;height:72px;flex-basis:72px}
+  .donut::after{inset:11px}
+}
+@media(max-width:700px){.deep{grid-template-columns:1fr}}
+@media(max-width:600px){
+  .kpis{grid-template-columns:1fr;gap:10px}
+  .mid{grid-template-columns:1fr}
+  .kpi .big{font-size:23px}
+  .donut-wrap{flex-wrap:wrap}
+  .bars{overflow-x:auto;padding-bottom:4px}
+  .bar-col{min-width:26px}
+  .fetch-strip input{flex:1 1 100%}
+  .fetch-strip .btn{flex:1 1 auto;min-width:0}
+  .chips{width:100%;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto}
+  .topbar{gap:8px}
+  .top-actions{margin-left:0;flex-wrap:wrap}
+  .top-actions .user{display:none}
+  .user .uname{display:none}
+  .mobile-nav{overflow-x:auto;white-space:nowrap}
+  .mobile-nav a{flex:0 0 auto}
+  .topbar h1{font-size:18px}
+  .date-pill{display:none}
+  .theme-toggle .tgl-ic{display:none}
+  .metric-grid{grid-template-columns:1fr}
+  .line-box{height:130px}
+  .set-row{flex-wrap:wrap}
+  table{font-size:12px;min-width:520px}
+  th,td{padding:7px 8px}
+  .card-head{flex-wrap:wrap}
+  .card-head h3{flex:1 1 auto}
+  /* ตารางจอเล็ก: ไม่บังคับกว้าง 600px, ซ่อนคอลัมน์ท้าย (Link/คำอธิบาย) ที่ไม่ใช่สาระหลัก */
+  .tbl-scroll table:not(.heatmap){min-width:0}
+  .tbl-scroll th:last-child,.tbl-scroll td:last-child{display:none}
+  .tbl-scroll table{font-size:11px}
+  .heatmap td.cell{min-width:22px}
+  html,body{overflow-x:clip}
+}
+@media(max-width:380px){
+  .main{padding:12px}
+  .card{padding:12px 14px}
+  .btn{padding:10px 14px}
+  .src-grid{grid-template-columns:1fr}
+}
+.kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kcol{background:var(--panel-2);border:1px solid var(--line-2);border-radius:12px;padding:10px;min-height:180px}
+.kcol h4{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:flex;justify-content:space-between}
+.kcol .kcount{background:var(--donut-track);border-radius:999px;padding:1px 9px;font-size:11px}
+.lead{background:var(--panel);border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.lead b{display:block;font-size:13px}
+.lead span{font-size:11.5px;color:var(--muted);display:block;margin-top:3px}
+.lead .lead-src{display:inline-block;margin-top:6px}
+.cal-week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.cal-day{background:var(--panel-2);border:1px solid var(--line-2);border-radius:10px;padding:10px;min-height:120px}
+.cal-day.today{border-color:var(--blue);box-shadow:0 0 0 2px rgba(34,197,94,.3)}
+.cal-day h5{margin:0 0 6px;font-size:12px;color:var(--muted)}
+.cal-day .post{font-size:11px;background:var(--panel);border:1px solid var(--line-2);border-radius:7px;padding:4px 7px;margin-bottom:4px}
+.cal-day .post.ok{border-left:3px solid var(--blue)}
+.cal-day .post.draft{border-left:3px solid var(--yellow)}
+.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.progress-row{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:12.5px}
+.progress-row .lbl{width:160px}
+.progress-row .bar{flex:1;height:9px;background:var(--donut-track);border-radius:999px;overflow:hidden}
+.progress-row .bar i{display:block;height:100%;background:var(--blue)}
+.progress-row .pct{width:44px;text-align:right;font-weight:700;font-size:12px}
+@media(max-width:1100px){.kanban{grid-template-columns:1fr 1fr}.cal-week{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:700px){.cal-week{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.kanban{grid-template-columns:1fr}.report-grid{grid-template-columns:1fr}.cal-week{grid-template-columns:1fr}}
+.kpis > *, .mid > *, .bottom > *, .deep > *, .src-grid > *, .set-grid > *, .idea-grid > *{min-width:0}
+.tbl-scroll table{max-width:100%}
+.bars{overflow-x:auto}
+@supports (overflow: clip){ body{overflow-x:clip} }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ================= Sidebar ================= -->
+  <aside class="sidebar" aria-label="Primary">
+    <div class="logo"><img class="logo-img" src="logo.svg" alt="ITOPPLUS logo" style="color:var(--text)"></div>
+    <nav class="nav">
+      <a href="#" data-page="overview" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>ภาพรวม</a>
+      <a href="#" data-page="sources"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 7v13h16V7M4 7l2-4h12l2 4"/></svg>แหล่งข้อมูล<span class="badge-n">4</span></a>
+      <a href="#" data-page="terms"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.5L3 21l2-5.6A8.5 8.5 0 1 1 21 11.5z"/></svg>คำยอดฮิต</a>
+      <a href="#" data-page="ideas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.4 3.4-5 6.5-5s5.7 1.6 6.5 5"/></svg>ไอเดียคอนเทนต์<span class="badge-n">18</span></a>
+      <a href="#" data-page="items"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>รายการทั้งหมด<span class="badge-n">64</span></a>
+      <a href="#" data-page="crm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="3.5"/><path d="M3.5 20c.8-3.4 3.2-5 5.5-5s4.7 1.6 5.5 5"/><circle cx="17" cy="9" r="2.6"/><path d="M15.7 15.2c1.5-.6 3.4-.3 4.8 1.2"/></svg>CRM / Leads<span class="badge-n">8</span></a>
+      <a href="#" data-page="ads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5-5 18-2.5-7.5L3 11z"/></svg>Ads Manager<span class="badge-n">6</span></a>
+      <a href="#" data-page="calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>Content Calendar</a>
+      <a href="#" data-page="tasks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Tasks<span class="badge-n">6</span></a>
+      <a href="#" data-page="reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/></svg>Reports</a>
+      <a href="#" data-page="goals"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/></svg>Goal Tracker</a>
+      <hr class="divider">
+      <a href="#" data-page="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.97 19.2a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.8 8.97a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.01A1.7 1.7 0 0 0 10.2 3.05V3a2 2 0 1 1 4 0v.09c0 .68.4 1.3 1.03 1.56.6.25 1.3.13 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.01c.26.63.88 1.03 1.56 1.03H21a2 2 0 1 1 0 4h-.09c-.68 0-1.3.4-1.56 1.03z"/></svg>ตั้งค่า</a>
+      <a href="#" onclick="return false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>ออกจากระบบ</a>
+    </nav>
+  </aside>
+
+  <!-- ================= Main ================= -->
+  <div class="main" id="top">
+    <div class="topbar">
+      <h1>Analytics</h1>
+      <span class="date-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span id="dateRange">—</span>
+      </span>
+      <div class="top-actions">
+        <div class="theme-toggle" aria-label="สลับธีม">
+          <svg class="tgl-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          <button class="switch" id="themeSwitch" aria-label="toggle light/dark"></button>
+          <svg class="tgl-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </div>
+        <div class="user"><span class="avatar">IT</span><span class="uname">ITOPPLUS</span></div>
+      </div>
+      <div class="page-sub" id="pageSub">ภาพรวม · Digital Marketing · ข้อมูลตัวอย่าง (mock)</div>
+    </div>
+
+    <nav class="mobile-nav" aria-label="Mobile">
+      <a href="#" data-page="overview" class="active">ภาพรวม</a><a href="#" data-page="sources">แหล่งข้อมูล</a>
+      <a href="#" data-page="terms">คำยอดฮิต</a><a href="#" data-page="ideas">ไอเดีย</a>
+      <a href="#" data-page="items">รายการ</a><a href="#" data-page="crm">CRM</a>
+      <a href="#" data-page="ads">Ads</a><a href="#" data-page="calendar">Calendar</a>
+      <a href="#" data-page="tasks">Tasks</a><a href="#" data-page="reports">Reports</a>
+      <a href="#" data-page="goals">Goals</a><a href="#" data-page="settings">ตั้งค่า</a>
+    </nav>
+
+    <!-- Fetch strip (global) -->
+    <div class="fetch-strip">
+      <input type="text" id="q" value="Digital Marketing" aria-label="keyword" placeholder="keyword / ชื่อสินค้า / ปัญหาที่ลูกค้าพูด">
+      <button class="btn btn-primary" id="btnFetch">Fetch now</button>
+      <button class="btn btn-ghost" id="btnDb">โหลดจาก DB</button>
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+
+    <!-- ============ PAGE: ภาพรวม ============ -->
+    <section class="page active" id="page-overview">
+      <div class="kpis">
+        <div class="card kpi">
+          <div class="label">รายการที่เก็บ <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18"/></svg></div>
+          <div class="big" id="stTotal">0</div>
+          <div class="delta up">↗ เพิ่มใน SQLite <small>· unique URL</small></div>
+        </div>
+        <div class="card kpi">
+          <div class="label">แหล่งข้อมูล <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12l2.5 2.5L16 9"/></svg></div>
+          <div class="big" id="stSrc">0</div>
+          <div class="delta up">↗ FB · TikTok · IG · LINE · YouTube </div>
+        </div>
+        <div class="card kpi">
+          <div class="label">คะแนนรวม (score)</div>
+          <div class="donut-wrap">
+            <div><div class="big" id="stScore">0</div><div class="delta"><small>ยอด engagement (สัดส่วนตามแหล่ง)</small></div></div>
+            <div class="donut" id="donutUsers" title="สัดส่วน score ตาม source"></div>
+            <div class="donut-legend" id="legendUsers"></div>
+          </div>
+        </div>
+        <div class="card kpi">
+          <div class="label">ไอเทมยอดฮิต</div>
+          <div class="donut-wrap">
+            <div><div class="big" id="stTop">0</div><div class="delta"><small>score สูงสุด (สัดส่วนจำนวน)</small></div></div>
+            <div class="donut" id="donutTop"></div>
+            <div class="donut-legend" id="legendTop"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mid">
+        <div class="card chart-card">
+          <div class="card-head"><h3>Source dynamics</h3><span class="select-like">ตามจำนวนรายการ <span>⌄</span></span></div>
+          <div class="bars" id="bars"></div>
+        </div>
+        <div class="card inv">
+          <div class="label">คะแนนเฉลี่ย <span class="ring-wrap" id="ring1"></span></div>
+          <div class="amount" id="invScore">0</div>
+          <div class="sub">ต่อ 1 รายการ</div>
+        </div>
+        <div class="card inv">
+          <div class="label">ความครอบคลุมคำค้น <span class="ring-wrap" id="ring2"></span></div>
+          <div class="amount" id="invCover">0</div>
+          <div class="sub">Top terms ที่เจอ</div>
+        </div>
+      </div>
+
+      <div class="bottom">
+        <div class="card">
+          <div class="card-head"><h3>Overall score activity</h3><span class="select-like">เรียงตาม score <span>⌄</span></span></div>
+          <div class="line-box"><svg id="line" viewBox="0 0 800 200" preserveAspectRatio="none" aria-hidden="true"></svg></div>
+        </div>
+        <div class="card">
+          <div class="tbl-head"><h3>Top items (8)</h3><button class="btn btn-ghost" data-goto="items" style="padding:6px 12px;font-size:12px">ดูทั้งหมด →</button></div>
+          <div class="tbl-scroll" id="tableWrap"><div class="empty">ยังไม่มีข้อมูล</div></div>
+        </div>
+      </div>
+
+      <div class="extra">
+        <div class="card">
+          <div class="card-head"><h3>Top terms (สรุป)</h3><button class="btn btn-ghost" data-goto="terms" style="padding:6px 12px;font-size:12px">ละเอียด →</button></div>
+          <div class="terms" id="termsBox"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>ไอเดียคอนเทนต์ (สรุป)</h3><button class="btn btn-ghost" data-goto="ideas" style="padding:6px 12px;font-size:12px">ดูทุกไอเดีย →</button></div>
+          <ul class="suggest" id="suggest"></ul>
+        </div>
+      </div>
+
+      <!-- Deep: fanpagekarma + wisesight style -->
+      <div class="deep">
+        <div class="card">
+          <div class="card-head"><h3>Follower growth (30 วัน)</h3><span class="select-like">รวมทุกช่อง <span>⌄</span></span></div>
+          <div class="line-box" style="height:130px"><svg id="growthLine" viewBox="0 0 800 160" preserveAspectRatio="none" aria-hidden="true"></svg></div>
+          <div class="metric-grid" style="margin-top:10px">
+            <div class="m"><b>12,450</b><span>Followers รวม (Facebook 5,850 · TikTok 4,120 · IG 2,480)</span></div>
+            <div class="m"><b style="color:var(--green)">+1,284 (+11.5%)</b><span>เติบโต 30 วัน (ดีกว่าเดือนก่อน +6.2%)</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Engagement rate</h3><span class="select-like">ต่อโพสต์ <span>⌄</span></span></div>
+          <div id="chanER"></div>
+          <div class="metric-grid" style="margin-top:10px">
+            <div class="m"><b>4.82%</b><span>เฉลี่ยรวม 30 วัน</span></div>
+            <div class="m"><b style="color:var(--green)">+0.64%</b><span>เทียบ 30 วันก่อน</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Sentiment (mentions)</h3><span class="select-like">wisesight style</span></div>
+          <div id="sentiBox"></div>
+          <div class="metric-grid" style="margin-top:10px">
+            <div class="m"><b>1,240</b><span>Posts ที่พูดถึง Digital Marketing (30 วัน)</span></div>
+            <div class="m"><b>38%</b><span>Share of voice จาก 4 คู่แข่ง</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PAGE: แหล่งข้อมูล ============ -->
+    <section class="page" id="page-sources">
+      <div class="page-head"><h2>แหล่งข้อมูล</h2><span class="hint">ช่องที่คนไทยใช้จริง 5 แหล่งหลัก · ตัวเลข mock แยกตามแพลตฟอร์ม</span></div>
+      <div class="src-grid" id="srcCards"></div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h3>รายละเอียดรายแหล่ง (mock)</h3><span class="select-like">อัปเดตล่าสุด 3 นาทีที่แล้ว</span></div>
+        <div class="tbl-scroll"><table>
+          <thead><tr><th>Source</th><th>จำนวน</th><th>สัดส่วน</th><th>Score รวม</th><th>Score เฉลี่ย</th><th>Fetch ล่าสุด</th><th>สถานะ</th></tr></thead>
+          <tbody id="srcRows"></tbody>
+        </table></div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h3>Channel performance (fanpagekarma style)</h3><span class="select-like">compare ทุกช่อง</span></div>
+        <div class="tbl-scroll"><table>
+          <thead><tr><th>Channel</th><th>Followers</th><th>Posts/สัปดาห์</th><th>Reach เฉลี่ย</th><th>ER%</th><th>Growth 30 วัน</th><th>Benchmark</th></tr></thead>
+          <tbody id="chanRows"></tbody>
+        </table></div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h3>Top pages & mentions (wisesight style)</h3><span class="select-like">คนที่พูดถึง keyword มากสุด</span></div>
+        <div class="tbl-scroll"><table>
+          <thead><tr><th>#</th><th>Page / Influencer</th><th>Platform</th><th>Followers</th><th>Mentions</th><th>Reach</th><th>Sentiment</th></tr></thead>
+          <tbody id="mentionRows"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ============ PAGE: คำยอดฮิต ============ -->
+    <section class="page" id="page-terms">
+      <div class="page-head"><h2>คำยอดฮิต (Top Terms)</h2><span class="hint">นับ offline จาก title + body ทุกครั้งที่ fetch</span></div>
+      <div class="card">
+        <div class="tbl-head"><h3 id="termsCount">12 คำ</h3><input type="text" class="filter" id="filterTerms" placeholder="ค้นหาคำ…"></div>
+        <div class="tbl-scroll"><table>
+          <thead><tr><th>Rank</th><th>คำ</th><th>จำนวน</th><th>สัดส่วน</th><th>Trend 7 วัน</th><th>Sentiment</th><th>ช่องที่พูดมากสุด</th><th>เอาไปใช้ทำอะไร</th></tr></thead>
+          <tbody id="termRows"></tbody>
+        </table></div>
+      </div>
+      <div class="deep" style="margin-top:16px">
+        <div class="card">
+          <div class="card-head"><h3>Mentions volume (7 วัน)</h3><span class="select-like">keyword: Digital Marketing</span></div>
+          <div class="bars" id="volBars" style="height:120px"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Share of voice (SOV)</h3><span class="select-like">vs คู่แข่ง 4 ราย</span></div>
+          <div id="sovBox"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Trending hashtags</h3></div>
+          <div class="terms" id="hashBox"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PAGE: ไอเดียคอนเทนต์ ============ -->
+    <section class="page" id="page-ideas">
+      <div class="page-head"><h2>ไอเดียคอนเทนต์</h2><span class="hint">สร้างจาก top source + top terms ของ ITOPPLUS</span></div>
+      <div class="idea-grid" id="ideaGrid"></div>
+      <div class="deep" style="margin-top:16px">
+        <div class="card">
+          <div class="card-head"><h3>Best time to post (fanpagekarma heatmap)</h3><span class="select-like">ตาม ER ต่อช่วงเวลา</span></div>
+          <div class="tbl-scroll"><table class="heatmap"><thead><tr><th></th><th>เช้า 6-9</th><th>สาย 9-12</th><th>บ่าย 12-15</th><th>เย็น 15-18</th><th>ค่ำ 18-21</th><th>ดึก 21-24</th></tr></thead><tbody id="heatRows"></tbody></table></div>
+          <div class="heat-scale"><span>น้อย</span><span style="display:inline-block;width:60px;height:8px;border-radius:999px;background:linear-gradient(90deg,#dcfce7,#22c55e,#15803d)"></span><span>มาก = โพสต์ช่วงนี้</span></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Content performance (30 วัน)</h3></div>
+          <div class="tbl-scroll"><table>
+            <thead><tr><th>Content</th><th>Type</th><th>Reach</th><th>Engagement</th><th>ER%</th></tr></thead>
+            <tbody id="perfRows"></tbody>
+          </table></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Publish plan (สัปดาห์นี้)</h3></div>
+          <div id="planBox" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PAGE: รายการทั้งหมด ============ -->
+    <section class="page" id="page-items">
+      <div class="page-head"><h2>รายการทั้งหมด (64)</h2><span class="hint">เรียง score สูง → ต่ำ · คลิกเปิดลิงก์ต้นทางได้ · ER คำนวณจาก score/followers (mock)</span></div>
+      <div class="card">
+        <div class="tbl-head"><h3>Items</h3><input type="text" class="filter" id="filterFull" placeholder="กรอง title/source…"></div>
+        <div class="tbl-scroll" id="tableFullWrap"></div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h3>Top 10 contents (by reach)</h3><span class="select-like">wisesight / fanpagekarma style</span></div>
+        <div class="tbl-scroll"><table>
+          <thead><tr><th>#</th><th>Title</th><th>Type</th><th>Reach</th><th>Likes</th><th>Comments</th><th>Shares</th><th>ER%</th></tr></thead>
+          <tbody id="topContentRows"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ============ PAGE: CRM / Leads ============ -->
+    <section class="page" id="page-crm">
+      <div class="page-head"><h2>CRM / Leads</h2><span class="hint">funnel ลีดจาก FB / TikTok / LINE · เรียงตามระดับความพร้อมปิดการขาย</span></div>
+      <div class="kpis">
+        <div class="card kpi"><div class="label">ลีดทั้งหมด (30 วัน)</div><div class="big">8</div><div class="delta up">↗ +3 จากเดือนก่อน</div></div>
+        <div class="card kpi"><div class="label">กำลังคุย</div><div class="big">2</div><div class="delta"><small>รอเอกสารร้าน</small></div></div>
+        <div class="card kpi"><div class="label">เสนอราคาแล้ว</div><div class="big">1</div><div class="delta"><small>รอคำตอบ 7 วัน</small></div></div>
+        <div class="card kpi"><div class="label">ปิดการขาย</div><div class="big">1</div><div class="delta up">↗ ค่าบริการ 85,000.-</div></div>
+      </div>
+      <div class="kanban" id="crmBoard" style="margin-top:16px"></div>
+    </section>
+
+    <!-- ============ PAGE: Ads Manager ============ -->
+    <section class="page" id="page-ads">
+      <div class="page-head"><h2>Ads Manager</h2><span class="hint">งบยิงแอดเดือนปัจจุบัน · แยก FB/TikTok/IG/LINE · CPL/ROAS/CTR</span></div>
+      <div class="kpis">
+        <div class="card kpi"><div class="label">งบเดือน พ.ย.</div><div class="big">45,000</div><div class="delta up">↗ +15% จากเดือนก่อน</div></div>
+        <div class="card kpi"><div class="label">CPL เฉลี่ย</div><div class="big">฿210</div><div class="delta up">↘ ดีขึ้น −12%</div></div>
+        <div class="card kpi"><div class="label">ROAS</div><div class="big">3.4</div><div class="delta up">↗ ยังกำไรอยู่</div></div>
+        <div class="card kpi"><div class="label">คลิก</div><div class="big">3,214</div><div class="delta"><small>CTR 2.8% · 21 คลิก/วัน</small></div></div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h3>แคมเปญยิงแอด (แยกตามช่อง)</h3><span class="select-like">เรียงตามงบ</span></div>
+        <div class="tbl-scroll"><table>
+          <thead><tr><th>แคมเปญ</th><th>ช่อง</th><th>งบ</th><th>Reach</th><th>คลิก</th><th>CPL</th><th>ROAS</th><th>สถานะ</th></tr></thead>
+          <tbody id="adsRows"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ============ PAGE: Content Calendar ============ -->
+    <section class="page" id="page-calendar">
+      <div class="page-head"><h2>Content Calendar</h2><span class="hint">โพสต์ล่วงหน้า 7 วัน · FB/TikTok/IG/LINE/YouTube · สถานะ Draft/Approved/Scheduled</span></div>
+      <div class="kpis">
+        <div class="card kpi"><div class="label">โพสต์สัปดาห์นี้</div><div class="big">15</div><div class="delta up">↗ ครบทุกช่อง</div></div>
+        <div class="card kpi"><div class="label">Approved</div><div class="big">8</div><div class="delta up">พร้อมโพสต์</div></div>
+        <div class="card kpi"><div class="label">Draft</div><div class="big">4</div><div class="delta"><small>รอตรวจ/แก้รูป</small></div></div>
+        <div class="card kpi"><div class="label">Scheduled</div><div class="big">3</div><div class="delta"><small>ตั้งเวลาถ่ายครบ</small></div></div>
+      </div>
+      <div class="cal-week" id="calWeek" style="margin-top:16px"></div>
+    </section>
+
+    <!-- ============ PAGE: Tasks ============ -->
+    <section class="page" id="page-tasks">
+      <div class="page-head"><h2>Tasks</h2><span class="hint">งานลูกค้าแยกทีม + สถานะ + กำหนดส่ง (SLA)</span></div>
+      <div class="kanban" id="taskBoard" style="margin-top:4px"></div>
+    </section>
+
+    <!-- ============ PAGE: Reports ============ -->
+    <section class="page" id="page-reports">
+      <div class="page-head"><h2>Reports</h2><span class="hint">รายงานพร้อมส่งลูกค้า · สรุป 30 วันที่ผ่านมาใน 1 หน้า</span></div>
+      <div class="report-grid">
+        <div class="card">
+          <div class="card-head"><h3>ภาพรวมลูกค้า ITOPPLUS (30 วัน)</h3></div>
+          <div class="metric-grid">
+            <div class="m"><b>182,600</b><span>Reach รวม 5 ช่อง</span></div>
+            <div class="m"><b>8.9%</b><span>Engagement เฉลี่ย</span></div>
+            <div class="m"><b>34</b><span>Leads ที่เกิดจริง</span></div>
+            <div class="m"><b>12,450</b><span>Followers รวม (+11.5%)</span></div>
+            <div class="m"><b>4.2x</b><span>ROAS เฉลี่ยทุกแคมเปญ</span></div>
+            <div class="m"><b>96%</b><span>ลูกค้าที่ต่อสัญญารอบนี้</span></div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:14px" id="btnExport">Export PDF (จำลอง)</button>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Progress ต่อลูกค้า</h3><span class="select-like">% เทียบเป้าหมาย</span></div>
+          <div id="goalRowsMini"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PAGE: Goal Tracker ============ -->
+    <section class="page" id="page-goals">
+      <div class="page-head"><h2>Goal Tracker</h2><span class="hint">เป้าหมายลูกค้า 6 ราย เทียบผลจริง — เห็นลูกค้าที่"ขาด"ก่อนจบเดือน</span></div>
+      <div class="card">
+        <div id="goalRows"></div>
+      </div>
+    </section>
+
+    <!-- ============ PAGE: ตั้งค่า ============ -->
+    <section class="page" id="page-settings">
+      <div class="page-head"><h2>ตั้งค่า</h2><span class="hint">ปรับเฉพาะในเบราว์เซอร์นี้ (localStorage) · แหล่ง mock: FB/TikTok/IG/LINE/YouTube</span></div>
+      <div class="set-grid">
+        <div class="card">
+          <div class="card-head"><h3>คีย์เวิร์ดที่ติดตาม</h3></div>
+          <div id="kwList"></div>
+          <div class="set-row"><div class="t"><b>เพิ่มคำค้น</b><span>จะเพิ่มเป็น chip ด้านบน</span></div>
+            <div style="display:flex;gap:8px"><input type="text" class="set-input" id="kwNew" placeholder="เช่น SEO" style="width:130px"><button class="btn btn-primary" id="kwAdd">เพิ่ม</button></div></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>แหล่งข้อมูล (free)</h3></div>
+          <div id="srcToggles"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>การ Fetch</h3></div>
+          <div class="set-row"><div class="t"><b>โหมด</b><span>ตอนนี้กด manual ทุกครั้ง</span></div>
+            <select id="fetchMode"><option>Manual (กดเอง)</option><option disabled>Auto รายวัน (Phase 2)</option></select></div>
+          <div class="set-row"><div class="t"><b>จำนวนต่อแหล่ง</b><span>limit ต่อ 1 fetch</span></div>
+            <select id="fetchLimit"><option>5</option><option selected>10</option><option>25</option></select></div>
+          <div class="set-row"><div class="t"><b>ช่วงเวลา</b><span>เรียงผลล่าสุด</span></div>
+            <select><option>ยอดฮิต (top)</option><option>ใหม่สุด</option></select></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>ข้อมูล (mock)</h3></div>
+          <div class="set-row"><div class="t"><b>โหลดข้อมูลตัวอย่างใหม่</b><span>รีเซ็ตหน้าทุกหน้าเป็น mock ชุด Digital Marketing</span></div>
+            <button class="btn btn-ghost" id="btnResetMock">โหลดตัวอย่าง</button></div>
+          <div class="set-row"><div class="t"><b>เริ่มใหม่ทั้งหมด</b><span>เคลียร์ประวัติคำค้น + กลับ keyword หลัก</span></div>
+            <button class="btn btn-ghost" id="btnWipe">เริ่มใหม่</button></div>
+          <div class="set-row"><div class="t"><b>ธีม</b><span>Light / Dark ตามภาพอ้างอิง</span></div>
+            <div style="display:flex;gap:8px"><button class="btn btn-ghost" id="btnLight">Light</button><button class="btn btn-ghost" id="btnDark">Dark</button></div></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+window.__START = "goals";
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g,
+  c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* date pill */
+(() => {
+  const d = new Date(), p = n => String(n).padStart(2,"0");
+  $("dateRange").textContent =
+    `${p(d.getDate())}.${p(d.getMonth()+1)}.${d.getFullYear()} - ${p(d.getDate())}.${p(d.getMonth()+1)}.${d.getFullYear()}`;
+})();
+
+/* theme */
+const sw = $("themeSwitch");
+function setTheme(t){ document.documentElement.setAttribute("data-theme", t); try{localStorage.setItem("st_theme",t)}catch{} }
+try{ if(localStorage.getItem("st_theme")==="dark") document.documentElement.setAttribute("data-theme","dark"); }catch{}
+sw.addEventListener("click", () => setTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark"));
+$("btnLight").addEventListener("click", () => setTheme("light"));
+$("btnDark").addEventListener("click", () => setTheme("dark"));
+
+/* ============ ROUTER — เปลี่ยนหน้าตามเมนู ============ */
+const SUBS = {
+  overview: "ภาพรวม · Digital Marketing · ข้อมูลตัวอย่าง (mock)",
+  sources: "แหล่งข้อมูล · 5 ช่องหลัก FB/TikTok/IG/LINE/YouTube · รายละเอียดต่อแหล่ง",
+  terms: "คำยอดฮิต · นับ offline · trend + มุมคอนเทนต์",
+  ideas: "ไอเดียคอนเทนต์ · สร้างจากข้อมูลของ ITOPPLUS",
+  items: "รายการทั้งหมด · 64 รายการ · เรียง score สูง → ต่ำ",
+  crm: "CRM / Leads · funnel FB/TikTok/LINE · เรียงตามระดับพร้อมปิดการขาย",
+  ads: "Ads Manager · งบ/ROAS/CPL ตามช่อง · FB · TikTok · IG · LINE",
+  calendar: "Content Calendar · โพสต์ล่วงหน้า 7 วัน · สถานะ Draft/Approved/Scheduled",
+  tasks: "Tasks · งานลูกค้าแยกทีม · กำหนดส่ง (SLA)",
+  reports: "Reports · รายงานส่งลูกค้า · 30 วันที่ผ่านมาใน 1 หน้า",
+  goals: "Goal Tracker · เป้าหมายลูกค้า 6 ราย เทียบผลจริง",
+  settings: "ตั้งค่า · คีย์เวิร์ด / แหล่ง / fetch / ข้อมูล"
+};
+function goPage(p){
+  document.querySelectorAll(".page").forEach(s => s.classList.toggle("active", s.id === "page-" + p));
+  document.querySelectorAll(".nav a[data-page], .mobile-nav a[data-page]").forEach(a =>
+    a.classList.toggle("active", a.dataset.page === p));
+  $("pageSub").textContent = SUBS[p] || "";
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+document.querySelectorAll("[data-page]").forEach(a => a.addEventListener("click", e => {
+  e.preventDefault(); goPage(a.dataset.page);
+}));
+document.querySelectorAll("[data-goto]").forEach(b => b.addEventListener("click", () => goPage(b.dataset.goto)));
+
+/* ===== MOCK DATA — keyword Digital Marketing (ITOPPLUS) ===== */
+const MOCK = {
+  keyword: "Digital Marketing", total: 64,
+  by_source: {facebook: 10, tiktok: 9, instagram: 6, line: 5, youtube: 3},
+  /* MOCK จากช่องที่คนไทยใช้จริง: Facebook/TikTok/IG/LINE/YouTube */
+  top_terms: [["marketing",28],["ธุรกิจ",24],["ลูกค้า",18],["budget",12],["social",11],
+    ["content",11],["ยอดขาย",10],["websites",8],["seo",8],["brands",7],
+    ["clients",6],["ads",6]],
+  hot: "How we get local clients with SEO + Google Business Profile",
+  suggestions: [
+    "คอนเทนต์: 'How we get local clients with SEO + Google Business Profile' — ITOPPLUS เล่าเคสจริง 30 วิ + ก่อน/หลัง + CTA ปรึกษาฟรี",
+    "หัวข้อ SEO/แฮชแท็ก: marketing, ธุรกิจ, ลูกค้า, budget, social, content, ยอดขาย — ทำเป็นชุดโพสต์/คลิปสั้นรายสัปดาห์",
+    "Angle ITOPPLUS: เอาคำถามยอดฮิต 'budget' มาทำ FAQ/บทความ/โพสต์ขายของ 3 ตอน (ตั้งงบยังไง คุ้มไหม ได้ลีดแค่ไหน)"
+  ],
+  errors: [],
+  items: [
+    {source:"facebook", title:"How we get local clients with SEO + Google Business Profile", body:"seo marketing ลูกค้า ธุรกิจ local clients search", url:"https://facebook.com/itopplus/posts/mock1", score:891},
+    {source:"tiktok", title:"Facebook Ads vs TikTok Ads: where should small businesses put budget in 2026?", body:"ads budget marketing social ธุรกิจ", url:"https://www.tiktok.com/@itopplus/video/mock1", score:642},
+    {source:"facebook", title:"Content strategy that actually brings leads (not just likes)", body:"content marketing ลูกค้า leads ธุรกิจ social", url:"https://facebook.com/itopplus/posts/mock2", score:534},
+    {source:"instagram", title:"ITOPPLUS case: 3x leads in 90 days with SEO and content", body:"seo content marketing leads ธุรกิจ clients ITOPPLUS", url:"https://www.instagram.com/p/mock1", score:521},
+    {source:"line", title:"How much should a small business spend on ads per month?", body:"ads budget marketing ธุรกิจ small business", url:"https://line.me/R/oat/mock", score:461},
+    {source:"youtube", title:"Social media manager checklist for Thai SMEs", body:"social media marketing content ธุรกิจ", url:"https://www.youtube.com/watch?v=mock1", score:415},
+    {source:"tiktok", title:"Why your website gets traffic but no customers", body:"websites traffic ลูกค้า marketing conversion", url:"https://www.tiktok.com/@itopplus/video/mock2", score:398},
+    {source:"facebook", title:"I replaced a brochure site with a lead gen landing page", body:"websites leads marketing conversion ธุรกิจ", url:"https://facebook.com/itopplus/posts/mock3", score:342},
+    {source:"line", title:"LINE OA + ads: turning followers into buyers", body:"ads social ลูกค้า ยอดขาย marketing", url:"https://line.me/R/oat/mock2", score:329},
+    {source:"instagram", title:"Branding that sells: simple playbook for small businesses", body:"brands marketing ธุรกิจ small business", url:"https://www.instagram.com/p/mock2", score:287},
+    {source:"tiktok", title:"ROAS explained for non-marketing business owners", body:"marketing budget ads ธุรกิจ clients", url:"https://www.tiktok.com/@itopplus/video/mock3", score:276},
+    {source:"facebook", title:"Review strategy: turning happy customers into free ads", body:"ลูกค้า reviews social marketing ธุรกิจ", url:"https://facebook.com/itopplus/posts/mock4", score:264},
+    {source:"instagram", title:"Short video content system: 1 shoot, 30 posts", body:"content social marketing ธุรกิจ", url:"https://www.instagram.com/reel/mock3", score:233},
+    {source:"youtube", title:"How agencies report results without vanity metrics", body:"marketing clients reporting ธุรกิจ budget", url:"https://www.youtube.com/watch?v=mock2", score:215},
+    {source:"tiktok", title:"Local SEO: rank in your area without paying for ads", body:"seo ads local marketing ลูกค้า", url:"https://www.tiktok.com/@itopplus/video/mock4", score:198},
+    {source:"line", title:"Email + chat automation for lead follow-up", body:"leads automation marketing ลูกค้า", url:"https://line.me/R/oat/mock3", score:188},
+    {source:"facebook", title:"How to pick a digital marketing agency: 7 questions", body:"digital marketing clients budget ธุรกิจ", url:"https://facebook.com/itopplus/posts/mock5", score:187},
+    {source:"instagram", title:"Blog vs social: where should you post first?", body:"content social marketing ธุรกิจ budget", url:"https://www.instagram.com/p/mock4", score:176},
+    {source:"facebook", title:"Paid search basics for service businesses", body:"search ads budget marketing ธุรกิจ", url:"https://facebook.com/itopplus/posts/mock6", score:152},
+    {source:"tiktok", title:"Case study: restaurant grew weekend bookings with ads", body:"ads ยอดขาย restaurant marketing social", url:"https://www.tiktok.com/@itopplus/video/mock5", score:98},
+    {source:"facebook", title:"ธุรกิจ SME ไทยเร่งทำตลาดดิจิทัล งบโฆษณาออนไลน์โต", body:"", url:"https://facebook.com/itopplus/posts/mock7", score:0},
+    {source:"tiktok", title:"ร้านค้าออนไลน์หันมาใช้ TikTok Ads ยอดขายพุ่ง", body:"", url:"https://www.tiktok.com/@trendvideo/mock6", score:0},
+    {source:"instagram", title:"SEO ท้องถิ่น กลยุทธ์ใหม่ของร้านบริการให้ลูกค้าเจอ", body:"", url:"https://www.instagram.com/p/mock5", score:0},
+    {source:"line", title:"ITOPPLUS ชี้แนวทางทำตลาดดิจิทัลยั่งยืนสำหรับธุรกิจเล็ก", body:"", url:"https://line.me/R/oat/mock4", score:0},
+    {source:"youtube", title:"วิธีตั้งงบยิงแอด Facebook TikTok สำหรับร้านเล็ก", body:"", url:"https://www.youtube.com/watch?v=mock3", score:0},
+    {source:"facebook", title:"รีวิวลูกค้าคือโฆษณาฟรีที่ผู้บริโภคเชื่อที่สุด", body:"", url:"https://facebook.com/itopplus/posts/mock8", score:0},
+    {source:"tiktok", title:"สินค้าคอนเทนต์สั้น ขายดิบขายดีในไทยปีนี้", body:"", url:"https://www.tiktok.com/@itopplus/video/mock7", score:0},
+    {source:"instagram", title:"การตลาดผ่านเนื้อหาได้ผลจริงสำหรับ SME ไทย", body:"", url:"https://www.instagram.com/p/mock6", score:0},
+    {source:"facebook", title:"การตลาดดิจิทัล", body:"digital marketing content ธุรกิจ", url:"https://facebook.com/itopplus/posts/mock9", score:0},
+    {source:"youtube", title:"การโฆษณาบนโซเชียลมีเดีย", body:"social media ads marketing", url:"https://www.youtube.com/watch?v=mock4", score:0},
+    {source:"tiktok", title:"การปรับแต่งเครื่องมือค้นหา", body:"seo websites search marketing", url:"https://www.tiktok.com/@itopplus/video/mock8", score:0},
+    {source:"line", title:"การตลาดผ่านเนื้อหา", body:"content marketing ธุรกิจ", url:"https://line.me/R/oat/mock5", score:0},
+    {source:"instagram", title:"การสร้างตราสินค้า", body:"brands marketing ธุรกิจ", url:"https://www.instagram.com/p/mock7", score:0},
+    /* เพิ่มเน็ตเติ้ลดิจิทัล: รายงานรายวัน 7 วัน */
+    {source:"facebook", title:"รายงาน Facebook Insights ประจำสัปดาห์: reach +12%", body:"facebook insights reach ยอดขาย ธุรกิจ", url:"https://facebook.com/itopplus/posts/mock10", score:0},
+    {source:"tiktok", title:"รายงาน TikTok Weekly: views แตะ 1.2M", body:"tiktok weekly views reach ยอดขาย", url:"https://www.tiktok.com/@itopplus/video/mock9", score:0},
+    {source:"instagram", title:"IG Reels รายงานยอดรีแอค 4,000 ครั้ง", body:"instagram reels engagement ยอดขาย", url:"https://www.instagram.com/reel/mock4", score:0},
+    {source:"line", title:"LINE OA broadcast รายงานอ่าน 92%", body:"line broadcast open rate ยอดขาย", url:"https://line.me/R/oat/mock6", score:0},
+    {source:"youtube", title:"YouTube Shorts รายสัปดาห์ subscribe เพิ่ม 180", body:"youtube shorts subscribe reach", url:"https://www.youtube.com/watch?v=mock5", score:0},
+    {source:"facebook", title:"Facebook Ads: ROAS 3.2 ในกลุ่มสินค้าอาหาร", body:"facebook ads roas ยอดขาย ร้านอาหาร", url:"https://facebook.com/itopplus/posts/mock11", score:0},
+    {source:"tiktok", title:"TikTok Shop: ยอดขายร้านพุ่งจากคลิป 30 วิ", body:"tiktok shop ยอดขาย ลงทุน", url:"https://www.tiktok.com/@itopplus/video/mock10", score:0},
+    {source:"instagram", title:"โพสต์คาร์ดเคสลูกค้าจริง ยอด save สูง", body:"instagram carousel engagement ลูกค้า", url:"https://www.instagram.com/p/mock8", score:0},
+    {source:"line", title:"LINE แชท automation ลดภาระฝ่ายขาย 40%", body:"line chat automation leads ลูกค้า", url:"https://line.me/R/oat/mock7", score:0},
+    {source:"youtube", title:"ไลฟ์: ตั้งงบยิงแอดจริง 20 นาที", body:"youtube live ads budget ทุน", url:"https://www.youtube.com/watch?v=mock6", score:0},
+    {source:"facebook", title:"วิดีโอเคส เจ้าของร้านกาแฟยอดขายโต 35%", body:"facebook video case before after coffee", url:"https://facebook.com/itopplus/posts/mock12", score:0},
+    {source:"tiktok", title:"วิดีโอรีวิวรีวิว: ขายของแบบใช้ TikTok", body:"tiktok review ขายของ พัด", url:"https://www.tiktok.com/@trendvideo/mock11", score:0},
+    {source:"instagram", title:"วิดีโอ IG Reels: ภาพอาหารที่ขายได้จริง", body:"instagram food photo marketing ยอดขาย", url:"https://www.instagram.com/reel/mock5", score:0},
+    {source:"line", title:"LINE rich menu ใหม่ คลิกเพิ่ม 60%", body:"line rich menu ยอดขาย ลูกค้า", url:"https://line.me/R/oat/mock8", score:0},
+    {source:"youtube", title:"คลิปสอนยิงแอด step-by-step ฟรี", body:"youtube สอน ยิงแอด budget", url:"https://www.youtube.com/watch?v=mock7", score:0},
+    {source:"facebook", title:"โพสต์รูปก่อน/หลังทำแบรนดิ้งร้านเสื้อผ้า", body:"facebook brand case before after clothing", url:"https://facebook.com/itopplus/posts/mock13", score:0},
+    {source:"tiktok", title:"คลิปโชว์โครงการจริง ขายของออนไลน์", body:"tiktok โชว์ โครงการ ขายของ", url:"https://www.tiktok.com/@itopplus/video/mock12", score:0},
+    {source:"instagram", title:"IG story เทสต์ขายวันนี้: 50 ออเดอร์", body:"instagram story ขายของ ออเดอร์", url:"https://www.instagram.com/p/mock9", score:0},
+    {source:"line", title:"LINE coupon: สมาชิกเดิมเท่านั้น ใช้ได้ 3 วัน", body:"line coupon สมาชิก ยอดขาย", url:"https://line.me/R/oat/mock9", score:0},
+    {source:"youtube", title:"รีวิวธุรกิจจริง: ร้านล้างรถใช้ AI ช่วยจอง", body:"youtube review ธุรกิจ car wash ai", url:"https://www.youtube.com/watch?v=mock8", score:0},
+    {source:"facebook", title:"ไลฟ์เสาร์นี้: ถามตอบยิงแอดกับทีม ITOPPLUS", body:"facebook live ITOPPLUS Q&A ยิงแอด", url:"https://facebook.com/itopplus/posts/mock14", score:0},
+    {source:"tiktok", title:"คลิปสั้นแนะนำสเปกกล้องสำหรับ Content Creator", body:"tiktok camera gear content marketing", url:"https://www.tiktok.com/@itopplus/video/mock13", score:0},
+    {source:"instagram", title:"Reel: 3 ทริคถ่ายภาพร้านอาหารให้ขายดี", body:"instagram food photo tips marketing", url:"https://www.instagram.com/reel/mock6", score:0},
+    {source:"line", title:"LINE OA automation ตอบรีวิวใน 5 นาที", body:"line automation review ลูกค้า", url:"https://line.me/R/oat/mock10", score:0},
+    {source:"youtube", title:"คลิป SEO ตัวจริง: ทำฟรีด้วยตัวเองใน 1 ชั่วโมง", body:"youtube seo ฟรี marketing", url:"https://www.youtube.com/watch?v=mock9", score:0},
+    {source:"facebook", title:"Facebook carousel: 10 รูปก่อนหลังปรับร้านค้า", body:"facebook carousel before after shop", url:"https://facebook.com/itopplus/posts/mock15", score:0},
+    {source:"tiktok", title:"TikTok trend จับปุ๊ปขายปั๊ป ฮิตใหม่สัปดาห์นี้", body:"tiktok trend ฮิต ขายของ", url:"https://www.tiktok.com/@trendvideo/mock14", score:0},
+    {source:"instagram", title:"IG guide: เลือกอาหารให้ถ่ายสวยขายดี", body:"instagram guide food photo marketing", url:"https://www.instagram.com/p/mock10", score:0},
+    {source:"line", title:"LINE broadcast: โปรสิ้นเดือน ทักแล้วได้ของ", body:"line broadcast โปรสิ้นเดือน ยอดขาย", url:"https://line.me/R/oat/mock11", score:0},
+    {source:"youtube", title:"คลิปวิเคราะห์: ทำไม ROAS ต่ำกว่า 2.0 ถึงควรพัก", body:"youtube roas วิเคราะห์ ads budget", url:"https://www.youtube.com/watch?v=mock10", score:0},
+    {source:"facebook", title:"โพสต์แจ้งโปร: ลูกค้าเดิมได้ส่วนลดพิเศษ", body:"facebook promo loyalty ยอดขาย", url:"https://facebook.com/itopplus/posts/mock16", score:0},
+    {source:"tiktok", title:"คลิปเปรียบเทียบ: ยิงแอด FB vs TikTok ตัวจริง", body:"tiktok compare facebook ads งบ", url:"https://www.tiktok.com/@itopplus/video/mock15", score:0},
+    {source:"instagram", title:"IG insights: เวลาโพสต์ดีที่สุด 5 ช่อง", body:"instagram insights เวลา โพสต์", url:"https://www.instagram.com/p/mock11", score:0},
+    {source:"line", title:"LINE OA: ระบบแท็กลูกค้าช่วยขายได้ 25%", body:"line tag ลูกค้า ยอดขาย", url:"https://line.me/R/oat/mock12", score:0}
+  ]
+};
+
+/* ===== PAGE MOCK — รายละเอียดทุกเมนู ===== */
+const SRC_DETAIL = [
+  {name:"facebook", label:"Facebook", color:"#1877F2", api:"Page insights · แฝดผู้ติดตามไทย", count:10,
+   total:3622, avg:362, last:"2 นาทีที่แล้ว", status:"เชื่อมต่อแล้ว",
+   sample:"How we get local clients with SEO + Google Business Profile"},
+  {name:"tiktok", label:"TikTok", color:"#000000", api:"TikTok Ads · คลิปเรียล", count:9,
+   total:3300, avg:367, last:"2 นาทีที่แล้ว", status:"เชื่อมต่อแล้ว",
+   sample:"FB Ads vs TikTok งบเท่ากัน คุ้มช่องไหน"},
+  {name:"instagram", label:"Instagram", color:"#E1306C", api:"Reels/Posts · ภาพ+คลิปสั้น", count:6,
+   total:0, avg:0, last:"2 นาทีที่แล้ว", status:"เชื่อมต่อแล้ว",
+   sample:"การสร้างตราสินค้า"},
+  {name:"line", label:"LINE OA", color:"#00B900", api:"Broadcast + ระบบแชท", count:5,
+   total:0, avg:0, last:"2 นาทีที่แล้ว", status:"เชื่อมต่อแล้ว",
+   sample:"LINE OA + ads: turning followers into buyers"},
+  {name:"youtube", label:"YouTube", color:"#FF0000", api:"Shorts + ยาว · SEO คลิป", count:3,
+   total:0, avg:0, last:"2 นาทีที่แล้ว", status:"เชื่อมต่อแล้ว",
+   sample:"การตลาดผ่านเนื้อหา"}
+];
+
+/* ===== DEEP MOCK — fanpagekarma style (profile/channel) ===== */
+const CHAN_PERF = [
+  {chan:"Facebook", followers:"5,850", posts:"4/สัปดาห์", reach:"8,240", er:"3.92%", growth:"+642", bench:"ดีกว่าอุตสาหกรรม +18%"},
+  {chan:"TikTok", followers:"4,120", posts:"5/สัปดาห์", reach:"18,900", er:"6.74%", growth:"+518", bench:"ดีกว่าอุตสาหกรรม +32%"},
+  {chan:"Instagram", followers:"2,480", posts:"3/สัปดาห์", reach:"5,610", er:"4.28%", growth:"+124", bench:"เสมออุตสาหกรรม"},
+  {chan:"LINE OA", followers:"1,940", posts:"2/สัปดาห์", reach:"3,150", er:"7.15%", growth:"+96", bench:"ดีกว่าอุตสาหกรรม +45%"},
+  {chan:"YouTube", followers:"1,230", posts:"1/สัปดาห์", reach:"4,780", er:"2.31%", growth:"+44", bench:"ต่ำกว่าอุตสาหกรรม -5%"}
+];
+const MENTIONS = [
+  {page:"ITOPPLUS Official", plat:"Facebook", fol:"5,850", n:486, reach:"52,400", senti:["Positive","pill-green"]},
+  {page:"SME Digital TH", plat:"Facebook", fol:"38,200", n:214, reach:"31,800", senti:["Positive","pill-green"]},
+  {page:"Marketing Hacks Club", plat:"Facebook", fol:"91,000", n:128, reach:"19,600", senti:["Neutral","pill-yellow"]},
+  {page:"Tech Startup TH", plat:"YouTube", fol:"—", n:96, reach:"12,300", senti:["Neutral","pill-yellow"]},
+  {page:"นายห้างดิจิทัล", plat:"TikTok", fol:"64,500", n:84, reach:"28,900", senti:["Positive","pill-green"]},
+  {page:"BizTalk Channel", plat:"YouTube", fol:"112,000", n:61, reach:"15,200", senti:["Neutral","pill-yellow"]},
+  {page:"SME Online โซน", plat:"LINE OA", fol:"—", n:47, reach:"9,800", senti:["Negative","pill-red"]},
+  {page:"SEO Story Blog", plat:"IG Reels", fol:"—", n:33, reach:"6,700", senti:["Positive","pill-green"]},
+  {page:"SME ไทยก้าวหน้า", plat:"YouTube", fol:"—", n:12, reach:"1,900", senti:["Neutral","pill-yellow"]},
+  {page:"Affiliate เล่าต่อ", plat:"TikTok", fol:"8,400", n:9, reach:"1,400", senti:["Neutral","pill-yellow"]},
+  {page:"ขาวฟ้าออนไลน์", plat:"TikTok", fol:"52,000", n:98, reach:"31,000", senti:["Positive","pill-green"]},
+  {page:"ไทยMarketing", plat:"Facebook", fol:"24,600", n:73, reach:"16,900", senti:["Neutral","pill-yellow"]},
+  {page:"คลิปเต็มออนไลน์", plat:"YouTube", fol:"18,400", n:57, reach:"12,100", senti:["Positive","pill-green"]},
+  {page:"Reels นายชัย", plat:"Instagram", fol:"41,000", n:42, reach:"24,600", senti:["Positive","pill-green"]},
+  {page:"LINE SME ไทย", plat:"LINE OA", fol:"—", n:31, reach:"6,200", senti:["Positive","pill-green"]},
+  {page:"TikTok สรุปยิงแอด", plat:"TikTok", fol:"92,000", n:124, reach:"37,500", senti:["Positive","pill-green"]},
+  {page:"FB ภาษาคนไทย", plat:"Facebook", fol:"76,000", n:89, reach:"29,800", senti:["Neutral","pill-yellow"]},
+  {page:"YouTube ต้นทุนยิงแอด", plat:"YouTube", fol:"33,000", n:54, reach:"18,700", senti:["Neutral","pill-yellow"]},
+  {page:"คอนเทนต์ขายดีคนไทย", plat:"TikTok", fol:"128,000", n:158, reach:"48,200", senti:["Positive","pill-green"]},
+  {page:"ไลน์OA ไทยแนะนำ", plat:"LINE OA", fol:"—", n:28, reach:"5,400", senti:["Positive","pill-green"]},
+  {page:"IG แนวทาง SME", plat:"Instagram", fol:"58,000", n:61, reach:"33,400", senti:["Positive","pill-green"]},
+  {page:"Facebook หาดใหญ่", plat:"Facebook", fol:"63,000", n:79, reach:"27,100", senti:["Neutral","pill-yellow"]},
+  {page:"YouTube อีคอมเมิร์ซไทย", plat:"YouTube", fol:"71,000", n:67, reach:"22,600", senti:["Positive","pill-green"]},
+  {page:"TikTok คนถ่ายภาพ", plat:"TikTok", fol:"39,000", n:45, reach:"20,800", senti:["Neutral","pill-yellow"]}
+];
+const VOLUME7 = [["จ.",142],["อ.",158],["พ.",171],["พฤ.",166],["ศ.",198],["ส.",184],["อา.",165],["จ.",151],["อ.",167],["พ.",180],["พฤ.",172],["ศ.",204],["ส.",191],["อา.",176]];
+const SOV = [
+  {name:"ITOPPLUS", v:38, color:"#22c55e"},
+  {name:"Agency A", v:27, color:"#ffb800"},
+  {name:"Agency B", v:21, color:"#14b8a6"},
+  {name:"Agency C", v:14, color:"#94a3b8"}
+];
+const HASHES = ["#DigitalMarketing","#การตลาดดิจิทัล","#SEO","#ยิงแอด","#TikTokMarketing","#ทำตลาดออนไลน์","#SMEไทย","#ContentMarketing","#ขายออนไลน์","#ITOPPLUS","#GoogleBusiness","#รีวิวลูกค้า","#LINEOA","#InstagramReels","#TikTokShop","#FacebookAds","#ยิงแอดคุ้ม","#คอนเทนต์สั้น"];
+const HEAT = [
+  ["จันทร์",[.3,.5,.4,.6,.9,.5]], ["อังคาร",[.3,.6,.5,.7,1,.6]], ["พุธ",[.3,.7,.6,.8,1,.5]],
+  ["พฤหัสฯ",[.4,.7,.5,.8,.9,.6]], ["ศุกร์",[.4,.6,.6,.9,.8,.5]], ["เสาร์",[.5,.8,.7,.6,.7,.4]],
+  ["อาทิตย์",[.4,.7,.8,.5,.6,.4]]
+];
+const PERF = [
+  ["คลิป SEO ฟรี 3 ข้อที่ร้านทำเองได้","Video",18200,1240,182,96,"6.81%"],
+  ["FB Ads vs TikTok Ads คุ้มช่องไหน","Carousel",14600,986,142,88,"6.75%"],
+  ["เคส ITOPPLUS 3x ลีดใน 90 วัน","Blog",11200,864,121,74,"7.71%"],
+  ["ระบบคอนเทนต์ 1 ถ่าย 30 โพสต์","Video",9800,742,98,61,"7.57%"],
+  ["รีวิวลูกค้า = โฆษณาฟรี","Post",8600,698,87,55,"8.12%"],
+  ["ร้านอาหาร: ยิงแอดแล้วจองเต็ม","Case",7400,521,66,42,"7.04%"],
+  ["ROAS อธิบายง่าย","Infographic",6200,431,58,37,"6.95%"],
+  ["เลือกเอเจนซี่ 7 คำถาม","Article",5400,388,49,31,"7.19%"]
+];
+const PLAN = [
+  ["จันทร์","โพสต์: คลิป SEO ฟรี 3 ข้อ","TikTok 19:00","pill-red"],
+  ["อังคาร","ไลฟ์/ตอบคำถามเรื่องงบยิงแอด","FB 20:00","pill-yellow"],
+  ["พุธ","Carousel: FB vs TikTok งบเท่ากัน","IG 18:00","pill-blue"],
+  ["พฤหัสฯ","Blog: เคส 3x ลีด 90 วัน","Web 09:00","pill-green"],
+  ["ศุกร์","รีวิวลูกค้า + Stories โพลล์","IG/FB 12:00","pill-purple"],
+  ["เสาร์","ถ่ายคอนเทนต์ชุด 1:30 โพสต์","—","pill-gray"],
+  ["อาทิตย์","สรุปยอดกราฟประจำสัปดาห์ + ECN","LINE OA 10:00","pill-green"],
+  ["จันทร์หน้า","คลิปสั้น: กลยุทธ์เว็บขายดี","TikTok 19:30","pill-red"],
+  ["อังคารหน้า","ตัวอย่าง: ROI สมาชิกใหม่ vs เก่า","FB 21:00","pill-yellow"]
+];
+const GROWTH30 = [11250,11290,11340,11390,11440,11490,11540,11590,11635,11685,11730,11780,11830,11875,11920,11970,12020,12070,12115,12160,12210,12260,12310,12360,12405,12450,12510,12580,12650,12730,12805,12890,12975,13060,13150,13240,13330,13415,13500,13590,13680,13770,13860,13950,14040,14130,14220,14310,14400,14490,14580,14660,14735,14790,14845,14890,14930,14960,14990,15010,15025,15035,15045,15055,15065];
+
+const TERM_SENTI = ["Positive","Positive","Positive","Neutral","Neutral","Positive","Positive","Neutral","Positive","Neutral","Positive","Neutral","Positive","Positive","Neutral","Positive","Positive","Positive","Neutral","Positive","Positive"];
+const TERM_CHAN = ["TikTok","Facebook","FB/LINE","TikTok","LINE OA","Facebook","TikTok","Blog","YouTube","FB","Blog","TikTok","Facebook","LINE OA","TikTok","TikTok","TikTok","Facebook","Facebook","Facebook","Facebook"];
+const TERM_DETAIL = [
+  ["marketing",28,"↗ +18%","ชื่อคลิป/แฮชแท็กหลักทุกโพสต์"],
+  ["ธุรกิจ",24,"↗ +12%","มุม SME/เจ้าของร้าน — กลุ่มลูกค้า ITOPPLUS"],
+  ["ลูกค้า",18,"↗ +9%","FAQ/รีวิว/เคสจริงที่ลูกค้าถามบ่อย"],
+  ["budget",12,"↗ +22%","โพสต์ตั้งงบยิงแอด + เครื่องคิด ROAS"],
+  ["social",11,"→ 0%","แพลตฟอร์ม Facebook/TikTok/LINE OA"],
+  ["content",11,"↗ +7%","ระบบคอนเทนต์ 1 ถ่าย 30 โพสต์"],
+  ["ยอดขาย",10,"↗ +15%","ก่อน/หลัง + ตัวเลขลีด/ยอดจอง"],
+  ["websites",8,"↘ -3%","บทความ conversion website → ลีด"],
+  ["seo",8,"↗ +31%","คลิป local SEO 3 นาที จบ"],
+  ["brands",7,"→ 0%","Branding เรียบง่ายสำหรับร้านเล็ก"],
+  ["clients",6,"↘ -4%","ผลลัพธ์ลูกค้า + การรายงานผล"],
+  ["ads",6,"↗ +6%","เทียบงบ Facebook Ads vs TikTok Ads"],
+  ["รีวิว",6,"↗ +25%","โพสต์รีวิวลูกค้าทุกสัปดาห์"],
+  ["LINE OA",5,"↗ +11%","Line automation + CRM"],
+  ["แคปชั่น",4,"↘ -8%","คอนเทนต์แคปชั่นดึงดูด"],
+  ["คอนเทนต์สั้น",4,"↗ +33%","คลิปสั้น TikTok/Reels"],
+  ["ผู้ติดตาม",7,"↗ +14%","ไอเดียโตผู้ติดตาม"],
+  ["ยิงแอด",9,"↗ +28%","ยิงแอดคุ้ม รวมงบ ROAS"],
+  ["โพสต์",8,"→ 0%","โพสต์ประจำสัปดาห์"],
+  ["โปรโม",5,"↗ +19%","โปรโมออนไลน์/เทศกาล"],
+  ["ไลฟ์",3,"↗ +37%","ไลฟ์ขายสด"]
+];
+
+/* ===== MOCK เมนูใหม่: CRM / Ads / Calendar / Tasks / Reports / Goals ===== */
+const CRM_LEADS = [
+  {id:"L-001", stage:"new", name:"คุณต้น (ร้านก๋วยเตี๋ยวเหนือ)", src:"Facebook Ads", value:25000, last:"คลิกจากโพสต์เมื่อวาน", next:"ทัก DM วันนี้ 10:00"},
+  {id:"L-002", stage:"new", name:"คุณเฟิร์น (คลินิก<คุณหมอให้เบอร์>)", src:"TikTok", value:60000, last:"ขอใบเสนอราคาหลังดูคลิป", next:"ส่งตัวอย่างเคส + ราคา"},
+  {id:"L-003", stage:"new", name:"คุณวี (ร้านกาแฟล่าสุดที่ขอนครปฐม)", src:"LINE OA", value:35000, last:"ทักหลังดู Reels", next:"ถามเป้า + เว็บเดิม"},
+  {id:"L-004", stage:"new", name:"คุณแนน (ร้านมือถือมือสอง)", src:"Facebook", value:18000, last:"ถามยิงแอด FB เปิดหน้าร้าน", next:"โทรกลับเร็วที่สุด"},
+  {id:"L-005", stage:"active", name:"คุณจิ๋ว (สุกี้หมูจุ่ม 3 สาขา)", src:"TikTok", value:90000, last:"คุยกับทีมการตลาด 2 รอบ", next:"ส่งข้อเสนอ Flash Sale คุ้ม"},
+  {id:"L-006", stage:"active", name:"คุณก้อย (น้ำหอมน้ำ)", src:"Facebook", value:45000, last:"นัดทั่วหน้า 15 พ.ย.", next:"รอเอกสารร้าน + พิกัด"},
+  {id:"L-007", stage:"quoted", name:"คุณผึ้ง (โรงงานขนม)", src:"LINE OA", value:120000, last:"ส่งข้อเสนอ + 3 เคส", next:"โทร follow-up + ขอตัวอย่าง"},
+  {id:"L-008", stage:"won", name:"คุณพี (ร้านเสื้อผ้าแฟชั่น)", src:"Instagram", value:85000, last:"เซ็นสัญญา 6 เดือน", next:"เริ่มคอนเทนต์อาทิตย์หน้า"}
+];
+const CRM_STAGES = [
+  {k:"new",    label:"ลีดใหม่",        cnt:4},
+  {k:"active", label:"กำลังคุย",       cnt:2},
+  {k:"quoted", label:"เสนอราคาแล้ว",   cnt:1},
+  {k:"won",    label:"ปิดการขาย",      cnt:1}
+];
+const ADS_CAMPAIGNS = [
+  {name:"FB — ขายของออนไลน์", plat:"Facebook", budget:15000, reach:48000, clicks:1120, cpl:190, roas:3.8, status:"กำลังยิง"},
+  {name:"TikTok — โปรโมตคลิปสั้น", plat:"TikTok", budget:12000, reach:62000, clicks:1540, cpl:168, roas:4.1, status:"กำลังยิง"},
+  {name:"IG — Reels สินค้าใหม่", plat:"Instagram", budget:8000, reach:31000, clicks:840, cpl:225, roas:2.6, status:"กำลังยิง"},
+  {name:"LINE OA — Broadcast นวดผิว", plat:"LINE OA", budget:6000, reach:15000, clicks:260, cpl:380, roas:1.9, status:"ทดสอบ"},
+  {name:"YouTube — ไลฟ์ขายของ", plat:"YouTube", budget:4000, reach:21000, clicks:391, cpl:245, roas:2.2, status:"พักไว้"},
+  {name:"Google Display — Branding", plat:"Google", budget:5000, reach:45000, clicks:62, cpl:520, roas:0.8, status:"พักไว้"}
+];
+const CALENDAR_WEEK = [
+  {day:"จ. 10 พ.ย.", today:false, posts:[{t:"09:00 · FB — คลิป 30 วิ SEO", st:"ok"},{t:"12:00 · IG — แคปชั่นดึงคอมเมนต์", st:"ok"},{t:"18:00 · TikTok — 1 ถ่าย 30 โพสต์", st:"ok"}]},
+  {day:"อ. 11 พ.ย.", today:false, posts:[{t:"10:00 · LINE OA — โปรนวดผิว", st:"ok"},{t:"13:00 · FB — ROAS อธิบาย", st:"ok"},{t:"19:00 · YT — ไลฟ์ขายของ", st:"draft"}]},
+  {day:"พ. 12 พ.ย.", today:true,  posts:[{t:"09:30 · FB — เคส 3x ลีด", st:"ok"},{t:"11:00 · IG — รีวิวลูกค้า + Stories", st:"ok"},{t:"15:00 · TikTok — คลิปสั้น TikTok Shop", st:"ok"}]},
+  {day:"พฤ. 13 พ.ย.", today:false,posts:[{t:"09:00 · FB — โปรโมสิ้นเดือน", st:"draft"},{t:"13:00 · LINE OA — coupon VIP", st:"ok"},{t:"20:00 · YT — ยาว 20 นาที", st:"draft"}]},
+  {day:"ศ. 14 พ.ย.", today:false, posts:[{t:"10:00 · FB — คาเฟ่รายหน้า", st:"ok"},{t:"12:00 · TikTok — คลิปตะลึงยอดจอง", st:"ok"}]},
+  {day:"ส. 15 พ.ย.", today:false, posts:[{t:"11:00 · IG — รีลส์ร้านอาหาร", st:"ok"},{t:"17:00 · FB — บทความ 7 คำถามเลือกเอเจนซี่", st:"draft"}]},
+  {day:"อา. 16 พ.ย.", today:false,posts:[{t:"09:00 · LINE OA — โปรวันอาทิตย์", st:"ok"},{t:"15:00 · FB — รีวิวรวมพฤศจิกา", st:"draft"}]}
+];
+const TASKS = [
+  {col:"ing",  title:"แก้ไขรูปคอนเทนต์", owner:"คุณแอน", sla:"2 วัน", body:"ร้านกาแฟ เช็คสี + ใส่ข้อความ 3 ลูกค้า"},
+  {col:"ing",  title:"เขียนแคปชั่นรายสัปดาห์", owner:"คุณนัท", sla:"1 วัน", body:"10 แคปชั่น FB/IG + กัปชั่น TikTok"},
+  {col:"ing",  title:"ยิงแอดร้านก๋วยเตี๋ยว", owner:"คุณต้น", sla:"วันนี้", body:"งบ 5,000 บาท ป. 2.8 target FB+IG"},
+  {col:"ing",  title:"15-slide plan ภาพถ่าย", owner:"คุณพลอย", sla:"3 วัน", body:"ร้านเสื้อผ้า ก่อน/หลัง rebrand"},
+  {col:"ing",  title:"สรุปยอดแคมเปญเดือนนี้", owner:"คุณก้อย", sla:"5 วัน", body:"เอเจนซี่ Omni เดือน+ROAS ทุกช่อง"},
+  {col:"approval", title:"ขออนุมัติข้อเสนอร้านเขียว", owner:"คุณจิ๋ว", sla:"1 วัน", body:"Slide เสนอ price หลัก + ตัวอย่าง + ราคา"},
+  {col:"approval", title:"ส่งใบเสนอราคา ROBOT-shop", owner:"คุณเฟิร์น", sla:"1 วัน", body:"รอคำตอบ 3 วัน (นับตั้งแต่วันส่ง)"},
+  {col:"done", title:"โพสต์ leaderboard กลุ่ม SME", owner:"คุณวี", sla:"เสร็จแล้ว", body:"โพสต์ลงกลุ่ม 12,000 คน"}
+];
+const GOALS = [
+  {client:"ร้านก๋วยเตี๋ยวเหนือ",  target:"30 ลิด/เดือน", actual:"24 ลีด", pct:80},
+  {client:"ร้านเสื้อผ้าแฟชั่น",    target:"ยอดขาย +30%",  actual:"+26%", pct:87},
+  {client:"สุกี้หมูจุ่ม 3 สาขา",  target:"จองโต +20%",   actual:"+13%", pct:65},
+  {client:"คลินิก คุณหมอ",       target:"ปรึกษาออนไลน์ 50/สัปดาห์", actual:"41/สัปดาห์", pct:82},
+  {client:"ร้านกาแฟเพกา",        target:"ผู้ติดตาม IG +500",        actual:"+390", pct:78},
+  {client:"โรงงานขนมแสนสบาย",    target:"ROAS 3.0 ข้ามแคมเปญ",      actual:"2.4", pct:80}
+];
+
+const IDEAS = [
+  {prio:"สูง", color:"pill-red", title:"คลิป 30 วิ: SEO ฟรี 3 ข้อที่ร้านทำเองได้วันนี้", format:"Short video", platform:"TikTok / Reels", hook:"ลูกค้าหาเราเจอใน Google โดยไม่ต้องยิงแอด", angle:"ITOPPLUS เล่าเคส local clients score 891", effort:"ถ่าย 1 ครั้ง · ตัด 1 วัน"},
+  {prio:"สูง", color:"pill-red", title:"เทียบงบ Facebook Ads vs TikTok Ads คุ้มช่องไหน", format:"Carousel 5 หน้า", platform:"Facebook / IG", hook:"بودجهเท่ากัน ได้ลีดต่างกันแค่ไหน", angle:"เจาะคำ budget (12 ครั้ง) + ads (6 ครั้ง)", effort:"ทำสไลด์ 1 ชุด"},
+  {prio:"สูง", color:"pill-red", title:"เคส ITOPPLUS: 3x ลีดใน 90 วัน ทำอะไรบ้าง", format:"Blog + สรุปคลิป", platform:"Website / TikTok", hook:"ไม่ใช่ยอดไลก์ แต่เป็นยอดลีดจริง", angle:"story score 521 — พร้อมใส่ตัวเลขก่อน/หลัง", effort:"เขียน blog 1 บทความ"},
+  {prio:"กลาง", color:"pill-yellow", title:"คอนเทนต์ระบบ 1 ถ่าย 30 โพสต์", format:"เบื้องหลัง/How-to", platform:"YouTube / Blog", hook:"ทีมเล็กก็โพสต์ได้ทุกวันโดยไม่หมดแรง", angle:"หัวข้อ content (11 ครั้ง)", effort:"ถ่ายครึ่งวัน"},
+  {prio:"กลาง", color:"pill-yellow", title:"ร้านอาหาร: ยิงแอดแล้วจองเต็มเสาร์-อาทิตย์", format:"Case study", platform:"Facebook / LINE", hook:"ยอดขายขึ้นแบบวัดได้ ไม่ใช่ยอดวิว", angle:"score 98 + คำ ยอดขาย (10 ครั้ง)", effort:"ขออนุญาตลูกค้าก่อน"},
+  {prio:"กลาง", color:"pill-yellow", title:"รีวิวลูกค้า = โฆษณาฟรีที่คนเชื่อสุด", format:"โพสต์ + Stories", platform:"Google / IG", hook:"เอารีวิวเดิมมาสร้างคอนเทนต์ได้ไม่จำกัด", angle:"ข่าวรีวิวลูกค้า — ความน่าเชื่อถือ", effort:"ทำได้ทันที 1 ชั่วโมง"},
+  {prio:"ต่ำ", color:"pill-gray", title:"ROAS อธิบายง่ายสำหรับเจ้าของร้าน", format:"Infographic", platform:"IG / Blog", hook:"เงิน 100 บาท กลับมาเท่าไหร่ใน 1 เดือน", angle:"score 276 + budget", effort:"ทำ infographic 1 หน้า"},
+  {prio:"ต่ำ", color:"pill-gray", title:"เลือกเอเจนซี่ดิจิทัล 7 คำถามก่อนเซ็นสัญญา", format:"บทความ", platform:"Website (SEO)", hook:"คำถามที่ช่วยประหยัดงบหลักหมื่น", angle:"score 187 — เข้ากลุ่ม clients", effort:"เขียนบทความยาว 1 ชิ้น"},
+  {prio:"สูง", color:"pill-red", title:"โพสต์: 5 คำผิดที่คนยิงแอดตัวจริงเจอทุกวัน", format:"Carousel", platform:"Facebook", hook:"งบวันละ 500 แต่เสียใจกับมือห้าม?", angle:"เจาะ audience/budget/target ที่ผิดบ่อย", effort:"ทำสไลด์ 6 หน้า"},
+  {prio:"สูง", color:"pill-red", title:"Reels: ขายของแบบยังไม่ต้องมีหน้าร้าน", format:"Reels", platform:"TikTok", hook:"ไม่มีหน้าร้านก็ขายได้ด้วยคอนเทนต์สั้น", angle:"เทคนิค 'ขายของแบบไม่มีหน้าร้าน' 8 ขั้น", effort:"ถ่าย 30 นาที"},
+  {prio:"กลาง", color:"pill-yellow", title:"Live: ตอบคำถามยิงแอดให้คนดู 100 คน", format:"Facebook Live", platform:"Facebook", hook:"ถามเรื่องที่คุณยิงแอดแล้วไม่ได้ผล", angle:"ประสบการณ์จริงจากทีม ITOPPLUS", effort:"ไลฟ์ 1 ชั่วโมง"},
+  {prio:"กลาง", color:"pill-yellow", title:"LINE OA: ระบบปิดการขายอัตโนมัติผ่านแชท", format:"บทความ", platform:"LINE OA", hook:"ไม่ต้องนั่งตอบแชทตลอด 24 ชั่วโมง", angle:"ROI จาก LINE automation", effort:"เขียน 1 ชั่วโมง"},
+  {prio:"กลาง", color:"pill-yellow", title:"Shorts: ภาพร้านอาหารที่ขายดีที่สุด", format:"Shorts", platform:"YouTube", hook:"ภาพแค่ 2 วินาที ก็ทำให้ลูกค้าสั่ง", angle:"ตัวอย่างจริงจากร้านลูกค้า", effort:"ตัดคลิป 1 วัน"},
+  {prio:"ต่ำ", color:"pill-gray", title:"บทความ: จบงบยิงแอด เลิกเสียเงิน", format:"Blog", platform:"Website", hook:"ทำไม ROAS ยิ่งดีขึ้นถ้ายิงต่อเนื่อง", angle:"อธิบาย ROI budget ad", effort:"เขียน blog 1 ชิ้น"},
+  {prio:"ต่ำ", color:"pill-gray", title:"ไกด์: เช็คลิสต์ร้าน online ที่ขายดิบขายดี", format:"Guide", platform:"PDF / Website", hook:"รายชื่อสิ่งที่ร้าน online ต้องมีก่อนเปิด", angle:"ตัวอย่างร้านจริง", effort:"เขียน 2 ชั่วโมง"},
+  {prio:"ต่ำ", color:"pill-gray", title:"FAQ: 10 คำถามที่ถูกถามบ่อยที่สุด", format:"FAQ", platform:"Website", hook:"คำถามที่ลูกค้ากำลังสงสัยวันนี้", angle:"รวมคำถามจริง", effort:"เขียน 1 ชั่วโมง"},
+  {prio:"สูง", color:"pill-red", title:"โพสต์: ถ้าเงินงบไม่พอ ลองทำดูก่อน", format:"Carousel", platform:"Instagram", hook:"ไม่ต้องยิงแอดตั้งแต่วันแรกก็ขายได้", angle:"Organic + Paid แบบไม่ต้อง ROI สูง", effort:"ทำสไลด์ 6 หน้า"},
+  {prio:"กลาง", color:"pill-yellow", title:"Reels: 3 ร้านที่ขายดิบขายดีในร้านเล็ก", format:"Reels", platform:"TikTok", hook:"ร้านเล็ก ลูกค้าว้าว ขายดิบขายดี", angle:"ตัวอย่างจริง 3 ร้าน", effort:"ถ่าย 1 ชั่วโมง"}
+];
+
+/* ===== render overview (ของเดิม) ===== */
+let currentItems = [];
+const COLORS = ["#ffb800","#ffd34d","#d4a017","#f59e0b","#ffe08a"];
+function drawDonut(el, legendEl, bySource){
+  const entries = Object.entries(bySource || {}).filter(([,v]) => v > 0);
+  const total = entries.reduce((s,[,v]) => s+v, 0);
+  if(!total){ el.style.background = "conic-gradient(#cbd5e1 0 100%)"; legendEl.innerHTML = ""; return; }
+  let acc = 0;
+  const stops = entries.map(([k,v],i) => {
+    const a = acc*360, b = (acc+v/total)*360; acc += v/total;
+    return `${COLORS[i % COLORS.length]} ${a}deg ${b}deg`;
+  }).join(",");
+  el.style.background = `conic-gradient(${stops})`;
+  legendEl.innerHTML = entries.map(([k,v],i) =>
+    `<span><i style="background:${COLORS[i % COLORS.length]}"></i><b>${Math.round(v/total*100)}%</b> ${esc(k)}</span>`).join("");
+}
+function drawRing(el, pct){
+  pct = Math.max(0, Math.min(100, Math.round(pct)));
+  const r = 16, c = 2*Math.PI*r;
+  el.innerHTML = `<svg viewBox="0 0 40 40">
+    <circle cx="20" cy="20" r="${r}" fill="none" stroke="#e5e7eb" stroke-width="4"/>
+    <circle cx="20" cy="20" r="${r}" fill="none" stroke="#22c55e" stroke-width="4"
+      stroke-dasharray="${c*pct/100} ${c}" stroke-linecap="round"/></svg>
+    <span class="pct">+${pct}%</span>`;
+  el.style.color = "#15803d";
+}
+function render(d, isFetch){
+  currentItems = d.items || [];
+  const by = d.by_source || {};
+  const totalScore = currentItems.reduce((s,i) => s + (+i.score || 0), 0);
+  const topScore = currentItems.reduce((m,i) => Math.max(m, +i.score || 0), 0);
+  const avgScore = currentItems.length ? Math.round(totalScore / currentItems.length) : 0;
+  $("stTotal").textContent = (d.total ?? 0).toLocaleString();
+  $("stSrc").textContent = Object.keys(by).length;
+  $("stScore").textContent = totalScore.toLocaleString();
+  $("stTop").textContent = topScore.toLocaleString();
+  /* card 3 donut = สัดส่วน score / card 4 donut = สัดส่วนจำนวนรายการ */
+  const scoreShare = {};
+  currentItems.forEach(i => { scoreShare[i.source] = (scoreShare[i.source] || 0) + (+i.score || 0); });
+  drawDonut($("donutUsers"), $("legendUsers"), scoreShare);
+  drawDonut($("donutTop"), $("legendTop"), by);
+  drawRing($("ring1"), currentItems.length ? Math.min(100, Math.round(totalScore / (totalScore || 1) * 15)) || 15 : 0);
+  drawRing($("ring2"), Math.round(((d.top_terms || []).length) / 15 * 100));
+  $("invScore").textContent = avgScore.toLocaleString();
+  $("invCover").textContent = (d.top_terms || []).length + " คำ";
+  const topN = [...currentItems].sort((a,b) => b.score - a.score).slice(0, 12);
+  const maxS = Math.max(1, ...topN.map(i => +i.score || 0));
+  $("bars").innerHTML = topN.length
+    ? topN.map(i => `<div class="bar-col"><div class="bar-track">
+        <div class="bar-fill" style="height:${Math.max(3, Math.round((+i.score||0)/maxS*100))}%" title="${esc(i.title)}"></div>
+      </div><div class="bar-label">${esc(i.source)}</div></div>`).join("")
+    : '<div class="empty">ยังไม่มีข้อมูล</div>';
+  const vals = topN.length ? topN.map(i => +i.score || 0) : [0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+  const lm = Math.max(1, ...vals);
+  const pts = vals.map((v,i) => `${(i*800/(vals.length-1)).toFixed(1)},${(185 - v/lm*155).toFixed(1)}`).join(" ");
+  $("line").innerHTML = `<polyline fill="none" stroke="#22c55e" stroke-width="2.5" points="${pts}"/>`;
+  $("termsBox").innerHTML = (d.top_terms || []).length
+    ? d.top_terms.map(([w,n]) => `<span class="term">${esc(w)}<b>${n}</b></span>`).join("")
+    : '<div class="empty">ยังไม่มีข้อมูล</div>';
+  $("suggest").innerHTML = (d.suggestions || []).map(s => `<li>${esc(s)}</li>`).join("");
+  renderTable();
+  renderFullTable();
+  const err = (d.errors || []).join(", ");
+  $("status").textContent = (isFetch ? `ดึงเสร็จ +${d.added ?? 0} รายการ${err ? " · มี error: " + err : ""}` : "แสดงข้อมูลจาก SQLite โดยไม่ยิงเน็ต");
+  $("status").className = err ? "status err" : "status";
+}
+const PILLS = [["Delivered","pill-green","row-green"],["Processed","pill-yellow","row-yellow"],["Cancelled","pill-blue","row-red"]];
+const PALETTE = ["#2f6bff","#06b6d4","#a855f7","#f59e0b","#22c55e","#ec4899","#64748b","#14b8a6"];
+const SRC_COLORS = {facebook:"#1877F2", tiktok:"#000000", instagram:"#E1306C", line:"#00B900", youtube:"#FF0000", reddit:"#FF4500", hn:"#FB5414", gnews:"#4285F4", wiki:"#64748b"};
+function band(score){
+  if(score >= 400) return ["มาแรง","pill-green","row-green"];
+  if(score >= 150) return ["กำลังมา","pill-yellow","row-yellow"];
+  return ["ปกติ","pill-gray","row-gray"];
+}
+function rowHtml(i){
+  const b = band(+i.score || 0);
+  const c = SRC_COLORS[i.source] || PALETTE[0];
+  return `<tr class="${b[2]}">
+    <td><span class="mini-avatar" style="background:${c}">${esc(i.source.slice(0,2).toUpperCase())}</span>${esc(i.source)}</td>
+    <td>${esc(i.title.slice(0,60))}${i.title.length > 60 ? "…" : ""}</td>
+    <td><b>${esc(i.score)}</b></td>
+    <td><span class="pill ${b[1]}">${b[0]}</span></td>
+    <td><a href="${esc(i.url)}" target="_blank" rel="noopener">เปิด →</a></td></tr>`;
+}
+
+function renderTable(){
+  const el = $("filter");
+  const f = el ? (el.value || "").toLowerCase() : "";
+  const rows = currentItems.filter(i => !f || (i.title + " " + i.body + " " + i.source).toLowerCase().includes(f)).slice(0, 8);
+  $("tableWrap").innerHTML = rows.length
+    ? `<table><thead><tr><th>Source</th><th>Title</th><th>Score</th><th>สัญญาณ</th><th>Link</th></tr></thead><tbody>${rows.map(rowHtml).join("")}</tbody></table>`
+    : '<div class="empty">ไม่พบรายการ</div>';
+}
+function renderFullTable(){
+  const el = $("filterFull");
+  const f = el ? (el.value || "").toLowerCase() : "";
+  const rows = currentItems.filter(i => !f || (i.title + " " + i.body + " " + i.source).toLowerCase().includes(f));
+  $("tableFullWrap").innerHTML = rows.length
+    ? `<table><thead><tr><th>Source</th><th>Title</th><th>Score</th><th>สัญญาณ</th><th>Link</th></tr></thead><tbody>${rows.map(rowHtml).join("")}</tbody></table>`
+    : '<div class="empty">ไม่พบรายการ</div>';
+}
+$("filter")?.addEventListener("input", renderTable);
+$("filterFull").addEventListener("input", renderFullTable);
+
+/* ===== render detailed pages (mock) ===== */
+function renderSources(){
+  $("srcCards").innerHTML = SRC_DETAIL.map(s => `
+    <div class="card src-card">
+      <div class="src-top"><div class="src-logo" style="background:${s.color}">${esc(s.label.slice(0,1))}</div>
+        <div><h4>${esc(s.label)}</h4><div class="api-note">${esc(s.api)}</div></div>
+        <span class="pill pill-green" style="margin-left:auto">เชื่อมต่อแล้ว</span></div>
+      <div class="src-metrics">
+        <div class="m"><b>${s.count}</b><span>รายการ</span></div>
+        <div class="m"><b>${s.total.toLocaleString()}</b><span>score รวม</span></div>
+        <div class="m"><b>${s.avg.toLocaleString()}</b><span>score เฉลี่ย</span></div>
+        <div class="m"><b>${s.last}</b><span>fetch ล่าสุด</span></div>
+      </div>
+      <div style="margin-top:10px;font-size:12px;color:var(--muted)">ตัวอย่าง: ${esc(s.sample)}</div>
+    </div>`).join("");
+  const tot = SRC_DETAIL.reduce((s,x) => s+x.count, 0);
+  $("srcRows").innerHTML = SRC_DETAIL.map(s => `
+    <tr><td><span class="mini-avatar" style="background:${s.color}">${esc(s.label.slice(0,2).toUpperCase())}</span><b>${esc(s.label)}</b></td>
+      <td>${s.count}</td><td>${Math.round(s.count/tot*100)}%</td>
+      <td>${s.total.toLocaleString()}</td><td>${s.avg.toLocaleString()}</td>
+      <td>${s.last}</td><td><span class="pill pill-green">${s.status}</span></td></tr>`).join("");
+}
+function renderTermsPage(){
+  const max = Math.max(...TERM_DETAIL.map(([,,c]) => c));
+  $("termsCount").textContent = TERM_DETAIL.length + " คำ (จาก 64 รายการ)";
+  $("termRows").innerHTML = TERM_DETAIL.map(([w,c,chg,use],i) => `
+    <tr><td class="rank">#${i+1}</td><td><b>${esc(w)}</b></td><td>${c}</td>
+      <td><div class="term-bar"><i style="width:${Math.round(c/max*100)}%"></i></div></td>
+      <td class="${chg.includes("↘") ? "chg-down" : "chg-up"}">${esc(chg)}</td>
+      <td>${esc(TERM_SENTI[i] || "")}</td><td>${esc(TERM_CHAN[i] || "")}</td><td>${esc(use)}</td></tr>`).join("");
+}
+$("filterTerms").addEventListener("input", () => {
+  const f = $("filterTerms").value.toLowerCase();
+  document.querySelectorAll("#termRows tr").forEach(r => {
+    r.style.display = r.textContent.toLowerCase().includes(f) ? "" : "none";
+  });
+});
+function renderIdeas(){
+  $("ideaGrid").innerHTML = IDEAS.map(d => `
+    <div class="card idea">
+      <div class="tags"><span class="pill ${d.color}">ความสำคัญ: ${d.prio}</span>
+        <span class="pill pill-blue">${esc(d.format)}</span>
+        <span class="pill pill-purple">${esc(d.platform)}</span></div>
+      <h4>${esc(d.title)}</h4><p><b>Hook:</b> ${esc(d.hook)}<br><b>มุม ITOPPLUS:</b> ${esc(d.angle)}</p>
+      <div class="meta"><span>⏱ ${esc(d.effort)}</span><span>ทำสัปดาห์นี้</span></div>
+    </div>`).join("");
+}
+
+/* ===== render deep widgets (static mock — ไม่ขึ้นกับ fetch) ===== */
+function renderDeep(){
+  /* follower growth line */
+  const g = $("growthLine"); if(g){
+    const max = Math.max(...GROWTH30), min = Math.min(...GROWTH30);
+    const pts = GROWTH30.map((v,i) => `${(i*800/(GROWTH30.length-1)).toFixed(1)},${(150 - (v-min)/(max-min||1)*125).toFixed(1)}`).join(" ");
+    g.innerHTML = `<polyline fill="none" stroke="#22c55e" stroke-width="2.5" points="${pts}"/>`;
+  }
+  /* engagement by channel */
+  if($("chanER")) $("chanER").innerHTML = CHAN_PERF.map(c => {
+    const er = parseFloat(c.er);
+    return `<div class="senti-row"><div class="name">${esc(c.chan)}</div>
+      <div class="senti-track"><div class="senti-fill" style="width:${(er/8*100).toFixed(0)}%;background:#22c55e"></div></div>
+      <b style="width:44px;text-align:right">${c.er}</b></div>`;
+  }).join("");
+  /* sentiment */
+  if($("sentiBox")) $("sentiBox").innerHTML = [
+    ["Positive",68,"#22c55e","843 posts"],["Neutral",22,"#94a3b8","273 posts"],["Negative",10,"#ff6b6b","123 posts"]
+  ].map(([n,v,col,c]) => `<div class="senti-row"><div class="name">${n}</div>
+    <div class="senti-track"><div class="senti-fill" style="width:${v}%;background:${col}"></div></div>
+    <b style="width:44px;text-align:right">${v}%</b><span style="color:var(--muted);font-size:11px">${c}</span></div>`).join("");
+  /* channel performance */
+  if($("chanRows")) $("chanRows").innerHTML = CHAN_PERF.map(c => `
+    <tr><td><b>${esc(c.chan)}</b></td><td>${c.followers}</td><td>${c.posts}</td><td>${c.reach}</td>
+      <td><b>${c.er}</b></td><td style="color:var(--green)">${c.growth}</td><td>${esc(c.bench)}</td></tr>`).join("");
+  /* mentions */
+  if($("mentionRows")) $("mentionRows").innerHTML = MENTIONS.map((m,i) => `
+    <tr><td class="rank">#${i+1}</td><td><b>${esc(m.page)}</b></td><td>${esc(m.plat)}</td><td>${m.fol}</td>
+      <td>${m.n}</td><td>${m.reach}</td><td><span class="pill ${m.senti[1]}">${m.senti[0]}</span></td></tr>`).join("");
+  /* mentions volume 7 days */
+  if($("volBars")) $("volBars").innerHTML = VOLUME7.map(([d,v]) => `
+    <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:${Math.round(v/220*100)}%" title="${v} mentions"></div></div>
+    <div class="bar-label">${d}</div></div>`).join("");
+  /* share of voice */
+  if($("sovBox")) $("sovBox").innerHTML = SOV.map(s => `
+    <div class="senti-row"><div class="name">${esc(s.name)}</div>
+      <div class="senti-track"><div class="senti-fill" style="width:${s.v}%;background:${s.color}"></div></div>
+      <b style="width:40px;text-align:right">${s.v}%</b></div>`).join("");
+  /* hashtags */
+  if($("hashBox")) $("hashBox").innerHTML = HASHES.map(h => `<span class="term">${esc(h)}</span>`).join("");
+  /* heatmap */
+  if($("heatRows")) $("heatRows").innerHTML = HEAT.map(([d,cells]) => `
+    <tr><td style="background:none"><b>${d}</b></td>${cells.map(v => {
+      const a = .12 + v*.88;
+      return `<td class="cell" style="background:rgba(34,197,94,${a.toFixed(2)})">${v}</td>`;
+    }).join("")}</tr>`).join("");
+  /* content performance */
+  if($("perfRows")) $("perfRows").innerHTML = PERF.map(p => `
+    <tr><td>${esc(p[0])}</td><td><span class="pill pill-blue">${p[1]}</span></td><td>${p[2]}</td>
+      <td>${p[3]+p[4]+p[5]}</td><td><b>${p[6]}</b></td></tr>`).join("");
+  /* publish plan */
+  if($("planBox")) $("planBox").innerHTML = PLAN.map(([d,t,when,p]) => `
+    <div style="display:flex;gap:10px;align-items:center;background:var(--panel-2);border:1px solid var(--line-2);border-radius:10px;padding:9px 12px">
+      <b style="width:62px;flex:0 0 62px">${esc(d)}</b><span style="flex:1">${esc(t)}</span>
+      <span class="pill ${p}" style="white-space:nowrap">${esc(when)}</span></div>`).join("");
+  /* top 10 contents in items page */
+  if($("topContentRows")) $("topContentRows").innerHTML = PERF.concat([["ทำไมเว็บมี traffic แต่ไม่มีลูกค้า","Article",4800,342,41,28,"6.72%"],
+    ["เว็บขายของใหม่ แทนเว็บโบรชัวร์เดิม","Case",4600,318,39,25,"6.91%"]]).slice(0,10).map((p,i) => `
+    <tr><td class="rank">#${i+1}</td><td>${esc(p[0])}</td><td><span class="pill pill-blue">${p[1]}</span></td>
+      <td>${p[2]}</td><td>${p[3]}</td><td>${p[4]}</td><td>${p[5]}</td><td><b>${p[6]}</b></td></tr>`).join("");
+}
+
+/* ===== render เมนูใหม่ ===== */
+function renderCrm(){
+  $("crmBoard").innerHTML = CRM_STAGES.map(s => {
+    const cards = CRM_LEADS.filter(l => l.stage === s.k);
+    return `<div class="kcol"><h4>${esc(s.label)} <span class="kcount">${cards.length}</span></h4>` +
+      cards.map(l => `<div class="lead"><b>${esc(l.name)}</b><span>id ${esc(l.id)} · ${esc(l.src)}</span>
+        <span>มูลค่า ฿${l.value.toLocaleString()}</span><span>อัปเดต: ${esc(l.last)}</span>
+        <span><b>Next:</b> ${esc(l.next)}</span><span class="lead-src pill pill-blue">${esc(l.src)}</span></div>`).join("") +
+      "</div>";
+  }).join("");
+}
+function renderAds(){
+  const pill = s => s === "กำลังยิง" ? "pill-green" : s === "ทดสอบ" ? "pill-yellow" : "pill-gray";
+  $("adsRows").innerHTML = ADS_CAMPAIGNS.map(c => `
+    <tr><td><b>${esc(c.name)}</b></td><td>${esc(c.plat)}</td><td>฿${c.budget.toLocaleString()}</td>
+      <td>${c.reach.toLocaleString()}</td><td>${c.clicks.toLocaleString()}</td>
+      <td>฿${c.cpl}</td><td>${c.roas}x</td><td><span class="pill ${pill(c.status)}">${esc(c.status)}</span></td></tr>`).join("");
+}
+function renderCalendar(){
+  $("calWeek").innerHTML = CALENDAR_WEEK.map(d => `
+    <div class="cal-day${d.today ? " today" : ""}"><h5>${esc(d.day)}${d.today ? " — วันนี้" : ""}</h5>` +
+    d.posts.map(p => `<div class="post ${p.st}">${esc(p.t)}</div>`).join("") + "</div>").join("");
+}
+function renderTasks(){
+  const cols = [
+    {k:"ing", label:"กำลังทำ"},
+    {k:"approval", label:"รออนุมัติ"},
+    {k:"done", label:"เสร็จแล้ว"}
+  ];
+  $("taskBoard").innerHTML = cols.map(c => {
+    const cards = TASKS.filter(t => t.col === c.k);
+    return `<div class="kcol"><h4>${esc(c.label)} <span class="kcount">${cards.length}</span></h4>` +
+      cards.map(t => `<div class="lead"><b>${esc(t.title)}</b><span>${esc(t.owner)} · SLA: ${esc(t.sla)}</span><span>${esc(t.body)}</span></div>`).join("") +
+      "</div>";
+  }).join("");
+}
+function renderGoals(){
+  const rows = GOALS.map(g => `
+    <div class="progress-row"><div class="lbl">${esc(g.client)}<br><span style="color:var(--muted);font-size:11px">เป้า: ${esc(g.target)} → จริง: ${esc(g.actual)}</span></div>
+      <div class="bar"><i style="width:${g.pct}%"></i></div><div class="pct">${g.pct}%</div></div>`).join("");
+  if($("goalRows")) $("goalRows").innerHTML = rows;
+  if($("goalRowsMini")) $("goalRowsMini").innerHTML = rows;
+}
+function renderReports(){
+  const btn = $("btnExport");
+  if(btn) btn.addEventListener("click", () => {
+    $("status").textContent = "Export PDF — จำลองเรียบร้อย (ไฟล์จะถูกบันทึกเมื่อเชื่อมต่อระบบทะเบียนร้อย)";
+    $("status").className = "status";
+  });
+}
+
+/* ===== fetch / db (ของเดิม, อัปเดตแค่หน้า overview) ===== */
+const HIST_KEY = "st_history";
+function getHistory(){ try { return JSON.parse(localStorage.getItem(HIST_KEY) || '["Digital Marketing"]'); } catch { return ["Digital Marketing"]; } }
+function renderChips(){
+  $("chips").innerHTML = getHistory().map(k => `<button class="chip" data-q="${esc(k)}">${esc(k)}</button>`).join("");
+}
+function pushHistory(q){
+  const h = [q, ...getHistory().filter(x => x !== q)].slice(0, 8);
+  try { localStorage.setItem(HIST_KEY, JSON.stringify(h)); } catch {}
+  renderChips();
+}
+$("chips").addEventListener("click", e => {
+  const b = e.target.closest(".chip"); if(!b) return;
+  $("q").value = b.dataset.q; loadDb();
+});
+function setBusy(b){ $("btnFetch").disabled = b; $("btnDb").disabled = b; }
+async function fetchNow(){
+  const q = $("q").value.trim() || "Digital Marketing";
+  setBusy(true); $("status").textContent = "กำลังดึงข้อมูล…"; $("status").className = "status";
+  try{
+    const r = await fetch("/api/fetch", {method:"POST",
+      headers:{"Content-Type":"application/json"}, body: JSON.stringify({q})});
+    const d = await r.json();
+    if(!r.ok) throw new Error(d.error || ("HTTP " + r.status));
+    pushHistory(q); render(d, true); goPage("overview");
+  }catch(e){ $("status").textContent = "ดึงไม่สำเร็จ: " + e.message; $("status").className = "status err"; }
+  finally{ setBusy(false); }
+}
+async function loadDb(){
+  const q = $("q").value.trim() || "Digital Marketing";
+  setBusy(true); $("status").textContent = "กำลังอ่าน SQLite…"; $("status").className = "status";
+  try{
+    const r = await fetch("/api/summary?q=" + encodeURIComponent(q));
+    const d = await r.json();
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    render(d, false);
+  }catch(e){ $("status").textContent = "อ่าน DB ไม่ได้: " + e.message; $("status").className = "status err"; }
+  finally{ setBusy(false); }
+}
+$("btnFetch").addEventListener("click", fetchNow);
+$("btnDb").addEventListener("click", loadDb);
+$("q").addEventListener("keydown", e => { if(e.key === "Enter") fetchNow(); });
+
+/* ===== settings page logic ===== */
+function renderSettings(){
+  $("kwList").innerHTML = getHistory().map(k => `
+    <div class="set-row"><div class="t"><b>${esc(k)}</b><span>chip ใช้งานได้เลย</span></div>
+      <button class="btn btn-ghost" data-use="${esc(k)}" style="padding:6px 12px;font-size:12px">ใช้</button></div>`).join("");
+  document.querySelectorAll("[data-use]").forEach(b => b.addEventListener("click", () => {
+    $("q").value = b.dataset.use; goPage("overview"); loadDb();
+  }));
+  $("srcToggles").innerHTML = SRC_DETAIL.map((s,i) => `
+    <div class="set-row"><div class="t"><b>${esc(s.label)}</b><span>${esc(s.api)}</span></div>
+      <button class="toggle on" data-src="${i}" aria-label="toggle ${esc(s.label)}"></button></div>`).join("");
+  document.querySelectorAll(".toggle[data-src]").forEach(t => t.addEventListener("click", () => {
+    t.classList.toggle("on");
+    $("status").textContent = t.classList.contains("on")
+      ? `${SRC_DETAIL[+t.dataset.src].label} เปิดแล้ว (มีผลตอน fetch ครั้งถัดไป)` : `${SRC_DETAIL[+t.dataset.src].label} ปิดแล้ว (มีผลตอน fetch ครั้งถัดไป)`;
+    $("status").className = "status";
+  }));
+}
+$("kwAdd").addEventListener("click", () => {
+  const v = $("kwNew").value.trim(); if(!v) return;
+  pushHistory(v); $("kwNew").value = ""; renderSettings();
+  $("status").textContent = `เพิ่มคำค้น "${v}" แล้ว`;
+});
+$("btnResetMock").addEventListener("click", () => {
+  $("q").value = "Digital Marketing"; render(MOCK, false);
+  $("status").textContent = "โหลดข้อมูลตัวอย่าง (mock) ใหม่แล้ว";
+});
+$("btnWipe").addEventListener("click", () => {
+  try{ localStorage.removeItem(HIST_KEY); }catch{}
+  $("q").value = "Digital Marketing"; renderChips(); renderSettings(); render(MOCK, false);
+  $("status").textContent = "เริ่มใหม่: คีย์เวิร์ด = Digital Marketing + โหลด mock";
+});
+
+/* init — mock ทุกหน้า */
+renderChips();
+renderSettings();
+render(MOCK, false);
+renderSources();
+renderTermsPage();
+renderIdeas();
+renderDeep();
+renderCrm();
+renderAds();
+renderCalendar();
+renderTasks();
+renderGoals();
+renderReports();
+$("status").textContent = "ข้อมูลตัวอย่าง (mock) · keyword: Digital Marketing · ITOPPLUS · 64 รายการ — กด Fetch now เพื่อดึงข้อมูลจริง";
+$("status").className = "status";
+/* deep-link: เปิด /?page=sources หรือ __START= มาตรงหน้า (ใช้แคปภาพด้วย) */
+(() => {
+  const p = new URLSearchParams(location.search).get("page") || window.__START;
+  if(p && SUBS[p]) goPage(p);
+})();
+</script>
+</body>
+</html>
