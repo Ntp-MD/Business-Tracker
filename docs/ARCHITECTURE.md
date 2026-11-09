@@ -18,7 +18,9 @@
 > **Decided 2026-11-06 (rev 2) — change here, not elsewhere:**
 > installer = `setup.bat` unchanged · sources = YouTube + Google News TH unchanged · Thai `top_terms` = plain
 > whitespace Counter unchanged · storage = disk JSON (`items.json` + `index.json` + `analysis.json`) ·
-> YouTube thumbnails stored locally on disk · server = stdlib only, port 8000 · mockup stays as-is · zero dependencies.
+> YouTube thumbnails stored locally on disk · server = stdlib + Playwright (TikTok/FB only), port 8000 · mockup stays as-is · Playwright approved.
+>
+> **Rev 3 (2026-11-13, owner-approved):** no installer (run `python server.py` locally); sources = YouTube + GNews + TikTok/FB via Playwright session; profiles in `data/profiles.json`.
 
 ---
 
@@ -88,13 +90,13 @@ If a source dies mid-run → its message goes into `errors[]`, the run continues
 
 | Layer | We use |
 |-------|--------|
-| Language | Python 3 (stdlib only) — `http.server`, `urllib`, `xml.etree`, `json`, `re`, `collections.Counter` |
-| Storage | Disk files — `data/items.json`, `data/index.json`, `data/analysis.json`. **No SQLite** |
+| Language | Python 3 (stdlib + `playwright` for TikTok/FB only) — `http.server`, `urllib`, `xml.etree`, `json`, `re`, `collections.Counter` |
+| Storage | Disk files — `data/items.json`, `data/index.json`, `data/analysis.json`, `data/profiles.json`. **No SQLite** |
 | Assets | `assets/{videoId}.jpg` — YT thumbnails downloaded on collect. **No bytes in JSON, no base64** |
 | Frontend | Existing `dashboard.html` (+ `page-*.html`) — mock kept as-is; endpoints preserved so mock goes live unchanged |
-| Sources | YouTube search (unofficial `ytInitialData`) · Google News RSS TH |
-| Runtime | `python server.py` → open `http://127.0.0.1:8000` |
-| Installer | `setup.bat` (see §9) |
+| Sources | YouTube search (`ytInitialData`) · Google News RSS TH · TikTok (public Playwright) · FB Ad Library · TikTok Creative Center (fail-soft) |
+| Runtime | `python server.py` → open `http://127.0.0.1:8000/dashboard-live.html` |
+| Installer | none — local run only (`python server.py`); installer removed by owner |
 | Repo/data | flat folder; `data/` + `assets/` disposable |
 
 ### Explicitly not used
@@ -125,9 +127,9 @@ social-tracker/
 ├── assets/
 │   └── fonts/             # self-hosted fonts (IBM Plex Sans Thai, LINE Seed) — served as-is
 ├── shots/                 # design verification, never served
-├── data/                  # created on first run (items.json + index.json + analysis.json), disposable
-├── server.py              # serves UI + /api/summary + /api/fetch + /api/analyze; COLLECT/STORE→disk/ANALYZE here
-├── setup.bat              # installer (repo root, per §9.1)
+├── data/                  # created on first run (items.json + index.json + analysis.json + profiles.json), disposable
+├── server.py              # serves UI + /api/summary + /api/fetch + /api/analyze + /api/profiles; COLLECT/STORE→disk/ANALYZE here
+├── pw_login.py            # one-time headed login for TikTok/FB sessions into sessions/ (machine-local)
 └── gen_page.py            # one-shot generator of page-*.html — not part of runtime
 ```
 
@@ -149,12 +151,12 @@ Split trigger: editing `server.py` breaks elsewhere, or 2+ people edit concurren
 ### Everyday loop
 
 ```
-1. double-click setup.bat         → checks Python, opens the localhost page
+1. run `python server.py`       → open `http://127.0.0.1:8000/dashboard-live.html` manually
 2. type a Thai keyword            → e.g. "เว็บขายของ" (placeholder until business keywords decided)
 3. press **Fetch now (= Collect/gather)** → POST /api/fetch → pulls YouTube + GNews,
    merges into data/items.json, downloads thumbnails into assets/
-4. press **โหลดจากดิสก์** → GET /api/summary → by_source, hot,
-   top terms, 3 template ideas (mock UI unchanged; reads disk only, never fetches)
+4. summary loads automatically (GET /api/summary on open) and after each fetch → by_source, hot,
+   top terms (the manual "Load from disk" button was removed 2026-11-13)
 5. press **Analyze** → POST /api/analyze → writes data/analysis.json → read the advice inline
 6. pick the angle by hand          → content made outside this tool
 7. measure by hand                 → sales/LINE chats, adjust keyword
@@ -339,23 +341,18 @@ Discovery (TikTok/FB) → views · Trust (YouTube) → views/comments · Close (
 
 ## 9. How we build parts 2 + 3 (the method)
 
-> Scope: **part 2 = `setup.bat` installer · part 3 = connect source → disk store → analyze.**
+> Scope: **part 2 = local run (no installer) · part 3 = connect source → disk store → analyze.**
 > Part 1 (mockup dashboard) stays as-is. All decisions below are locked as of 2026-11-06 (rev 2) — change here, not elsewhere.
 
 > **No code yet** — this spec exists first; rebuild happens only on owner's go.
 
-### 9.1 How the installer works
+### 9.1 How the server starts (no installer)
 
-**Use:** one Windows batch file at repo root — `setup.bat` (no installer framework, no admin, no PATH changes, no pip).
+**Use:** run `python server.py` directly (run from repo root). Owner dropped the installer; keep it dropped. First run creates `data/` + empty `items.json`/`index.json`/`analysis.json`/`profiles.json` and `assets/` — nothing else. `sessions/` (TikTok/FB login profiles) created by first `pw_login.py` run.
 
-**Steps it performs (in order):**
-
-1. `where python` → if Python is missing, print the exact download link and stop with exit code 1 (we do not install Python for the user)
-2. `python -m py_compile server.py` → syntax check; stops on error, prints message
-3. `python server.py` in a new window (`start "social-tracker" python server.py`) — server ensures `data/` + `assets/` exist and valid JSON files are initialized; no database file is ever created
-4. `timeout /t 2` → `start "" http://127.0.0.1:8000` — browser opens at localhost
-
-**What the user does:** double-click `setup.bat` → app opens. The batch window stays open; closing it stops the server (documented in the window). First run creates `data/` (+ empty `items.json`/`index.json`/`analysis.json`) and `assets/` — nothing else.
+**Steps the owner runs:**
+1. (once) `python -m pip install playwright` + `python -m playwright install chromium` — needed only for TikTok/FB collectors; YouTube/GNews work without
+2. `python server.py` → open `http://127.0.0.1:8000/dashboard-live.html` in the browser
 
 ### 9.2 How fetching works (COLLECT)
 
@@ -405,15 +402,17 @@ Discovery (TikTok/FB) → views · Trust (YouTube) → views/comments · Close (
 
 | What | We use / do | Locked because |
 |------|-------------|----------------|
-| Installer | `setup.bat`, `where python` check, no admin | zero-install friction, no Python auto-install |
-| Sources | YouTube + Google News TH | Thai market, free, no key |
+| Installer | **none** — owner runs locally only: `python server.py` (one command) | installer decision removed (owner), installer must not reappear without sign-off |
+| Sources | YouTube (stdlib scrape) + Google News TH (stdlib RSS) + TikTok via Playwright, 2 modes: `public` (no login, works) vs `session` (logged-in profile in `sessions/`, optional); ad libraries: FB Ad Library (keyword, TH, active) + TikTok Creative Center Top Ads (TH, period) — public pages, no login | Thai market, free, no key; Facebook organic dropped (owner 2026-11-13): login wall, no dates |
+| Freshness | `POST /api/fetch` takes `max_age_days` (UI: 7 / 30 / 365 / ทั้งหมด, default 30). YouTube adds upload-date `sp` + parses `publishedTimeText`; GNews adds `when:` + filters `pubDate`; TikTok reads `createTime` from the search page's own JSON; TikTok Ads uses the page's period filter (7/30/180d); prune applies only to dated organic sources (`youtube`/`gnews`/`tiktok`) — ads stay because active ads are current by definition | owner: content must be recent, not "all years"; search engines block automation (tested Google/Bing/DDG/Brave/Mojeek), so use platform pages instead |
+| Profiles | keyword profiles stored on disk: `data/profiles.json` (name + keywords[] + sources[]); `/api/profiles` CRUD; `POST /api/fetch` accepts `profile_id` + `mode` (`public`\|`session` for TikTok/FB) (collects every keyword × source sequentially, dedup by `url`); UI: picker + mode in fetch strip, manage in Settings, per-keyword tabs, Top items table has per-platform tabs and filters rows | multi-keyword preset, no DB, no new deps |
 | Thai top terms | plain Counter, broken output accepted | avoid adding pythainlp until needed |
 | Storage | **disk JSON** — `data/items.json` (merged on `url`, atomic rename) + `data/index.json` (derived rollup) + `data/analysis.json` (advice to read) | owner wants all data on disk; files inspectable/resettable; no database |
 | Frontend | **mock kept as-is** — `GET /api/summary` + `POST /api/fetch` contract preserved; analyze added as `POST /api/analyze` | mock goes live unchanged; dashboard edits only if owner explicitly asks |
 | Thumbnails | **stored**: `assets/{videoId}.jpg`, YT `mqdefault.jpg` as-is, fail-soft | owner wants images cached locally; PDPA: public video thumbnails only |
 | Fragility | YouTube kept, wrapped fail-soft, error shown in UI; asset download failure never kills the item | GNews keeps working when YT markup changes; cache is opportunistic |
 | Config | none; port 8000 fixed | YAGNI |
-| Dependencies | none (pythainlp rejected; no image libs — raw `mqdefault` kept) | zero-install, zero-maintenance |
+| Dependencies | `playwright` (pip) + chromium browser (TikTok / TikTok Ads / FB Ads; YT/GNews stdlib only) — approved 2026-11-13 | pythainlp rejected; no image libs — raw `mqdefault` kept |
 | `app/` refactor | stay flat | stay flat |
 | Runtime | lightweight localhost server stays; dashboard buttons must work | owner picked option A |
 
@@ -421,7 +420,7 @@ Discovery (TikTok/FB) → views · Trust (YouTube) → views/comments · Close (
 
 ### 9.6 How we verify (done when all are true on a clean Windows + Python 3)
 
-1. Double-click `setup.bat` → browser opens our app; `data/` + `assets/` get created; no database file appears
+1. `python server.py` → open `http://127.0.0.1:8000/dashboard-live.html` manually; `data/` + `assets/` get created; no database file appears
 2. Type keyword → Collect → rows land in `data/items.json` (valid JSON, same `url`s not duplicated); thumbnails appear in `assets/` for new YouTube items
 3. Summary shows `by_source`, hot item, top terms; `data/index.json` written
 4. Kill YouTube (disconnect network) → Collect still returns GNews rows; `errors` shows `youtube: ...`; app never crashes
@@ -431,7 +430,8 @@ Discovery (TikTok/FB) → views · Trust (YouTube) → views/comments · Close (
 
 ### 9.7 What is not in parts 2 + 3
 
-- FB / TikTok / IG (any method) · Trends RSS · Pantip
+- IG · Trends RSS · Pantip · LINE (no public trend surface)
+- Browser sessions (`sessions/`) are machine-local only; gitignored, never committed
 - Any database file at any point — JSON only
 - Re-encoding/resizing images — raw `mqdefault.jpg` only (needs owner sign-off to add image libs)
 - Long-form snapshots (`data/docs/`) — needs owner sign-off

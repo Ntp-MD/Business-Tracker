@@ -1,5 +1,9 @@
 # Design System Inspired by Starbucks
 
+> **Live UI tokens (ของจริงใน `app/variables.css`):** สีหลัก `#22c55e` (ชื่อตัวแปร `--blue`), ขอบ `#e7ebf3`/`#2b3044`, ข้อความ `#0f172a`/`#f1f5f9`, การ์ด radius `16px`, ฟอนต์ Inter + LINE Seed Sans TH (self-hosted, ไม่มี CDN), ปุ่ม radius `9px` สูงขั้นต่ำ `42px`, โหมดสว่าง/มืดเปลี่ยนตัวแปรตาม `data-theme`. ชั้น CSS: `variables.css` (tokens) → `base.css` (global/tag defaults) → `component.css` (reusable appearance) → `<style>` ในแต่ละหน้า (layout). เอกสาร Starbucks ข้างล่างเป็น reference ทางกลิ่นอายเท่านั้น ไม่ใช่ tokens ของแอปนี้
+>
+> **ไฟล์นี้เอง:** `DESGIN.md` (สะกดผิดเดิม) — ยังไม่เปลี่ยนชื่อไฟล์เพราะลิงก์/สคริปต์อาจอ้างถึง
+
 ## 1. Visual Theme & Atmosphere
 
 Starbucks' design system is a **warm, confident retail flagship** wearing the green of their storefront apron across every surface. The canvas alternates between a neutral-warm cream (`#f2f0eb`) and a ceramic off-white (`#edebe9`) — colors that reference actual store materials: the paper napkins, the café walls, the wood finishes — while the signature **Starbucks Green** (`#006241`) anchors the brand moment on hero bands, CTAs, and the Rewards experience. The greens come in four calibrated shades (Starbucks, Accent, House, Uplift) each mapped to a specific surface role, and gold (`#cba258`) appears only around Rewards-status ceremony — not as a general accent.

@@ -6,7 +6,1374 @@
 <title>Business · Social Tracker Analytics — ITOPPLUS</title>
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <!-- Offline localhost: ไม่มี CDN นอกเครื่อง ใช้ system font ล้วน (ก่อนหน้าใช้ Inter/Anuphan จาก Google Fonts — ตัดออกเพื่อเปิดแบบไม่มีเน็ตได้) -->
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="variables.css">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="component.css">
+<style>
+/* ===== layout for this page (component scope) ===== */
+*{
+  box-sizing:border-box;
+}
+html,body{
+  margin:0;
+  padding:0;
+}
+.skip-link{
+  position:absolute;
+  left:8px;
+  top:-48px;
+  z-index:99;
+  padding:10px 14px;
+}
+.skip-link:focus{
+  top:8px;
+}
+.app{
+  display:flex;
+  min-height:100vh;
+}
+.sidebar{
+  width:228px;
+  flex:0 0 228px;
+  display:flex;
+  flex-direction:column;
+  padding:18px 14px;
+  position:sticky;
+  top:0;
+  height:100vh;
+}
+.logo{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:2px 8px 16px;
+}
+.logo-img{
+  width:100%;
+  height:auto;
+  max-height:52px;
+  display:block;
+  flex:0 0 auto;
+}
+.logo small{
+  display:block;
+}
+.nav{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.nav a{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+}
+.nav a svg{
+  width:17px;
+  height:17px;
+  flex:0 0 17px;
+}
+.nav .divider{
+  margin:10px 4px;
+}
+.nav .badge-n{
+  margin-left:auto;
+  padding:1px 8px;
+}
+.help-card{
+  margin-top:auto;
+  padding:14px;
+}
+.help-card p{
+  margin:0 0 10px;
+}
+.help-card p b{
+  display:block;
+}
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:9px 16px;
+  min-height:42px;
+}
+.help-card .btn{
+  width:100%;
+}
+.main{
+  flex:1;
+  min-width:0;
+  padding:22px 26px 28px;
+}
+.topbar{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  flex-wrap:wrap;
+  margin-bottom:18px;
+}
+.topbar h1{
+  margin:0;
+}
+.topbar .page-sub{
+  width:100%;
+  margin-top:2px;
+}
+.date-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:7px 12px;
+}
+.date-pill svg{
+  width:15px;
+  height:15px;
+}
+.top-actions{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+.theme-toggle{
+  display:flex;
+  align-items:center;
+  gap:9px;
+}
+.theme-toggle svg{
+  width:16px;
+  height:16px;
+}
+.switch{
+  position:relative;
+  width:48px;
+  height:26px;
+  padding:0;
+  flex:0 0 48px;
+}
+.switch::after{
+  position:absolute;
+  left:3px;
+  top:3px;
+  width:20px;
+  height:20px;
+}
+[data-theme="dark"] .switch::after{
+  left:25px;
+}
+.user{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.avatar{
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+}
+.loading-overlay{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.loading-overlay[hidden]{display:none}
+.loading-card{
+  width:min(420px,100%);
+  padding:22px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.loading-head{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.loading-spin{
+  width:28px;
+  height:28px;
+  flex:0 0 28px;
+}
+.loading-bar{
+  height:8px;
+}
+.loading-fill{
+  height:100%;
+  width:0%;
+}
+.loading-meta{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.fetch-strip{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding:14px 16px;
+  margin-bottom:10px;
+}
+.fetch-main{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:flex-end;
+  min-width:0;
+}
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-width:0;
+}
+.field.grow{
+  flex:1 1 240px;
+}
+.field > select,.field > input{
+  height:40px;
+  padding:0 32px 0 12px;
+  max-width:100%;
+}
+.field > input{
+  width:100%;
+  padding:0 14px;
+}
+.fetch-main > .fetch-btn{
+  height:40px;
+  padding:0 22px;
+}
+.fetch-strip .chips:empty{
+  display:none;
+}
+.src-pop{
+  position:relative;
+}
+.src-pop > summary{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  height:40px;
+  padding:0 12px;
+}
+.src-pop > summary::-webkit-details-marker{
+  display:none;
+}
+.src-pop > summary svg{
+  width:14px;
+  height:14px;
+}
+.src-pop > .src-picker{
+  position:absolute;
+  z-index:40;
+  top:calc(100% + 6px);
+  right:0;
+  width:320px;
+  max-width:88vw;
+  padding:8px;
+}
+@media(max-width:600px){
+.src-pop{
+  position:static;
+}
+.src-pop > .src-picker{
+  position:fixed;
+  left:12px;
+  right:12px;
+  top:50%;
+  width:auto;
+  max-width:none;
+  max-height:70vh;
+  overflow:auto;
+}
+}
+.src-picker{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  align-items:stretch;
+  width:100%;
+}
+.src-picker-label{
+  padding:2px 8px 4px;
+}
+.src-option{
+  display:flex;
+  gap:8px;
+  align-items:flex-start;
+  padding:7px 8px;
+}
+.src-option input{
+  width:18px;
+  height:18px;
+  flex:0 0 18px;
+  margin-top:0;
+}
+.src-main{
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:1px;
+}
+.src-detail{
+  overflow:hidden;
+}
+.src-picker .src-ic{
+  width:18px;
+  height:18px;
+  flex:0 0 18px;
+  display:inline-grid;
+  place-items:center;
+  margin-top:0;
+}
+.src-picker .src-ic svg{
+  width:10px;
+  height:10px;
+  display:block;
+}
+.src-opts{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  padding:6px 8px 2px;
+  margin-top:4px;
+}
+.src-opts .mode-pick{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.src-opts select{
+  padding:5px 8px;
+}
+.pf-src{
+  width:100%;
+  padding:6px;
+}
+.chips{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+}
+.chip{
+  padding:8px 12px;
+  min-height:32px;
+}
+.status{
+  min-height:18px;
+  margin:-8px 2px 14px;
+}
+.status span{
+  display:block;
+}
+.status span:first-child{
+  display:inline;
+}
+.page{
+  display:none;
+}
+.page.active{
+  display:block;
+}
+.page-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:14px;
+}
+.page-head h2{
+  margin:0;
+}
+.kpis{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:18px;
+  align-items:stretch;
+}
+.kpis > *, .bottom > *, .deep > *, .extra > *, .src-grid > *, .idea-grid > *{
+  min-width:0;
+  height:100%;
+}
+.set-grid > *{
+  min-width:0;
+}
+.card{
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+}
+.card > *{
+  min-width:0;
+}
+.card-head,.tbl-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  min-height:34px;
+  padding-bottom:12px;
+  margin-bottom:14px;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.tbl-tabs{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  align-items:center;
+  margin-right:auto;
+}
+.tbl-tabs .chip{
+  padding:3px 9px;
+}
+.card-head h3,.tbl-head h3{
+  margin:0;
+}
+.select-like{
+  display:inline-flex;
+  gap:6px;
+  align-items:center;
+  padding:4px 11px;
+}
+.kpi{
+  gap:0;
+}
+.kpi .label{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.kpi-ic{
+  margin-left:auto;
+  width:30px;
+  height:30px;
+  flex:0 0 30px;
+  display:grid;
+  place-items:center;
+}
+.kpi-ic svg{
+  width:16px;
+  height:16px;
+}
+.kpi .big{
+  margin-top:12px;
+}
+.kpi .delta{
+  margin-top:auto;
+  padding-top:12px;
+}
+.kpi .top-title{
+  margin-top:6px;
+  display:-webkit-box;
+  overflow:hidden;
+}
+.kpi-donut .donut-wrap{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-top:14px;
+}
+.kpi-vals{
+  min-width:0;
+}
+.kpi-vals .big{
+  margin-top:0;
+}
+.kpi-vals .delta{
+  margin-top:4px;
+  padding-top:0;
+}
+.donut{
+  width:82px;
+  height:82px;
+  flex:0 0 82px;
+  position:relative;
+}
+.donut::after{
+  position:absolute;
+  inset:13px;
+}
+.donut-legend{
+  margin-top:auto;
+  padding-top:14px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:5px 12px;
+}
+.donut-legend:empty{
+  display:none;
+}
+.donut-legend span{
+  overflow:hidden;
+}
+.donut-legend i{
+  display:inline-block;
+  width:9px;
+  height:9px;
+  margin-right:6px;
+  flex:0 0 9px;
+}
+.mid{
+  display:grid;
+  grid-template-columns:minmax(0,2.3fr) minmax(0,1fr);
+  gap:18px;
+  margin-top:18px;
+  align-items:stretch;
+}
+.mid-side{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  min-width:0;
+}
+.mid-side > *{
+  min-width:0;
+}
+.mid-side .inv{
+  flex:1;
+}
+.chart-card .bars{
+  flex:1;
+  min-height:180px;
+}
+.chart-card .bars:has(> .empty){
+  min-height:0;
+  flex:none;
+}
+.bars:has(> .empty){
+  align-items:center;
+  justify-content:center;
+}
+.bars{
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  gap:14px;
+  padding:10px 8px 0;
+}
+.bar-col{
+  flex:0 0 92px;
+  max-width:92px;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  align-items:center;
+  gap:7px;
+  height:100%;
+}
+.bar-track{
+  width:100%;
+  max-width:64px;
+  height:100%;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+}
+.bar-fill{
+  width:100%;
+  min-height:3px;
+}
+.bar-val{
+  margin-bottom:2px;
+}
+.inv .label{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.inv .amount{
+  margin-top:auto;
+  padding-top:14px;
+}
+.inv .sub{
+  margin-top:4px;
+}
+.line-box{
+  min-height:230px;
+  flex:1;
+}
+.line-box:has(#line:empty){
+  display:none;
+}
+.line-box svg{
+  width:100%;
+  height:100%;
+  min-height:230px;
+  display:block;
+}
+.bottom{
+  display:grid;
+  grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);
+  gap:18px;
+  margin-top:18px;
+  align-items:start;
+}
+.side-stack{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  min-width:0;
+}
+.side-stack > .card{
+  min-width:0;
+}
+.bottom .card .tbl-scroll{
+  flex:1;
+}
+.bottom .line-box{
+  height:260px;
+  min-height:260px;
+  flex:0 0 auto;
+}
+.bottom .empty{
+  min-height:0;
+  display:block;
+  padding:18px 8px;
+}
+.extra{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:18px;
+  margin-top:18px;
+  align-items:start;
+}
+.extra .terms,.extra .suggest{
+  flex:none;
+}
+.extra .line-box{
+  height:200px;
+  min-height:180px;
+  flex:0 0 auto;
+}
+.deep{
+  display:grid;
+  grid-template-columns:minmax(0,1.35fr) minmax(0,1fr) minmax(0,1fr);
+  gap:18px;
+  margin-top:18px;
+  align-items:start;
+}
+.deep .card .line-box{
+  min-height:180px;
+  flex:none;
+}
+.tbl-scroll{
+  overflow-x:auto;
+}
+#tableWrap table{
+  table-layout:fixed;
+  min-width:0;
+}
+#tableWrap th,#tableWrap td{
+  vertical-align:middle;
+}
+#tableWrap th:nth-child(1),#tableWrap td:nth-child(1){
+  width:116px;
+  overflow:hidden;
+}
+#tableWrap th:nth-child(3),#tableWrap td:nth-child(3){
+  width:84px;
+}
+#tableWrap th:nth-child(4),#tableWrap td:nth-child(4){
+  width:64px;
+}
+#tableWrap td:nth-child(2){
+  max-width:0;
+  overflow:hidden;
+}
+#tableWrap td:nth-child(2) a{
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  white-space:normal;
+  overflow:hidden;
+  line-height:1.7;
+  word-break:break-word;
+  padding-bottom:2px;
+  min-height:43px;
+}
+#tableWrap .mini-avatar{
+  vertical-align:middle;
+}
+#tableFullWrap table{
+  table-layout:fixed;
+  min-width:0;
+}
+#tableFullWrap th:nth-child(1),#tableFullWrap td:nth-child(1){
+  width:118px;
+}
+#tableFullWrap th:nth-child(3),#tableFullWrap td:nth-child(3){
+  width:96px;
+}
+#tableFullWrap th:nth-child(4),#tableFullWrap td:nth-child(4){
+  width:92px;
+}
+#tableFullWrap th:nth-child(5),#tableFullWrap td:nth-child(5){
+  width:78px;
+}
+#tableFullWrap td:nth-child(2){
+  max-width:0;
+  overflow:hidden;
+}
+#tableFullWrap td:nth-child(2) a{
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  white-space:normal;
+  overflow:hidden;
+  line-height:1.6;
+  word-break:break-word;
+}
+table{
+  width:100%;
+  min-width:600px;
+}
+th{
+  padding:2px 12px;
+}
+td{
+  padding:10px 12px;
+}
+.mini-avatar{
+  width:24px;
+  height:24px;
+  display:inline-grid;
+  place-items:center;
+  vertical-align:middle;
+  margin-right:8px;
+}
+.pill{
+  display:inline-block;
+  padding:3px 12px;
+}
+.terms{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.terms .empty{
+  flex:1 1 100%;
+  padding:14px 2px;
+}
+.term{
+  padding:7px 12px;
+}
+.term b{
+  margin-left:5px;
+}
+.suggest{
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.suggest li{
+  padding:11px 14px 11px 40px;
+  position:relative;
+}
+.suggest li.empty{
+  padding:14px;
+}
+.suggest li::before{
+  position:absolute;
+  left:13px;
+  top:11px;
+  width:19px;
+  height:19px;
+  display:grid;
+  place-items:center;
+}
+.empty{
+  padding:28px 8px;
+}
+.filter{
+  padding:8px 12px;
+  min-width:180px;
+}
+.src-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:18px;
+}
+.src-card{
+  position:relative;
+  overflow:hidden;
+}
+.src-card::before{
+  position:absolute;
+  inset:0 0 auto;
+  height:3px;
+}
+.src-card .src-top{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:12px;
+}
+.src-logo{
+  width:38px;
+  height:38px;
+  flex:0 0 38px;
+  display:grid;
+  place-items:center;
+}
+.src-card h4{
+  margin:0;
+}
+.src-metrics{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:auto;
+}
+.src-metrics .m{
+  padding:9px 11px;
+}
+.src-metrics .m b{
+  display:block;
+}
+.metric-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.metric-grid .m{
+  padding:12px 13px;
+}
+.metric-grid .m b{
+  display:block;
+}
+.metric-grid .m span{
+  display:block;
+  margin-top:2px;
+}
+.senti-row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:10px 0;
+}
+.senti-row .name{
+  width:108px;
+  flex:0 0 108px;
+}
+.senti-track{
+  flex:1;
+  height:8px;
+  overflow:hidden;
+}
+.senti-fill{
+  height:100%;
+}
+.heatmap{
+  width:100%;
+}
+.heatmap th,.heatmap td{
+  padding:7px 4px;
+}
+.heatmap td.cell{
+  min-width:30px;
+}
+.heat-scale{
+  display:flex;
+  gap:6px;
+  align-items:center;
+  margin-top:6px;
+}
+.term-bar{
+  height:8px;
+  min-width:90px;
+  overflow:hidden;
+}
+.term-bar i{
+  display:block;
+  height:100%;
+}
+.idea-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(330px,1fr));
+  gap:18px;
+}
+.idea .tags{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-bottom:10px;
+}
+.idea .tags .pill{
+  padding:2px 10px;
+}
+.idea h4{
+  margin:0 0 7px;
+}
+.idea p{
+  margin:0;
+}
+.idea .meta{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:auto;
+  padding-top:12px;
+}
+.idea .meta span:last-child{
+  margin-left:auto;
+}
+.set-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:18px;
+  align-items:start;
+}
+.set-col{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  min-width:0;
+}
+.set-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:11px 0;
+}
+.set-row.wide{
+  flex-direction:column;
+  align-items:stretch;
+  gap:8px;
+}
+.set-row.wide > *{
+  width:100%;
+  max-width:none;
+}
+.set-row.wide textarea{
+  min-height:88px;
+  padding:8px 10px;
+  resize:vertical;
+}
+.set-row .t b{
+  display:block;
+}
+.toggle{
+  position:relative;
+  width:44px;
+  height:24px;
+  padding:0;
+  flex:0 0 44px;
+}
+.toggle::after{
+  position:absolute;
+  left:3px;
+  top:3px;
+  width:18px;
+  height:18px;
+}
+.toggle.on::after{
+  left:23px;
+}
+select{
+  padding:8px 32px 8px 12px;
+}
+input[type=text].set-input{
+  padding:8px 12px;
+}
+.mobile-nav{
+  display:none;
+}
+@media(max-width:1440px){
+.main{
+  padding:20px 22px 40px;
+}
+}
+@media(max-width:1200px){
+.kpis{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.fetch-main{
+  gap:8px;
+}
+.fetch-main > .fetch-btn{
+  flex:1 1 100%;
+}
+.mid{
+  grid-template-columns:1fr;
+}
+.bottom{
+  grid-template-columns:1fr;
+}
+.mid-side{
+  flex-direction:row;
+}
+.deep{
+  grid-template-columns:1fr 1fr;
+}
+.deep > .card:first-child{
+  grid-column:1 / -1;
+}
+}
+@media(max-width:920px){
+.sidebar{
+  display:none;
+}
+.mobile-nav{
+  display:flex;
+  gap:6px;
+  overflow-x:auto;
+  padding:0 16px 12px;
+}
+.mobile-nav::-webkit-scrollbar{
+  display:none;
+}
+.mobile-nav a{
+  flex:0 0 auto;
+  padding:9px 14px;
+}
+.main{
+  padding:16px;
+}
+.bottom,.extra{
+  grid-template-columns:1fr;
+}
+.set-grid{
+  grid-template-columns:1fr;
+}
+.donut{
+  width:72px;
+  height:72px;
+  flex-basis:72px;
+}
+.donut::after{
+  inset:11px;
+}
+}
+@media(max-width:600px){
+.kpis{
+  grid-template-columns:1fr;
+  gap:14px;
+}
+.mid-side{
+  flex-direction:column;
+}
+.deep{
+  grid-template-columns:1fr;
+}
+.donut-wrap{
+  flex-wrap:wrap;
+}
+.bars{
+  overflow-x:auto;
+  padding-bottom:4px;
+}
+.bar-col{
+  min-width:26px;
+}
+.fetch-main > .field{
+  flex:1 1 45%;
+}
+.fetch-main > .field.grow{
+  flex:1 1 100%;
+}
+.fetch-main > .fetch-btn{
+  flex:1 1 100%;
+}
+.chips{
+  width:100%;
+  flex-wrap:nowrap;
+  overflow-x:auto;
+}
+.chips::-webkit-scrollbar{
+  display:none;
+}
+.chip{
+  flex:0 0 auto;
+}
+.topbar{
+  gap:8px;
+}
+.top-actions{
+  margin-left:0;
+  flex-wrap:wrap;
+}
+.top-actions .user{
+  display:none;
+}
+.user .uname{
+  display:none;
+}
+.mobile-nav{
+  overflow-x:auto;
+}
+.mobile-nav a{
+  flex:0 0 auto;
+}
+.date-pill{
+  display:none;
+}
+.theme-toggle .tgl-ic{
+  display:none;
+}
+.metric-grid{
+  grid-template-columns:1fr;
+}
+.line-box{
+  min-height:150px;
+}
+.line-box svg{
+  min-height:150px;
+}
+.bottom .line-box{
+  height:150px;
+  min-height:150px;
+}
+.card{
+  padding:16px 18px;
+}
+.set-row{
+  flex-wrap:wrap;
+}
+table{
+  min-width:520px;
+}
+th,td{
+  padding:7px 8px;
+}
+.card-head{
+  flex-wrap:wrap;
+}
+.card-head h3{
+  flex:1 1 auto;
+}
+.tbl-scroll table:not(.heatmap){
+  min-width:480px;
+}
+#tableWrap th:last-child,#tableWrap td:last-child,
+  #tableFullWrap th:nth-child(4),#tableFullWrap td:nth-child(4),
+  #tableFullWrap th:nth-child(5),#tableFullWrap td:nth-child(5){
+  display:none;
+}
+#tableWrap table,#tableFullWrap table{
+  min-width:0;
+}
+#tableFullWrap th:nth-child(1),#tableFullWrap td:nth-child(1){
+  width:60px;
+}
+#tableFullWrap th:nth-child(3),#tableFullWrap td:nth-child(3){
+  width:72px;
+}
+.heatmap td.cell{
+  min-width:22px;
+}
+#tableWrap th:nth-child(1),#tableWrap td:nth-child(1){
+  width:56px;
+  padding-left:8px;
+  padding-right:4px;
+}
+#tableWrap .src-name{
+  display:none;
+}
+#tableWrap .mini-avatar{
+  margin-right:0;
+}
+#tableWrap th:nth-child(4),#tableWrap td:nth-child(4){
+  display:none;
+}
+html,body{
+  overflow-x:clip;
+}
+}
+@media(max-width:380px){
+.mobile-nav{
+  padding:0 16px 12px;
+}
+.card{
+  padding:12px 14px;
+}
+.btn{
+  padding:10px 14px;
+}
+.src-grid{
+  grid-template-columns:1fr;
+}
+}
+.proto-tag{
+  display:block;
+  padding:4px 8px;
+  margin-top:10px;
+}
+.kanban{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+.kcol{
+  padding:10px;
+  min-height:180px;
+}
+.kcol h4{
+  margin:0 0 8px;
+  display:flex;
+  justify-content:space-between;
+}
+.kcol .kcount{
+  padding:1px 9px;
+}
+.lead{
+  padding:12px 14px;
+  margin-bottom:8px;
+}
+.lead b{
+  display:block;
+}
+.lead span{
+  display:block;
+  margin-top:3px;
+}
+.lead .lead-src{
+  display:inline-block;
+  margin-top:6px;
+}
+.cal-week{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:8px;
+}
+.cal-day{
+  padding:10px;
+  min-height:120px;
+}
+.cal-day h5{
+  margin:0 0 6px;
+}
+.cal-day .post{
+  padding:4px 7px;
+  margin-bottom:4px;
+}
+.report-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+.progress-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:8px 0;
+}
+.progress-row .lbl{
+  width:160px;
+}
+.progress-row .bar{
+  flex:1;
+  height:9px;
+  overflow:hidden;
+}
+.progress-row .bar i{
+  display:block;
+  height:100%;
+}
+.progress-row .pct{
+  width:44px;
+}
+@media(max-width:1100px){
+.kanban{
+  grid-template-columns:1fr 1fr;
+}
+.cal-week{
+  grid-template-columns:repeat(4,1fr);
+}
+}
+@media(max-width:700px){
+.cal-week{
+  grid-template-columns:repeat(2,1fr);
+}
+}
+.comp-tabs{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:12px;
+}
+.comp-tab{
+  padding:6px 14px;
+}
+.comp-detail{
+  display:grid;
+  grid-template-columns:1.2fr 1fr;
+  gap:16px;
+  margin-top:16px;
+}
+.kv{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:7px 0;
+}
+.alert{
+  padding:10px 12px;
+  margin-bottom:8px;
+}
+.tag{
+  display:inline-block;
+  padding:2px 8px;
+}
+@media(max-width:900px){
+.comp-detail{
+  grid-template-columns:1fr;
+}
+}
+@media(max-width:600px){
+.kanban{
+  grid-template-columns:1fr;
+}
+.report-grid{
+  grid-template-columns:1fr;
+}
+.cal-week{
+  grid-template-columns:1fr;
+}
+}
+.kpis > *, .mid > *, .bottom > *, .deep > *, .src-grid > *, .set-grid > *, .idea-grid > *, .report-grid > *, .comp-detail > *, .kanban > *, .cal-week > *{
+  min-width:0;
+}
+.tbl-scroll table{
+  max-width:100%;
+}
+.bars{
+  overflow-x:auto;
+}
+@supports (overflow: clip){
+body{
+  overflow-x:clip;
+}
+}
+@media(max-width:600px){
+.kpi .donut-legend{
+  flex-direction:row;
+  flex-wrap:wrap;
+  gap:4px 10px;
+}
+.senti-row .name{
+  width:70px;
+}
+.heatmap td.cell{
+  min-width:22px;
+}
+html,body{
+  overflow-x:clip;
+}
+}
+</style>
 </head>
 <body>
 <div class="app">
@@ -66,12 +1433,70 @@
 
     <!-- Fetch strip (global) -->
     <div class="fetch-strip">
-      <input type="text" id="q" value="Digital Marketing" aria-label="keyword" placeholder="keyword / product / customer pain">
-      <button class="btn btn-primary" id="btnFetch">Fetch now</button>
-      <button class="btn btn-ghost" id="btnDb">Load from disk</button>
+      <div class="fetch-main">
+        <div class="field">
+          <label for="profileSel">โปรไฟล์</label>
+          <select id="profileSel">
+            <option value="">Keyword ใหม่</option>
+            <option value="mock1" selected>Profile 1 — ITOPPLUS (mock)</option>
+          </select>
+        </div>
+        <div class="field grow">
+          <label for="q">Keyword</label>
+          <input type="text" id="q" value="Digital Marketing" placeholder="ใส่ keyword ที่ต้องการค้นหา…">
+        </div>
+        <div class="field">
+          <span class="field-label" id="srcLabel">Sources</span>
+          <details class="src-pop" id="srcPop">
+            <summary aria-labelledby="srcLabel"><span id="srcSummary">YouTube</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+            <div class="src-picker" id="srcPicker" role="group" aria-label="fetch sources">
+              <label class="src-option"><input type="checkbox" value="youtube" checked><span class="src-main"><span class="src-name">YouTube</span><span class="src-detail" title="youtube.com/results — scrape ytInitialData (stdlib)">youtube.com/results · stdlib scrape</span></span></label>
+              <label class="src-option"><input type="checkbox" value="gnews"><span class="src-main"><span class="src-name">ข่าว (GNews)</span><span class="src-detail" title="news.google.com/rss/search — RSS">news.google.com/rss · RSS</span></span></label>
+              <label class="src-option"><input type="checkbox" value="tiktok"><span class="src-main"><span class="src-name">TikTok</span><span class="src-detail" title="tiktok.com/search — Playwright + JSON (public/session)">tiktok.com/search · Playwright</span></span></label>
+              <label class="src-option"><input type="checkbox" value="fbads"><span class="src-main"><span class="src-name">FB Ads</span><span class="src-detail" title="facebook.com/ads/library — Playwright public (TH, active)">facebook.com/ads/library · Playwright</span></span></label>
+              <label class="src-option"><input type="checkbox" value="ttads"><span class="src-main"><span class="src-name">TikTok Ads</span><span class="src-detail" title="ads.tiktok.com/business/creativecenter/inspiration/topads/pc/en — Playwright public (TH)">ads.tiktok.com/creativecenter · Playwright</span></span></label>
+            </div>
+          </details>
+        </div>
+        <div class="field">
+          <label for="fetchMode">Mode</label>
+          <select id="fetchMode">
+            <option value="public">Public</option>
+            <option value="session">Login session</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="freshDays">Fresh</label>
+          <select id="freshDays">
+            <option value="7">7 วัน</option>
+            <option value="30" selected>30 วัน</option>
+            <option value="365">1 ปี</option>
+            <option value="0">ทั้งหมด</option>
+          </select>
+        </div>
+        <button class="btn btn-primary fetch-btn" id="btnFetch">Fetch now</button>
+      </div>
       <div class="chips" id="chips"></div>
     </div>
+    <div class="kw-tabs" id="kwTabs" style="display:none;gap:7px;flex-wrap:wrap;margin:-2px 2px 12px"></div>
     <div class="status" id="status" role="status" aria-live="polite"></div>
+    <div class="loading-overlay" id="loadModal" hidden>
+      <div class="loading-card" role="dialog" aria-modal="true" aria-labelledby="loadTitle">
+        <div class="loading-head">
+          <div class="loading-spin" aria-hidden="true"></div>
+          <div>
+            <div class="loading-title" id="loadTitle">กำลังดึงข้อมูล…</div>
+            <div class="loading-sub" id="loadSub">กำลังเก็บข้อมูลจากช่องทางที่เลือก</div>
+          </div>
+        </div>
+        <div class="loading-bar"><div class="loading-fill" id="loadFill"></div></div>
+        <div class="loading-meta">
+          <span class="loading-name" id="loadName">—</span>
+          <span class="loading-count" id="loadCount"></span>
+        </div>
+        <div class="loading-hint">รอจนจบ — อย่าปิดหน้านี้</div>
+      </div>
+    </div>
 
     <!-- ============ PAGE: ภาพรวม ============ -->
     <section class="page active" id="page-overview">
@@ -104,16 +1529,18 @@
 
       <div class="bottom">
         <div class="card">
-          <div class="card-head"><h3>Score distribution</h3><span class="chart-note" id="scoreNote">—</span></div>
-          <div class="line-box"><svg id="line" viewBox="0 0 800 200" preserveAspectRatio="none" aria-hidden="true"></svg></div>
-          <div class="metric-grid" style="margin-top:12px">
-            <div class="m"><b id="scoreHigh">0</b><span>Highest score</span></div>
-            <div class="m"><b id="scoreLow">0</b><span>Lowest score</span></div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="tbl-head"><h3 id="topItemsTitle">Top items</h3><button class="btn btn-ghost" data-goto="items" style="padding:6px 12px;font-size:12px">View all →</button></div>
+          <div class="tbl-head"><h3 id="topItemsTitle">Top items</h3><div class="tbl-tabs" id="topItemsTabs" role="tablist" aria-label="Top items by platform"></div><button class="btn btn-ghost" data-goto="items" style="padding:6px 12px;font-size:12px">View all →</button></div>
           <div class="tbl-scroll" id="tableWrap"><div class="empty">No data yet</div></div>
+        </div>
+        <div class="side-stack">
+          <div class="card">
+            <div class="card-head"><h3>Top terms (summary)</h3><button class="btn btn-ghost" data-goto="terms" style="padding:6px 12px;font-size:12px">Details →</button></div>
+            <div class="terms" id="termsBox"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Content ideas (summary)</h3><button class="btn btn-ghost" data-goto="ideas" style="padding:6px 12px;font-size:12px">All ideas →</button></div>
+            <ul class="suggest" id="suggest"></ul>
+          </div>
         </div>
       </div>
 
@@ -138,12 +1565,12 @@
 
       <div class="extra">
         <div class="card">
-          <div class="card-head"><h3>Top terms (summary)</h3><button class="btn btn-ghost" data-goto="terms" style="padding:6px 12px;font-size:12px">Details →</button></div>
-          <div class="terms" id="termsBox"></div>
-        </div>
-        <div class="card">
-          <div class="card-head"><h3>Content ideas (summary)</h3><button class="btn btn-ghost" data-goto="ideas" style="padding:6px 12px;font-size:12px">All ideas →</button></div>
-          <ul class="suggest" id="suggest"></ul>
+          <div class="card-head"><h3>Score distribution</h3><span class="chart-note" id="scoreNote">—</span></div>
+          <div class="line-box"><svg id="line" viewBox="0 0 800 200" preserveAspectRatio="none" role="img" aria-label="Score distribution line chart"></svg></div>
+          <div class="metric-grid" style="margin-top:12px">
+            <div class="m"><b id="scoreHigh">0</b><span>Highest score</span></div>
+            <div class="m"><b id="scoreLow">0</b><span>Lowest score</span></div>
+          </div>
         </div>
       </div>
 
@@ -154,7 +1581,7 @@
           <div class="line-box" style="height:130px"><svg id="growthLine" viewBox="0 0 800 160" preserveAspectRatio="none" aria-hidden="true"></svg></div>
           <div class="metric-grid" style="margin-top:10px">
             <div class="m"><b>12,450</b><span>Total followers (Facebook 5,850 · TikTok 4,120 · IG 2,480)</span></div>
-            <div class="m"><b style="color:var(--green)">+1,284 (+11.5%)</b><span>30-day growth (+6.2% vs prior month)</span></div>
+            <div class="m"><b style="color:var(--link)">+1,284 (+11.5%)</b><span>30-day growth (+6.2% vs prior month)</span></div>
           </div>
         </div>
         <div class="card">
@@ -162,7 +1589,7 @@
           <div id="chanER"></div>
           <div class="metric-grid" style="margin-top:10px">
             <div class="m"><b>4.82%</b><span>30-day average</span></div>
-            <div class="m"><b style="color:var(--green)">+0.64%</b><span>vs prior 30 days</span></div>
+            <div class="m"><b style="color:var(--link)">+0.64%</b><span>vs prior 30 days</span></div>
           </div>
         </div>
         <div class="card">
@@ -382,35 +1809,45 @@
 
     <!-- ============ PAGE: ตั้งค่า ============ -->
     <section class="page" id="page-settings">
-      <div class="page-head"><h2>Settings</h2><span class="hint">Browser-only (localStorage) · mock sources: FB/TikTok/IG/LINE/YouTube</span></div>
+      <div class="page-head"><h2>Settings</h2><span class="hint">Browser-only (localStorage) · mock sources: 5 ช่องทาง</span></div>
       <div class="set-grid">
+        <div class="set-col">
+        <div class="card">
+          <div class="card-head"><h3>Keyword profiles</h3></div>
+          <div class="set-row"><div class="t"><b>Profile 1 — ITOPPLUS</b><span>Digital Marketing · SEO · Local SEO · เว็บขายของ · youtube, gnews, tiktok (mock)</span></div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-ghost" data-pfed-mock="1" style="padding:6px 12px;font-size:12px">Edit</button>
+              <button class="btn btn-ghost" data-pfdel-mock="1" style="padding:6px 12px;font-size:12px">Delete</button>
+            </div></div>
+          <div class="set-row wide"><div class="t"><b>ชื่อโปรไฟล์</b><span>รวมหลาย keyword + sources (mock — ไม่เก็บที่เซิร์เออร์)</span></div>
+            <input type="text" class="set-input" id="pfNameM" placeholder="เช่น ITOPPLUS หลัก" aria-label="Mock profile name"></div>
+          <div class="set-row wide"><div class="t"><b>Keywords</b><span>บรรทัดละคำ หรือคั่นจุลภาค</span></div>
+            <textarea id="pfKwsM" rows="4" aria-label="Mock profile keywords"></textarea></div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn btn-primary" id="pfSaveM">Add profile</button>
+          </div>
+        </div>
+        </div>
+        <div class="set-col">
         <div class="card">
           <div class="card-head"><h3>Tracked keywords</h3></div>
           <div id="kwList"></div>
           <div class="set-row"><div class="t"><b>Add keyword</b><span>Adds a chip above</span></div>
-            <div style="display:flex;gap:8px"><input type="text" class="set-input" id="kwNew" placeholder="e.g. SEO" style="width:130px"><button class="btn btn-primary" id="kwAdd">Add</button></div></div>
+            <div style="display:flex;gap:8px"><input type="text" class="set-input" id="kwNew" placeholder="e.g. SEO" aria-label="New keyword" style="width:130px"><button class="btn btn-primary" id="kwAdd">Add</button></div></div>
         </div>
         <div class="card">
           <div class="card-head"><h3>Sources (free)</h3></div>
           <div id="srcToggles"></div>
         </div>
         <div class="card">
-          <div class="card-head"><h3>Fetching</h3></div>
-          <div class="set-row"><div class="t"><b>Mode</b><span>Manual press for now</span></div>
-            <select id="fetchMode"><option>Manual (press)</option><option disabled>Daily auto (Phase 2)</option></select></div>
-          <div class="set-row"><div class="t"><b>Per-source limit</b><span>limit per fetch</span></div>
-            <select id="fetchLimit"><option>5</option><option selected>10</option><option>25</option></select></div>
-          <div class="set-row"><div class="t"><b>Time range</b><span>Latest first</span></div>
-            <select><option>Top</option><option>Newest</option></select></div>
-        </div>
-        <div class="card">
           <div class="card-head"><h3>Data (mock)</h3></div>
           <div class="set-row"><div class="t"><b>Reload sample data</b><span>Resets all pages to Digital Marketing mock</span></div>
             <button class="btn btn-ghost" id="btnResetMock">Load sample</button></div>
-          <div class="set-row"><div class="t"><b>Reset all</b><span>Clears history + back to main keyword</span></div>
+          <div class="set-row"><div class="t"><b>Clear browser prefs</b><span>History + keyword + page (disk data stays)</span></div>
             <button class="btn btn-ghost" id="btnWipe">Reset</button></div>
           <div class="set-row"><div class="t"><b>Theme</b><span>Light / Dark</span></div>
             <div style="display:flex;gap:8px"><button class="btn btn-ghost" id="btnLight">Light</button><button class="btn btn-ghost" id="btnDark">Dark</button></div></div>
+        </div>
         </div>
       </div>
     </section>
@@ -562,7 +1999,7 @@ const SRC_DETAIL = [
   {name:"tiktok", label:"TikTok", color:"#000000", api:"TikTok Ads · short clips", count:9,
    total:3300, avg:367, last:"2 min ago", status:"Connected",
    sample:"FB Ads vs TikTok งบเท่ากัน คุ้มช่องไหน"},
-  {name:"instagram", label:"Instagram", color:"#E1306C", api:"Reels/Posts · photo+shorts", count:6,
+  {name:"instagram", label:"Instagram", color:"#BE185D", api:"Reels/Posts · photo+shorts", count:6,
    total:0, avg:0, last:"2 min ago", status:"Connected",
    sample:"การสร้างตราสินค้า"},
   {name:"line", label:"LINE OA", color:"#00B900", api:"Broadcast + chat", count:5,
@@ -849,7 +2286,7 @@ function render(d, isFetch){
   const bars = Object.entries(scoreShare).sort((a,b) => b[1] - a[1]);
   const maxBar = Math.max(1, ...bars.map(([,v]) => v));
   $("bars").innerHTML = bars.length
-    ? bars.map(([k,v]) => `<div class="bar-col"><div class="bar-track">
+    ? bars.map(([k,v]) => `<div class="bar-col"><div class="bar-val">${v.toLocaleString()}</div><div class="bar-track">
         <div class="bar-fill" style="height:${Math.max(3, Math.round(v/maxBar*100))}%;background:${SRC_CHART[k] || PALETTE[0]}" title="${esc(k)}: ${v.toLocaleString()} score"></div>
       </div><div class="bar-label">${esc(srcLabel(k))}</div></div>`).join("")
     : '<div class="empty">No data yet</div>';
@@ -872,41 +2309,87 @@ function render(d, isFetch){
   $("termsBox").innerHTML = (d.top_terms || []).length
     ? d.top_terms.map(([w,n]) => `<span class="term">${esc(w)}<b>${n}</b></span>`).join("")
     : '<div class="empty">No data yet</div>';
-  $("suggest").innerHTML = (d.suggestions || []).map(s => `<li>${esc(s)}</li>`).join("");
+  $("suggest").innerHTML = (d.suggestions || []).length
+    ? d.suggestions.map(s => `<li>${esc(s)}</li>`).join("")
+    : '<li class="empty">No ideas yet — fetch a keyword first</li>';
+  computeBands(currentItems);
+  renderItemsTabs();
   renderTable();
   renderFullTable();
-  const mode = d === MOCK ? "sample data (mock)" : isFetch ? "live fetch" : "disk data";
+  const mode = "sample data (mock)";
   SUBS.overview = `Overview · ${currentKeyword} · ${currentItems.length} items · ${mode}`;
   if($("page-overview").classList.contains("active")) $("pageSub").textContent = SUBS.overview;
   setBadge("items", d.total ?? currentItems.length);
   const err = (d.errors || []).join(", ");
-  $("status").textContent = (isFetch ? `Fetched +${d.added ?? 0} items${err ? " · errors: " + err : ""}` : "Showing disk data (offline)");
+  $("status").textContent = "Sample data (mock) · ไม่เรียกเซิร์ฟเวอร์";
   $("status").className = err ? "status err" : "status";
 }
 const PILLS = [["Delivered","pill-green","row-green"],["Processed","pill-yellow","row-yellow"],["Cancelled","pill-blue","row-red"]];
 const PALETTE = ["#2f6bff","#06b6d4","#a855f7","#f59e0b","#22c55e","#ec4899","#64748b","#14b8a6"];
-const SRC_COLORS = {facebook:"#1877F2", tiktok:"#000000", instagram:"#E1306C", line:"#00B900", youtube:"#FF0000", reddit:"#FF4500", hn:"#FB5414", gnews:"#4285F4", wiki:"#64748b"};
-function band(score){
-  if(score >= 400) return ["Hot","pill-green","row-green"];
-  if(score >= 150) return ["Rising","pill-yellow","row-yellow"];
-  return ["Steady","pill-gray","row-gray"];
+const SRC_COLORS = {facebook:"#1877F2", tiktok:"#000000", instagram:"#BE185D", line:"#00B900", youtube:"#FF0000", reddit:"#FF4500", hn:"#FB5414", gnews:"#4285F4", wiki:"#64748b"};
+/* relative bands: rank by percentile within the current list (live logic) */
+let scoreCut = {hot: Infinity, rising: Infinity};
+function computeBands(items){
+  const vals = items.map(i => +i.score || 0).filter(v => v > 0).sort((a,b) => b - a);
+  const at = p => vals.length ? vals[Math.min(vals.length - 1, Math.floor(vals.length * p))] : Infinity;
+  scoreCut = {hot: at(0.2), rising: at(0.5)};
 }
-function rowHtml(i, withSignal = true){
-  const b = band(+i.score || 0);
+function band(score){
+  score = +score || 0;
+  if(!score) return ["Unscored","pill-gray",""];
+  if(score >= scoreCut.hot) return ["Hot","pill-green","row-green"];
+  if(score >= scoreCut.rising) return ["Rising","pill-yellow","row-yellow"];
+  return ["Steady","pill-gray",""];
+}
+const MOCK_SRC_PATHS = {
+  youtube:"M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z",
+  facebook:"M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z",
+  tiktok:"M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z",
+  line:"M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"
+};
+MOCK_SRC_PATHS.fbads = MOCK_SRC_PATHS.facebook;
+MOCK_SRC_PATHS.ttads = MOCK_SRC_PATHS.tiktok;
+function svgIcon(key, size){ return MOCK_SRC_PATHS[key] ? `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="${MOCK_SRC_PATHS[key]}"/></svg>` : ""; }
+function rowHtml(i, withSignal = true, plainTint = false){
+  const b = plainTint ? ["","",""] : band(+i.score || 0);
   const c = SRC_COLORS[i.source] || PALETTE[0];
   return `<tr class="${b[2]}">
-    <td><span class="mini-avatar" style="background:${c}">${esc(i.source.slice(0,2).toUpperCase())}</span><span class="src-name">${esc(i.source)}</span></td>
+    <td><span class="mini-avatar" style="background:${c}" title="${esc(i.source)}">${svgIcon(i.source, 14) || esc(i.source.slice(0,2).toUpperCase())}</span><span class="src-name">${esc(srcLabel(i.source))}</span></td>
     <td title="${esc(i.title)}"><a class="row-title" href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a></td>
-    <td><b>${esc(i.score)}</b></td>
+    <td><b>${(+i.score || 0).toLocaleString()}</b></td>
     ${withSignal ? `<td><span class="pill ${b[1]}">${b[0]}</span></td>` : ""}
     <td><a href="${esc(i.url)}" target="_blank" rel="noopener">Open →</a></td></tr>`;
 }
 
+/* platform tabs for Top items (live parity) */
+let itemsTab = "all";
+function renderItemsTabs(){
+  const box = $("topItemsTabs");
+  if(!box) return;
+  const keys = [...new Set(currentItems.map(i => i.source))].sort();
+  if(!keys.length){ box.style.display = "none"; box.innerHTML = ""; return; }
+  if(itemsTab !== "all" && !keys.includes(itemsTab)) itemsTab = "all";
+  box.style.display = "flex";
+  box.innerHTML = ["all", ...keys].map(k =>
+    `<button class="chip" data-items-tab="${esc(k)}" role="tab" aria-selected="${k === itemsTab}">${k === "all" ? "All" : esc(srcLabel(k))}</button>`).join("");
+  const paint = () => box.querySelectorAll("[data-items-tab]").forEach(x => {
+    const on = x.dataset.itemsTab === itemsTab;
+    x.style.borderColor = on ? "var(--link)" : "";
+    x.style.color = on ? "var(--link)" : "";
+    x.setAttribute("aria-selected", on ? "true" : "false");
+  });
+  box.querySelectorAll("[data-items-tab]").forEach(b => b.addEventListener("click", () => {
+    itemsTab = b.dataset.itemsTab;
+    paint(); renderTable();
+  }));
+  paint();
+}
 function renderTable(){
-  const rows = [...currentItems].sort((a,b) => (+b.score || 0) - (+a.score || 0)).slice(0, 8);
+  const base = itemsTab === "all" ? currentItems : currentItems.filter(i => i.source === itemsTab);
+  const rows = [...base].sort((a,b) => (+b.score || 0) - (+a.score || 0)).slice(0, 8);
   $("topItemsTitle").textContent = `Top items (${rows.length})`;
   $("tableWrap").innerHTML = rows.length
-    ? `<table aria-label="Top items by score"><thead><tr><th>Source</th><th>Title</th><th>Score</th><th>Link</th></tr></thead><tbody>${rows.map(i => rowHtml(i, false)).join("")}</tbody></table>`
+    ? `<table aria-label="Top items by score"><thead><tr><th>Source</th><th>Title</th><th>Score</th><th>Link</th></tr></thead><tbody>${rows.map(i => rowHtml(i, false, true)).join("")}</tbody></table>`
     : '<div class="empty">No items found</div>';
 }
 function renderFullTable(){
@@ -914,7 +2397,7 @@ function renderFullTable(){
   const f = el ? (el.value || "").toLowerCase() : "";
   const rows = currentItems.filter(i => !f || (i.title + " " + i.body + " " + i.source).toLowerCase().includes(f));
   $("tableFullWrap").innerHTML = rows.length
-    ? `<table aria-label="All items by score"><thead><tr><th>Source</th><th>Title</th><th>Score</th><th>Signal</th><th>Link</th></tr></thead><tbody>${rows.map(rowHtml).join("")}</tbody></table>`
+    ? `<table aria-label="All items by score"><thead><tr><th>Source</th><th>Title</th><th>Score</th><th>Signal</th><th>Link</th></tr></thead><tbody>${rows.map(i => rowHtml(i)).join("")}</tbody></table>`
     : '<div class="empty">No items found</div>';
 }
 $("filterFull").addEventListener("input", renderFullTable);
@@ -1118,7 +2601,29 @@ function renderCompetitors(){
   $("compAlerts").innerHTML = COMP_RELEASES[0].map(([a,b]) => `<div class="alert"><b>${esc(a)}</b><br><span style="color:var(--muted);font-size:11px">${esc(b)}</span></div>`).join("");
 }
 
-/* ===== fetch / db (ของเดิม, อัปเดตแค่หน้า overview) ===== */
+function selectedSources(){
+  return [...document.querySelectorAll("#srcPicker input:checked")].map(el => el.value);
+}
+const SRC_LABELS = {youtube:"YouTube", gnews:"Google News", tiktok:"TikTok", fbads:"FB Ads", ttads:"TikTok Ads", facebook:"Facebook", instagram:"Instagram", line:"LINE OA"};
+const SOURCES = [
+  {name:"youtube", label:"YouTube", api:"youtube.com/results · scrape ytInitialData (stdlib)"},
+  {name:"gnews", label:"ข่าว (GNews)", api:"news.google.com/rss/search · RSS"},
+  {name:"tiktok", label:"TikTok", api:"tiktok.com/search · Playwright + JSON (public/session)"},
+  {name:"fbads", label:"FB Ads", api:"facebook.com/ads/library · Playwright public (TH, active)"},
+  {name:"ttads", label:"TikTok Ads", api:"ads.tiktok.com/business/creativecenter/inspiration/topads/pc/en · Playwright public (TH)"}
+];
+const MOCK_SRC_LABELS = {youtube:"YouTube", gnews:"Google News", tiktok:"TikTok", fbads:"FB Ads", ttads:"TikTok Ads", facebook:"Facebook", instagram:"Instagram", line:"LINE OA"};
+function renderSrcSummary(){
+  const el = $("srcSummary");
+  if(!el) return;
+  const list = [...document.querySelectorAll("#srcPicker input")];
+  const on = list.filter(cb => cb.checked);
+  const names = on.map(cb => MOCK_SRC_LABELS[cb.value] || cb.value);
+  el.textContent = on.length === list.length ? `ทั้งหมด (${on.length})`
+    : !on.length ? "ยังไม่เลือก"
+    : names.length <= 2 ? names.join(", ") : `${names.slice(0,2).join(", ")} +${names.length - 2}`;
+}
+/* ===== fetch / db (mock: ใช้ข้อมูลจำลองในหน้าอย่างเดียว ไม่เรียกเน็ต) ===== */
 const HIST_KEY = "st_history";
 function getHistory(){ try { return JSON.parse(localStorage.getItem(HIST_KEY) || '["Digital Marketing"]'); } catch { return ["Digital Marketing"]; } }
 function renderChips(){
@@ -1129,37 +2634,97 @@ function pushHistory(q){
   try { localStorage.setItem(HIST_KEY, JSON.stringify(h)); } catch {}
   renderChips();
 }
+function showKwTabs(kws){
+  const box = $("kwTabs");
+  if(!box || !kws.length){ if(box){ box.style.display = "none"; box.innerHTML = ""; } return; }
+  box.style.display = "flex";
+  box.innerHTML = kws.map(k => `<button class="chip" data-kw="${esc(k)}">${esc(k)}</button>`).join("");
+  const paint = b => box.querySelectorAll("[data-kw]").forEach(x => {
+    const on = x === b;
+    x.style.borderColor = on ? "var(--link)" : "";
+    x.style.color = on ? "var(--link)" : "";
+  });
+  box.querySelectorAll("[data-kw]").forEach(b => b.addEventListener("click", () => {
+    paint(b);
+    $("q").value = b.dataset.kw;
+    renderMockSample(b.dataset.kw);
+  }));
+  paint(box.querySelector("[data-kw]"));
+}
+function mockFiltered(q){
+  const kw = (q || "Digital Marketing").trim();
+  /* mock: checkbox หน้าติดตาม live แต่ข้อมูลจำลองเป็น Digital Marketing ชุดเดียว — ไม่กรองตาม source */
+  const all = MOCK.items.slice();
+  const byKw = JSON.parse(JSON.stringify(MOCK));
+  byKw.keyword = kw;
+  byKw.items = all;
+  byKw.total = all.length;
+  return byKw;
+}
+function renderMockSample(kw){
+  const d = mockFiltered(kw || $("q").value);
+  const kws = $("profileSel") && $("profileSel").value
+    ? ["Digital Marketing", "SEO", "Local SEO", "การตลาดดิจิทัล"] : [];
+  showKwTabs(kws);
+  render(d, false);
+}
+function setBusy(b){ $("btnFetch").disabled = b; }
+/* loading modal สำหรับ mock — จำลองรอบให้ user เห็น animation */
+function showLoading(text, sub){
+  const m = $("loadModal");
+  if(!m) return;
+  $("loadTitle").textContent = text || "กำลังดึงข้อมูล…";
+  if(sub) $("loadSub").textContent = sub;
+  m.hidden = false;
+  document.body.style.overflow = "hidden";
+}
+function setLoadingProgress(done, total, label){
+  const fill = $("loadFill"), name = $("loadName"), count = $("loadCount");
+  if(!fill) return;
+  const pct = total > 0 ? Math.round(done / total * 100) : 0;
+  fill.style.width = pct + "%";
+  if(name) name.textContent = label || "—";
+  if(count) count.textContent = `${done}/${total} · ${pct}%`;
+}
+function hideLoading(){
+  const m = $("loadModal");
+  if(m) m.hidden = true;
+  document.body.style.overflow = "";
+}
+function fetchNow(){
+  const pid = $("profileSel") ? $("profileSel").value : "";
+  const q = $("q").value.trim() || "Digital Marketing";
+  $("status").textContent = `Fetching… (mock ${pid ? "profile" : "keyword"})`;
+  $("status").className = "status";
+  showLoading("กำลังดึงข้อมูล…", "mock sample · ไม่เรียกเซิร์ฟเวอร์");
+  setLoadingProgress(0, 1, q);
+  setBusy(true);
+  setTimeout(() => {
+    setLoadingProgress(1, 1, q);
+    pushHistory(q);
+    renderMockSample(q);
+    $("status").textContent = `Fetched +${mockFiltered(q).items.length} items · mock sample (no network)`;
+    goPage("overview");
+    setBusy(false);
+    hideLoading();
+  }, 900);
+}
 $("chips").addEventListener("click", e => {
   const b = e.target.closest(".chip"); if(!b) return;
-  $("q").value = b.dataset.q; loadDb();
+  $("q").value = b.dataset.q;
+  renderMockSample(b.dataset.q);
 });
-function setBusy(b){ $("btnFetch").disabled = b; $("btnDb").disabled = b; }
-async function fetchNow(){
-  const q = $("q").value.trim() || "Digital Marketing";
-  setBusy(true); $("status").textContent = "Fetching…"; $("status").className = "status";
-  try{
-    const r = await fetch("/api/fetch", {method:"POST",
-      headers:{"Content-Type":"application/json"}, body: JSON.stringify({q})});
-    const d = await r.json();
-    if(!r.ok) throw new Error(d.error || ("HTTP " + r.status));
-    pushHistory(q); render(d, true); goPage("overview");
-  }catch(e){ $("status").textContent = "Fetch failed: " + e.message; $("status").className = "status err"; }
-  finally{ setBusy(false); }
-}
-async function loadDb(){
-  const q = $("q").value.trim() || "Digital Marketing";
-  setBusy(true); $("status").textContent = "Reading disk…"; $("status").className = "status";
-  try{
-    const r = await fetch("/api/summary?q=" + encodeURIComponent(q));
-    const d = await r.json();
-    if(!r.ok) throw new Error("HTTP " + r.status);
-    render(d, false);
-  }catch(e){ $("status").textContent = "Disk read failed: " + e.message; $("status").className = "status err"; }
-  finally{ setBusy(false); }
-}
 $("btnFetch").addEventListener("click", fetchNow);
-$("btnDb").addEventListener("click", loadDb);
 $("q").addEventListener("keydown", e => { if(e.key === "Enter") fetchNow(); });
+$("profileSel")?.addEventListener("change", () => {
+  const active = !!$("profileSel").value;
+  $("q").disabled = active;
+  renderMockSample(active ? "Digital Marketing" : $("q").value);
+});
+$("q").addEventListener("input", () => {
+  if($("profileSel").value){ $("profileSel").value = ""; $("q").disabled = false; showKwTabs([]); renderSrcSummary(); }
+});
+document.querySelectorAll("#srcPicker input").forEach(el => el.addEventListener("change", () => { renderSrcSummary(); }));
 
 /* ===== settings page logic ===== */
 function renderSettings(){
@@ -1167,15 +2732,23 @@ function renderSettings(){
     <div class="set-row"><div class="t"><b>${esc(k)}</b><span>Click a chip to use</span></div>
       <button class="btn btn-ghost" data-use="${esc(k)}" style="padding:6px 12px;font-size:12px">Use</button></div>`).join("");
   document.querySelectorAll("[data-use]").forEach(b => b.addEventListener("click", () => {
-    $("q").value = b.dataset.use; goPage("overview"); loadDb();
+    $("q").value = b.dataset.use; goPage("overview"); renderMockSample(b.dataset.use);
   }));
-  $("srcToggles").innerHTML = SRC_DETAIL.map((s,i) => `
-    <div class="set-row"><div class="t"><b>${esc(s.label)}</b><span>${esc(s.api)}</span></div>
-      <button class="toggle on" data-src="${i}" aria-label="toggle ${esc(s.label)}"></button></div>`).join("");
+  $("srcToggles").innerHTML = SOURCES.map((s,i) => {
+    const cb = document.querySelector(`#srcPicker input[value="${s.name}"]`);
+    const on = cb ? cb.checked : false;
+    return `<div class="set-row"><div class="t"><b>${esc(s.label)}</b><span>${esc(s.api)}</span></div>
+      <button class="toggle${on ? " on" : ""}" data-src="${i}" aria-pressed="${on}" aria-label="toggle ${esc(s.label)}"></button></div>`;
+  }).join("");
   document.querySelectorAll(".toggle[data-src]").forEach(t => t.addEventListener("click", () => {
-    t.classList.toggle("on");
-    $("status").textContent = t.classList.contains("on")
-      ? `${SRC_DETAIL[+t.dataset.src].label} On (applies next fetch)` : `${SRC_DETAIL[+t.dataset.src].label} Off (applies next fetch)`;
+    const s = SOURCES[+t.dataset.src];
+    const cb = document.querySelector(`#srcPicker input[value="${s.name}"]`);
+    const on = !(cb && cb.checked);
+    if(cb) cb.checked = on;
+    t.classList.toggle("on", on);
+    t.setAttribute("aria-pressed", String(on));
+    renderSrcSummary();
+    $("status").textContent = `${s.label} ${on ? "On" : "Off"} (applies next fetch)`;
     $("status").className = "status";
   }));
 }
@@ -1185,19 +2758,47 @@ $("kwAdd").addEventListener("click", () => {
   $("status").textContent = `Keyword "${v}" added`;
 });
 $("btnResetMock").addEventListener("click", () => {
-  $("q").value = "Digital Marketing"; render(MOCK, false);
+  $("q").value = "Digital Marketing"; renderMockSample("Digital Marketing");
   $("status").textContent = "Sample data (mock) reloaded";
 });
+$("pfSaveM")?.addEventListener("click", () => {
+  const name = $("pfNameM").value.trim();
+  const kws = $("pfKwsM").value.split(/\n|,/).map(s => s.trim()).filter(Boolean);
+  if(!name || !kws.length){ $("status").textContent = "Mock profile: กรอกชื่อ + keywords ก่อน"; $("status").className = "status err"; return; }
+  const opt = document.createElement("option");
+  opt.value = "mock-" + Date.now().toString(36);
+  opt.textContent = `${name} (${kws.length} คำ)`;
+  $("profileSel").appendChild(opt);
+  $("profileSel").value = opt.value;
+  $("q").disabled = true;
+  showKwTabs(kws);
+  $("status").textContent = "Profile (mock) saved";
+  $("status").className = "status";
+});
+document.querySelectorAll("[data-pfed-mock]").forEach(b => b.addEventListener("click", () => {
+  $("pfNameM").value = "Profile 1 — ITOPPLUS";
+  $("pfKwsM").value = "Digital Marketing\nSEO\nLocal SEO\nเว็บขายของ";
+  $("status").textContent = "Edit (mock): แก้ชื่อ/keywords แล้วกด Add profile";
+}));
+document.querySelectorAll("[data-pfdel-mock]").forEach(b => b.addEventListener("click", () => {
+  $("status").textContent = "Delete (mock) — ปุ่มนี้ไม่ลบจริงในหน้า mock";
+  $("status").className = "status";
+}));
 $("btnWipe").addEventListener("click", () => {
   try{ localStorage.removeItem(HIST_KEY); }catch{}
-  $("q").value = "Digital Marketing"; renderChips(); renderSettings(); render(MOCK, false);
+  $("q").value = "Digital Marketing"; renderChips(); renderSettings(); renderMockSample("Digital Marketing");
   $("status").textContent = "Reset: keyword = Digital Marketing + mock loaded";
 });
 
 /* init — mock ทุกหน้า */
+if(new URLSearchParams(location.search).get("loadDemo")){
+  showLoading("กำลังดึงข้อมูล…", "YouTube, TikTok · 30 วัน");
+  setLoadingProgress(1, 3, "เว็บขายของ");
+}
+renderSrcSummary();
 renderChips();
 renderSettings();
-render(MOCK, false);
+renderMockSample("Digital Marketing");
 renderSources();
 renderTermsPage();
 renderIdeas();
@@ -1216,7 +2817,7 @@ setBadge("crm", CRM_LEADS.length);
 setBadge("competitors", COMP_DATA.length);
 setBadge("ads", ADS_CAMPAIGNS.length);
 setBadge("tasks", TASKS.length);
-$("status").textContent = `Sample data (mock) · keyword: Digital Marketing · ITOPPLUS · ${MOCK.items.length} items — press Fetch now for live data`;
+$("status").textContent = `Sample data (mock) · keyword: Digital Marketing · ITOPPLUS · ${MOCK.items.length} items — press Fetch now to simulate`;
 $("status").className = "status";
 /* deep-link: เปิด /?page=sources หรือ __START= มาตรงหน้า (ใช้แคปภาพด้วย) */
 (() => {

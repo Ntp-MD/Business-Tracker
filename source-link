@@ -1,0 +1,25 @@
+# ช่องทางที่ดึงข้อมูลได้ (อัปเดต 2026-11-13)
+
+## ✅ ใช้ได้ตอนนี้ (5 ช่องทาง)
+
+| # | Source key | ช่องทาง | วิธีดึง | login | วันที่ / Fresh window | ข้อมูลที่ได้ |
+|---|------------|---------|---------|-------|----------------------|--------------|
+| 1 | `youtube` | YouTube Search | scrape `ytInitialData` (stdlib) | ไม่ต้อง | ✅ `publishedTimeText` → 7/30/365 วัน | ชื่อ, views, channel, thumbnail |
+| 2 | `gnews` | Google News TH | RSS (`news.google.com/rss`) | ไม่ต้อง | ✅ `pubDate` + `when:` → 7/30/365 วัน | headline, วันที่, ลิงก์ |
+| 3 | `tiktok` | TikTok (organic) | Playwright เปิด search page แล้วอ่าน JSON ของหน้า (`createTime`, `playCount`) | ไม่ต้อง (session ได้ถ้าอยาก) | ✅ `createTime` → 7/30/365 วัน | desc, plays, author, วันที่ |
+| 4 | `fbads` | FB Ads (Meta Ad Library) | Playwright เปิด `facebook.com/ads/library` (keyword, TH, active) | ไม่ต้อง | active ads (ไม่ prune) | advertiser, ad copy, Library ID, วันเริ่ม |
+| 5 | `ttads` | TikTok Ads (Creative Center) | Playwright เปิด `ads.tiktok.com/business/creativecenter/.../topads` (TH) | ไม่ต้อง | ✅ period 7/30/180 วัน | ชื่อแอด, likes, CTR, ลิงก์ |
+
+## ❌ ใช้ไม่ได้ / ตัดออกแล้ว
+
+| ช่องทาง | สถานะ | เหตุผล |
+|---------|-------|--------|
+| Facebook organic (video search) | ตัดออก 2026-11-13 | เจอ login wall, ไม่มีวันที่ใน search DOM, ข้อมูลไม่จริง |
+| Instagram | ยังไม่ทำ | ไม่มี public search ที่ไม่ต้อง login |
+| LINE | ไม่ทำ | ไม่มี public trend surface |
+| Google / Bing / DuckDuckGo / Brave search (scrape) | ใช้ไม่ได้ | บล็อก automation: Google `sorry` page, Bing challenge, DDG 202 anomaly, Brave 429, Mojeek 403, Ecosia 403 |
+
+## หมายเหตุ
+- `mode: "public" | "session"` ใช้กับ TikTok เท่านั้น (session = `sessions/tiktok` จาก `python pw_login.py tiktok`)
+- `max_age_days` ใน `POST /api/fetch`: 7 / 30 / 365 / 0 (ทั้งหมด) — prune เฉพาะ youtube/gnews/tiktok
+- Ads ไม่ถูก prune เพราะ active ad = ยังใช้งานอยู่; TikTok Ads ไม่กรองตาม keyword (เป็น top ads ของ TH ตาม period)
