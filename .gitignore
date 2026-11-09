@@ -2,6 +2,8 @@
 shots/
 # tasteskill checker artifacts (browser profiles, audit logs)
 .taste-skill/
+# installed skills (machine-only, keep on disk)
+.agents/
 # runtime caches created by server.py (disposable, ARCHITECTURE §6)
 data/
 assets/*.jpg
