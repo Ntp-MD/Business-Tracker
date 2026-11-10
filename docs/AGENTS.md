@@ -92,17 +92,20 @@ Never claim done before §9.6 passes in full. If only partial, say exactly which
 | File | Your use |
 |------|----------|
 | `docs/ARCHITECTURE.md` | Read fully first; all decisions live here |
+| `docs/QOL-PLAN.md` | Detailed 0.2 QOL plan (filters, sort, toast/undo, trash, archive QOL, load more) |
 | `docs/AGENTS.md` (this file) | How you work; binding rules; all |
-| `server.py` (repo root) | Only code you may create/replace; single file |
+| `server.py` (repo root) | Only backend code; single file |
+| `tests/` | stdlib `unittest` for dedup/import/clear — run `python -m unittest discover -s tests -t .` |
 | `pw_login.py` (repo root) | One-time headed login into `sessions/` (TikTok/FB) |
 | `social.db` | Legacy garbage from the old design — do not create; delete candidate if owner approves |
 | `data/` · `assets/` | Created on first run; disposable — delete to reset |
 | `app/dashboard.html`, `views/archive/page-*.html`, `gen_page.py` | Read-only context — never edit without explicit owner approval |
-| `app/dashboard-live.html` | Live UI. `<head>` links the three CSS layers and carries the page layout in one `<style>` |
-| `app/dashboard.html` | Mock. Uses the same three layers and its own inline layout `<style>` |
-| `app/variables.css` | Tokens only: `@font-face` + CSS variables for light/dark |
-| `app/base.css` | Global and tag defaults (appearance); no component classes |
-| `app/component.css` | Reusable appearance classes; no layout properties |
+| `live/index.html` | Live UI (`/live/`). Links `assets/css/*.css`; no inline `<style>` |
+| `index.html` | Mock (`/`). Same CSS layers + its own `assets/css/layout.css` |
+| `assets/css/variables.css` | Tokens only: `@font-face` + CSS variables for light/dark |
+| `assets/css/base.css` | Global and tag defaults (appearance); no component classes |
+| `assets/css/component.css` | Reusable appearance classes; no layout properties |
+| `assets/css/layout.css`, `assets/css/layout-live.css` | Page layout extracted from the two HTML files (was inline `<style>`) |
 | `docs/DESGIN.md`, `assets/fonts/`, `shots/`, `logo.svg` | Not yours, never touched |
 
 ## 8. First moves for the implementing session

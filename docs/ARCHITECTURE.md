@@ -72,7 +72,7 @@ If a source dies mid-run → its message goes into `errors[]`, the run continues
 - Stdlib only — no pip, no venv needed
 - Manual only — no cron, no background jobs, no auto-fetch on start; **every disk write needs a button press**
 - Collect writes `items.json` + `index.json` + `assets/`; Analyze writes `analysis.json`; Summary/GET never writes
-- Idempotent — dedup by URL
+- Idempotent — 3 dedup layers: canonical URL (tracking/share variants merged), title key (same source), near-duplicate title for organic sources (`youtube`/`gnews`/`tiktok`, trigram Jaccard ≥ 0.90)
 - Disk is source of truth — no database; `data/` + `assets/` both disposable
 - Suggest = template — AI is opt-in later, never required
 - Mockup stays as-is — endpoints preserved; frontend edits only when owner explicitly asks
@@ -223,12 +223,16 @@ data/
 
 | Field | What it holds | Why |
 |--------|-----------|-----|
-| `url` | direct link | **dedup key** — already-known URLs are skipped |
-| `title` | full title text | core content |
+| `url` | direct link | original link, open in browser |
+| `canonical_url` | normalized link | **dedup layer 1** — strips `utm_*`/`fbclid`/share params, unifies YouTube/TikTok/FB Ad URL forms |
+| `title` | full title text | core content; layer 2 = exact normalized title per source, layer 3 = near-duplicate (trigram Jaccard ≥ 0.90, organic only) |
 | `body` | first 500 chars max | copyright + bloat cap |
 | `source` / `keyword` | `youtube` / `gnews`, search phrase | group/filter |
 | `author` | YT channel or GNews publisher | credit/context |
-| `score` | views (YouTube) / 0 (GNews) | hot ranking |
+| `score` | views (YouTube), plays (TikTok), likes (TikTok Ads) | ranking metric; 0 when the source exposes nothing |
+| `views` | actual view/play count or null | source metric kept separately so ads likes are not called views |
+| `metric` | `views` / `plays` / `likes` / `none` | UI label under each score |
+| `channel_url` | creator/channel/publisher link | YouTube channel, TikTok `@user`, GNews publisher; empty when not exposed |
 | `created` | raw date string (GNews RFC / YouTube empty) | raw kept |
 | `created_at` | UTC ISO8601 | cross-source sort |
 | `asset` | `"assets/{videoId}.jpg"` for YouTube items; empty for GNews | local thumbnail reference |
@@ -392,8 +396,26 @@ Discovery (TikTok/FB) → views · Trust (YouTube) → views/comments · Close (
 
 - `BaseHTTPRequestHandler`, fixed port 8000, localhost only
 - `GET /` → `app/dashboard.html`, `/logo.svg` → `app/logo.svg` raw files (both live in `app/` since 2026-11-06 reorg); `/fonts/*` served from `assets/fonts/`; `/assets/*` thumbnails; `/logo.webp` when present (path traversal guarded via `.resolve()` + `ROOT in rel.parents`)
-- `GET /api/summary?q=` → `analyze(q)` JSON (UTF-8 `ensure_ascii=False`; reads disk, no fetch)
-- `POST /api/fetch` → `collect(q)` → `analyze(q)` → JSON with `added`, `errors`, `fetched_at` (button: Fetch now)
+- `GET /api/summary?q=` → `analyze(q)` JSON (UTF-8 `ensure_ascii=False`; reads disk, no fetch). Omit `q` → returns the whole local store (All items view on first open)
+- `GET /api/progress` → live fetch heartbeat: `{active, keyword, source, stage, elapsed, since_update}`; collectors push stage strings while running (browser open → page load → wait → read). The loading modal polls it every 1.5 s: the stage line proves the server is moving, and > 60 s without a stage update (or 4 failed polls) turns it into a "not responding" warning. Read-only, never writes
+- `POST /api/fetch` → `collect(q)` → `analyze(q)` → JSON with `added`, `duplicates`, `errors`, `cancelled`, `fetched_at` (button: Search Now)
+- `POST /api/cancel` → asks the running fetch to stop before the next source/keyword; current collector finishes, partial results are saved
+- `GET /api/export[?q=]` → JSON envelope `{format, version, app_version, exported_at, keywords, count, items}` as a download
+- `GET /api/export.zip[?q=]` → zip with `items.json` + referenced `assets/*.jpg`
+- `POST /api/import` → JSON envelope or zip body; validates `format`/`version`, canonical dedup per keyword, rebuilds index/analysis; returns `{added, duplicates, keywords, per_keyword}`
+- `GET /api/status` → `{app_version, items, keywords, data_bytes, assets, assets_bytes, sources, sessions}`; `sources` holds last success/error per collector
+- `GET /api/archive` → archived items (`archived_at` preserved)
+- `POST /api/archive {items:[{keyword,url}]}` → move active items to `data/archive.json` (bulk)
+- `POST /api/archive/restore {items}` → move archived items back to active (skips URL conflicts)
+- `DELETE /api/archive {items}` → permanently delete archived items + unused thumbnails
+- `POST /api/items/bulk {action:"delete"|"move", items, to_keyword?}` → bulk delete/move active items
+- `POST /api/items` → create a manual/imported item (`url` + `keyword` required); dedup rules apply; returns `{added, duplicates, item}`
+- `PUT /api/items {keyword, url, patch}` → edit title/body/author/channel/keyword/score/views/metric of one item; rebuilds index/analysis
+- `DELETE /api/items {keyword, url}` → delete one item + its unused thumbnail; rebuilds index/analysis
+- `POST /api/clear-all` → wipe items/index/analysis/source-log and all thumbnails; **profiles are kept**
+- `POST /api/clear {q}` → deletes one keyword's items + analysis entry, removes unreferenced thumbnails; returns `{removed, total}`
+- `POST /api/refresh-stats {q, sources?}` → re-reads view/play/like counts for existing items only (YouTube watch page per item, TikTok/TikTok Ads re-scrape); never adds items; returns `{updated, total, errors, cancelled}`
+- `POST /api/prune {days}` → deletes dated organic items older than N days across all keywords (ads stay), refreshes index/analysis, removes orphan thumbnails
 - `POST /api/analyze` → `analyze(q)` only, no fetch (button: Analyze); JSON with `analysis`, `fetched_at`
 - Only POST presses write to disk; GET endpoints never write; no auto-run on server start
 - 404 for anything else; `log_message` silenced
@@ -404,11 +426,17 @@ Discovery (TikTok/FB) → views · Trust (YouTube) → views/comments · Close (
 |------|-------------|----------------|
 | Installer | **none** — owner runs locally only: `python server.py` (one command) | installer decision removed (owner), installer must not reappear without sign-off |
 | Sources | YouTube (stdlib scrape) + Google News TH (stdlib RSS) + TikTok via Playwright, 2 modes: `public` (no login, works) vs `session` (logged-in profile in `sessions/`, optional); ad libraries: FB Ad Library (keyword, TH, active) + TikTok Creative Center Top Ads (TH, period) — public pages, no login | Thai market, free, no key; Facebook organic dropped (owner 2026-11-13): login wall, no dates |
-| Freshness | `POST /api/fetch` takes `max_age_days` (UI: 7 / 30 / 365 / ทั้งหมด, default 30). YouTube adds upload-date `sp` + parses `publishedTimeText`; GNews adds `when:` + filters `pubDate`; TikTok reads `createTime` from the search page's own JSON; TikTok Ads uses the page's period filter (7/30/180d); prune applies only to dated organic sources (`youtube`/`gnews`/`tiktok`) — ads stay because active ads are current by definition | owner: content must be recent, not "all years"; search engines block automation (tested Google/Bing/DDG/Brave/Mojeek), so use platform pages instead |
-| Profiles | keyword profiles stored on disk: `data/profiles.json` (name + keywords[] + sources[]); `/api/profiles` CRUD; `POST /api/fetch` accepts `profile_id` + `mode` (`public`\|`session` for TikTok/FB) (collects every keyword × source sequentially, dedup by `url`); UI: picker + mode in fetch strip, manage in Settings, per-keyword tabs, Top items table has per-platform tabs and filters rows | multi-keyword preset, no DB, no new deps |
+| Freshness | `POST /api/fetch` takes `max_age_days` (UI: 1 / 3 / 7 / 15 / 30 / ทั้งหมด, default 30; 1/3 map to the nearest supported 7d source window, then prune by real date). YouTube adds upload-date `sp` + parses `publishedTimeText`; GNews adds `when:` + filters `pubDate`; TikTok reads `createTime` from the search page's own JSON; TikTok Ads uses the page's period filter (7/30/180d); prune applies only to dated organic sources (`youtube`/`gnews`/`tiktok`) — ads stay because active ads are current by definition | owner: content must be recent, not "all years"; search engines block automation (tested Google/Bing/DDG/Brave/Mojeek), so use platform pages instead |
+| Profiles | keyword profiles stored on disk: `data/profiles.json` (name + keywords[] + sources[]); `/api/profiles` CRUD; `POST /api/fetch` accepts `profile_id` + `mode` (`public`\|`session` for TikTok/FB) (collects every keyword × source sequentially, dedup by canonical URL + title layers); UI: picker + mode in fetch strip, manage in Settings, per-keyword tabs, Top items table has per-platform tabs and filters rows | multi-keyword preset, no DB, no new deps |
 | Thai top terms | plain Counter, broken output accepted | avoid adding pythainlp until needed |
-| Storage | **disk JSON** — `data/items.json` (merged on `url`, atomic rename) + `data/index.json` (derived rollup) + `data/analysis.json` (advice to read) | owner wants all data on disk; files inspectable/resettable; no database |
-| Frontend | **mock kept as-is** — `GET /api/summary` + `POST /api/fetch` contract preserved; analyze added as `POST /api/analyze` | mock goes live unchanged; dashboard edits only if owner explicitly asks |
+| Storage | **disk JSON** — `data/items.json` (dedup per keyword: canonical URL + title key + near-dup, atomic rename) + `data/archive.json` (bookmarked items + `archived_at`) + `data/index.json` (derived rollup) + `data/analysis.json` (advice, no `items` copy) + `data/sources.json` (last fetch status per collector) | owner wants all data on disk; files inspectable/resettable; no database |
+| Archive | per-item/ bulk bookmark: move active items out of `items.json` into `archive.json`, restore or delete permanently; thumbnails of archived items are kept until deleted | user wants a "keep for later" store without a database |
+| Backup | JSON export/import + zip with thumbnails, schema `social-tracker.items` v1; import is idempotent (same dedup, no overwrite) | data must survive disk loss/machine moves without a DB |
+| Cancel | loading modal has a stop button → `POST /api/cancel`; server stops before the next source, partial results kept | profile runs can take 10–15 min; closing the tab must not be the only exit |
+| Ads page | unlocked, renders collected `fbads` + `ttads` items (advertiser, copy, started, link) plus counts/last fetch; other 6 menu items stay locked | ads data already fetched; user-facing proof of what exists |
+| Local CRUD | profiles create/edit/delete; items create/edit/delete (URL/keyword are the identity); recent keywords add/delete; data export/import/clear/prune. `index.json` + `analysis.json` stay derived — never edited directly | owner wants to manage local data without hand-editing JSON |
+| Frontend | mock is a **static prototype** (`app/dashboard.html`), not the feature-parity target: export/import, cancel, live ads and locked menus live only in `dashboard-live.html` | avoid duplicating backend features manually; mock stays as design reference |
+| Tests | stdlib `unittest` in `tests/` (canonical URL, dedup layers, per-keyword identity, import/clear); manual API smoke for export/import/cancel/clear | no new dependencies; regression safety for dedup |
 | Thumbnails | **stored**: `assets/{videoId}.jpg`, YT `mqdefault.jpg` as-is, fail-soft | owner wants images cached locally; PDPA: public video thumbnails only |
 | Fragility | YouTube kept, wrapped fail-soft, error shown in UI; asset download failure never kills the item | GNews keeps working when YT markup changes; cache is opportunistic |
 | Config | none; port 8000 fixed | YAGNI |
@@ -421,12 +449,17 @@ Discovery (TikTok/FB) → views · Trust (YouTube) → views/comments · Close (
 ### 9.6 How we verify (done when all are true on a clean Windows + Python 3)
 
 1. `python server.py` → open `http://127.0.0.1:8000/dashboard-live.html` manually; `data/` + `assets/` get created; no database file appears
-2. Type keyword → Collect → rows land in `data/items.json` (valid JSON, same `url`s not duplicated); thumbnails appear in `assets/` for new YouTube items
+2. Type keyword → Search Now → rows land in `data/items.json` (valid JSON, same canonical URL/title not duplicated); thumbnails appear in `assets/` for new YouTube items
 3. Summary shows `by_source`, hot item, top terms; `data/index.json` written
-4. Kill YouTube (disconnect network) → Collect still returns GNews rows; `errors` shows `youtube: ...`; app never crashes
-5. Collect the same keyword twice → `total` unchanged (dedup works)
-6. Press Analyze → `data/analysis.json` written; JSON parses; advice renders inline
+4. Kill YouTube (disconnect network) → Search Now still returns GNews rows; `errors` shows `youtube: ...`; app never crashes
+5. Search the same keyword twice → `total` unchanged and the response reports `duplicates` (dedup works)
+6. Press Analyze → `data/analysis.json` written (summary only, no items); JSON parses; advice renders inline
 7. Delete `data/` + `assets/` → app still starts and re-creates them empty
+8. Export JSON + ZIP → re-import both → `added` 0, `duplicates` = item count (idempotent); files download with content-disposition
+9. Start a profile fetch → press Stop → response has `cancelled: true`; later sources do not run; partial results stay
+10. Settings → disk usage matches files; clear a test keyword → only that keyword's items disappear, orphan thumbnails removed
+11. Add item → edit title/score → delete → All items reflects each step; Clear all wipes items/analysis/thumbnails but keeps profiles
+12. Select 2 items → Archive → Archive page shows them, active count drops → Restore → active count returns; bulk Move/Delete works
 
 ### 9.7 What is not in parts 2 + 3
 

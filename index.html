@@ -1,12 +1,3440 @@
-<!doctype html>
-<html lang="th">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Business Tracker — ITOPPLUS</title>
-<meta http-equiv="refresh" content="0; url=app/dashboard.html">
-</head>
-<body>
-<p><a href="app/dashboard.html">Open dashboard</a></p>
-</body>
+﻿<!doctype html>
+<html lang="th" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Business · Social Tracker Analytics — ITOPPLUS</title>
+    <link rel="icon" href="app/logo.svg" type="image/svg+xml" />
+    <!-- Offline localhost: ไม่มี CDN นอกเครื่อง ใช้ system font ล้วน (ก่อนหน้าใช้ Inter/Anuphan จาก Google Fonts — ตัดออกเพื่อเปิดแบบไม่มีเน็ตได้) -->
+    <link rel="stylesheet" href="assets/css/variables.css" />
+    <link rel="stylesheet" href="assets/css/base.css" />
+    <link rel="stylesheet" href="assets/css/component.css" />
+    <link rel="stylesheet" href="assets/css/layout.css" />
+  </head>
+  <body>
+    <div class="app">
+      <!-- ================= Sidebar ================= -->
+      <aside class="sidebar" aria-label="Primary">
+        <div class="logo">
+          <svg class="logo-img" viewBox="0 0 320 92" role="img" aria-label="ITOPPLUS logo" style="color: var(--text)">
+            <rect class="logo-badge" x="2" y="14" width="64" height="64" rx="16" fill="#0f172a" />
+            <rect x="14" y="52" width="7" height="14" rx="2" fill="#94a3b8" />
+            <rect x="26" y="46" width="7" height="20" rx="2" fill="#cbd5e1" />
+            <rect x="38" y="40" width="7" height="26" rx="2" fill="#ffffff" />
+            <rect x="50" y="32" width="7" height="34" rx="2" fill="#22c55e" />
+            <text x="82" y="54" font-family="Segoe UI, Arial, sans-serif" font-size="40" font-weight="800" letter-spacing="-1" fill="currentColor">
+              ITOP
+              <tspan fill="#22c55e">PLUS</tspan>
+            </text>
+            <text class="logo-sub" x="84" y="76" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="600" letter-spacing="3.4" fill="#64748b">DIGITAL MARKETING</text>
+          </svg>
+        </div>
+        <nav class="nav">
+          <a href="#" data-page="overview" class="active"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7" rx="1.5" />
+              <rect x="14" y="3" width="7" height="7" rx="1.5" />
+              <rect x="3" y="14" width="7" height="7" rx="1.5" />
+              <rect x="14" y="14" width="7" height="7" rx="1.5" /></svg
+            >Overview</a
+          >
+          <a href="#" data-page="sources"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 7v13h16V7M4 7l2-4h12l2 4" /></svg>Sources<span class="badge-n">4</span></a
+          >
+          <a href="#" data-page="terms"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.5L3 21l2-5.6A8.5 8.5 0 1 1 21 11.5z" /></svg>Top Terms</a
+          >
+          <a href="#" data-page="ideas"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="9" cy="8" r="3.5" />
+              <path d="M2.5 20c.8-3.4 3.4-5 6.5-5s5.7 1.6 6.5 5" /></svg
+            >Content Ideas<span class="badge-n">18</span></a
+          >
+          <a href="#" data-page="items"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01" /></svg>All Items<span class="badge-n"
+              >64</span
+            ></a
+          >
+          <a href="#" data-page="archive"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="5" rx="1" />
+              <path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9M10 13h4" /></svg
+            >Archive<span class="badge-n">4</span></a
+          >
+          <a href="#" data-page="crm"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="9" cy="7" r="3.5" />
+              <path d="M3.5 20c.8-3.4 3.2-5 5.5-5s4.7 1.6 5.5 5" />
+              <circle cx="17" cy="9" r="2.6" />
+              <path d="M15.7 15.2c1.5-.6 3.4-.3 4.8 1.2" /></svg
+            >CRM / Leads<span class="badge-n">8</span></a
+          >
+          <a href="#" data-page="competitors"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 21v-4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v4" />
+              <circle cx="12" cy="7" r="4" />
+              <path d="M22 21v-4a2 2 0 0 0-1.5-1.94M16.5 3.05a4 4 0 0 1 0 7.9" /></svg
+            >Competitors<span class="badge-n">4</span></a
+          >
+          <a href="#" data-page="ads"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5-5 18-2.5-7.5L3 11z" /></svg>Ads Manager<span class="badge-n">6</span></a
+          >
+          <a href="#" data-page="calendar"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <path d="M8 2v4M16 2v4M3 10h18" /></svg
+            >Content Calendar</a
+          >
+          <a href="#" data-page="tasks"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 11l3 3L22 4" />
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg
+            >Tasks<span class="badge-n">6</span></a
+          >
+          <a href="#" data-page="reports"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <path d="M14 2v6h6M9 15l2 2 4-4" /></svg
+            >Reports</a
+          >
+          <a href="#" data-page="goals"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="9" />
+              <circle cx="12" cy="12" r="5" />
+              <circle cx="12" cy="12" r="1.3" fill="currentColor" /></svg
+            >Goal Tracker</a
+          >
+          <hr class="divider" />
+          <a href="#" data-page="settings"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.97 19.2a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.8 8.97a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.01A1.7 1.7 0 0 0 10.2 3.05V3a2 2 0 1 1 4 0v.09c0 .68.4 1.3 1.03 1.56.6.25 1.3.13 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.01c.26.63.88 1.03 1.56 1.03H21a2 2 0 1 1 0 4h-.09c-.68 0-1.3.4-1.56 1.03z"
+              /></svg
+            >Settings</a
+          >
+          <a href="#" onclick="return false;"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <path d="M16 17l5-5-5-5M21 12H9" /></svg
+            >Log out</a
+          >
+        </nav>
+        <div class="help-card">
+          <span class="proto-tag">PROTOTYPE · mock data — not production</span>
+        </div>
+      </aside>
+
+      <!-- ================= Main ================= -->
+      <div class="main" id="top">
+        <div class="topbar">
+          <h1>Analytics</h1>
+          <span class="date-pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <path d="M16 2v4M8 2v4M3 10h18" />
+            </svg>
+            <span id="dateRange">—</span>
+          </span>
+          <div class="top-actions">
+            <div class="theme-toggle" aria-label="Toggle theme">
+              <svg class="tgl-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+              </svg>
+              <button class="switch" id="themeSwitch" role="switch" aria-checked="false" aria-label="Dark mode"></button>
+              <svg class="tgl-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>
+            </div>
+            <div class="user"><span class="avatar">IT</span><span class="uname">ITOPPLUS</span></div>
+          </div>
+          <div class="page-sub" id="pageSub">Overview · Digital Marketing · sample data (mock)</div>
+        </div>
+
+        <nav class="mobile-nav" aria-label="Mobile">
+          <a href="#" data-page="overview" class="active">Overview</a><a href="#" data-page="sources">Sources</a> <a href="#" data-page="terms">Top Terms</a><a href="#" data-page="ideas">Ideas</a>
+          <a href="#" data-page="items">Items</a><a href="#" data-page="archive">Archive</a><a href="#" data-page="crm">CRM</a> <a href="#" data-page="ads">Ads</a
+          ><a href="#" data-page="competitors">Competitors</a><a href="#" data-page="calendar">Calendar</a> <a href="#" data-page="tasks">Tasks</a><a href="#" data-page="reports">Reports</a>
+          <a href="#" data-page="goals">Goals</a><a href="#" data-page="settings">Settings</a>
+        </nav>
+
+        <!-- Fetch strip (global) -->
+        <div class="fetch-strip">
+          <div class="fetch-main">
+            <div class="field">
+              <label for="profileSel">โปรไฟล์</label>
+              <select id="profileSel">
+                <option value="">Keyword ใหม่</option>
+                <option value="mock1" selected>Profile 1 — ITOPPLUS (mock)</option>
+              </select>
+            </div>
+            <div class="field grow">
+              <label for="q">Keyword</label>
+              <input type="text" id="q" value="Digital Marketing" placeholder="ใส่ keyword ที่ต้องการค้นหา…" />
+            </div>
+            <div class="field">
+              <span class="field-label" id="srcLabel">Sources</span>
+              <details class="src-pop" id="srcPop">
+                <summary aria-labelledby="srcLabel">
+                  <span id="srcSummary">YouTube</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+                </summary>
+                <div class="src-picker" id="srcPicker" role="group" aria-label="fetch sources">
+                  <label class="src-option"
+                    ><input type="checkbox" value="youtube" checked /><span class="src-main"
+                      ><span class="src-name">YouTube</span><span class="src-detail" title="youtube.com/results — scrape ytInitialData (stdlib)">youtube.com/results · stdlib scrape</span></span
+                    ></label
+                  >
+                  <label class="src-option"
+                    ><input type="checkbox" value="gnews" /><span class="src-main"
+                      ><span class="src-name">ข่าว (GNews)</span><span class="src-detail" title="news.google.com/rss/search — RSS">news.google.com/rss · RSS</span></span
+                    ></label
+                  >
+                  <label class="src-option"
+                    ><input type="checkbox" value="tiktok" /><span class="src-main"
+                      ><span class="src-name">TikTok</span><span class="src-detail" title="tiktok.com/search — Playwright + JSON (public/session)">tiktok.com/search · Playwright</span></span
+                    ></label
+                  >
+                  <label class="src-option"
+                    ><input type="checkbox" value="fbads" /><span class="src-main"
+                      ><span class="src-name">FB Ads</span><span class="src-detail" title="facebook.com/ads/library — Playwright public (TH, active)">facebook.com/ads/library · Playwright</span></span
+                    ></label
+                  >
+                  <label class="src-option"
+                    ><input type="checkbox" value="ttads" /><span class="src-main"
+                      ><span class="src-name">TikTok Ads</span
+                      ><span class="src-detail" title="ads.tiktok.com/business/creativecenter/inspiration/topads/pc/en — Playwright public (TH)">ads.tiktok.com/creativecenter · Playwright</span></span
+                    ></label
+                  >
+                </div>
+              </details>
+            </div>
+            <div class="field">
+              <label for="fetchMode">Mode</label>
+              <select id="fetchMode">
+                <option value="public">Public</option>
+                <option value="session">Login session</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="freshDays">Fresh</label>
+              <select id="freshDays">
+                <option value="1">1 วัน</option>
+                <option value="3">3 วัน</option>
+                <option value="7">7 วัน</option>
+                <option value="15">15 วัน</option>
+                <option value="30" selected>30 วัน</option>
+                <option value="0">ทั้งหมด</option>
+              </select>
+            </div>
+            <button class="btn btn-primary fetch-btn" id="btnFetch">Search Now</button>
+          </div>
+          <div class="chips" id="chips"></div>
+          <div class="status" id="status" role="status" aria-live="polite"></div>
+        </div>
+        <div class="kw-tabs" id="kwTabs" style="display: none; gap: 7px; flex-wrap: wrap; margin: -2px 2px 12px"></div>
+        <div class="loading-overlay" id="loadModal" hidden>
+          <div class="loading-card" role="dialog" aria-modal="true" aria-labelledby="loadTitle">
+            <div class="loading-head">
+              <div class="loading-spin" aria-hidden="true"></div>
+              <div>
+                <div class="loading-title" id="loadTitle">กำลังดึงข้อมูล…</div>
+                <div class="loading-sub" id="loadSub">กำลังเก็บข้อมูลจากช่องทางที่เลือก</div>
+              </div>
+            </div>
+            <div class="loading-bar"><div class="loading-fill" id="loadFill"></div></div>
+            <div class="loading-stage" id="loadStage">กำลังเริ่ม…</div>
+            <div class="loading-meta">
+              <span class="loading-name" id="loadName">—</span>
+              <span class="loading-count" id="loadCount"></span>
+            </div>
+            <div class="loading-hint">รอจนจบ — อย่าปิดหน้านี้ · <span id="loadClock">0:00</span></div>
+            <button class="btn btn-ghost loading-cancel" id="loadCancel">หยุดการค้นหา</button>
+          </div>
+        </div>
+
+        <!-- 2.15 mock parity: confirm dialog (replaces native confirm) -->
+        <div class="loading-overlay" id="confirmModal" hidden>
+          <div class="loading-card dialog-card" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+            <div class="loading-head">
+              <div>
+                <div class="loading-title" id="confirmTitle">ยืนยัน</div>
+                <div class="loading-sub" id="confirmMsg"></div>
+              </div>
+              <button class="btn btn-ghost loading-cancel" id="confirmClose" aria-label="ปิด" style="margin-left: auto">×</button>
+            </div>
+            <div class="dialog-actions">
+              <button class="btn btn-danger" id="confirmOk">ยืนยัน</button>
+              <button class="btn btn-ghost" id="confirmCancel">ยกเลิก</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2.15 mock parity: move keyword dialog (replaces native prompt) -->
+        <div class="loading-overlay" id="moveModal" hidden>
+          <div class="loading-card dialog-card" role="dialog" aria-modal="true" aria-labelledby="moveTitle">
+            <div class="loading-head">
+              <div>
+                <div class="loading-title" id="moveTitle">ย้าย keyword</div>
+                <div class="loading-sub" id="moveSub"></div>
+              </div>
+              <button class="btn btn-ghost loading-cancel" id="moveClose" aria-label="ปิด" style="margin-left: auto">×</button>
+            </div>
+            <div class="item-form">
+              <label class="item-field"
+                ><span>ย้ายไป keyword</span
+                ><select id="moveSelect"></select
+              ></label>
+              <label class="item-field" id="moveNewField" hidden><span>ชื่อ keyword ใหม่</span><input type="text" id="moveNew" placeholder="พิมพ์ keyword ใหม่" /></label>
+            </div>
+            <div class="dialog-actions">
+              <button class="btn btn-primary" id="moveOk">ย้าย</button>
+              <button class="btn btn-ghost" id="moveCancel">ยกเลิก</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2.15 mock parity: toast host (bottom-right, role=status) -->
+        <div class="toast-host" id="toastHost" aria-live="polite" aria-atomic="false"></div>
+
+        <!-- ============ PAGE: ภาพรวม ============ -->
+        <section class="page active" id="page-overview">
+          <div class="kpis">
+            <div class="card kpi">
+              <div class="label">
+                <span>Items saved</span
+                ><span class="kpi-ic"
+                  ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="5" width="18" height="14" rx="2" />
+                    <path d="M3 9h18" /></svg
+                ></span>
+              </div>
+              <div class="big" id="stTotal">0</div>
+              <div class="delta"><small>Saved to disk · unique URL</small></div>
+            </div>
+            <div class="card kpi">
+              <div class="label">
+                <span>Sources</span
+                ><span class="kpi-ic"
+                  ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="3" />
+                    <path d="M8 12l2.5 2.5L16 9" /></svg
+                ></span>
+              </div>
+              <div class="big" id="stSrc">0</div>
+              <div class="delta"><small id="stSrcNote">—</small></div>
+            </div>
+            <div class="card kpi kpi-donut">
+              <div class="label"><span>Total score</span></div>
+              <div class="donut-wrap">
+                <div class="donut" id="donutUsers" title="score share by source"></div>
+                <div class="kpi-vals">
+                  <div class="big" id="stScore">0</div>
+                  <div class="delta"><small>score share by source</small></div>
+                </div>
+              </div>
+              <div class="donut-legend" id="legendUsers"></div>
+            </div>
+            <div class="card kpi kpi-top">
+              <div class="label">
+                <span>Top item</span
+                ><span class="kpi-ic"
+                  ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.6 5.6 6.4.8-4.7 4.3 1.3 6.3L12 17l-5.6 3 1.3-6.3L3 9.4l6.4-.8z" /></svg
+                ></span>
+              </div>
+              <div class="big" id="stTop">0</div>
+              <div class="top-title" id="stTopTitle">—</div>
+              <div class="delta"><small id="stTopMeta">—</small></div>
+            </div>
+          </div>
+
+          <div class="bottom">
+            <div class="card">
+              <div class="tbl-head">
+                <h3 id="topItemsTitle">Top items</h3>
+                <div class="tbl-tabs" id="topItemsTabs" role="tablist" aria-label="Top items by platform"></div>
+                <button class="btn btn-ghost" data-goto="items" style="padding: 6px 12px; font-size: 12px">View all →</button>
+              </div>
+              <div class="tbl-scroll" id="tableWrap"><div class="empty">No data yet</div></div>
+            </div>
+            <div class="side-stack">
+              <div class="card">
+                <div class="card-head">
+                  <h3>Top terms (summary)</h3>
+                  <button class="btn btn-ghost" data-goto="terms" style="padding: 6px 12px; font-size: 12px">Details →</button>
+                </div>
+                <div class="terms" id="termsBox"></div>
+              </div>
+              <div class="card">
+                <div class="card-head">
+                  <h3>Content ideas (summary)</h3>
+                  <button class="btn btn-ghost" data-goto="ideas" style="padding: 6px 12px; font-size: 12px">All ideas →</button>
+                </div>
+                <ul class="suggest" id="suggest"></ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="mid">
+            <div class="card chart-card">
+              <div class="card-head">
+                <h3>Score by source</h3>
+                <span class="chart-note">Total score</span>
+              </div>
+              <div class="bars" id="bars"></div>
+            </div>
+            <div class="mid-side">
+              <div class="card inv">
+                <div class="label"><span>Average score</span></div>
+                <div class="amount" id="invScore">0</div>
+                <div class="sub">Per scored item</div>
+              </div>
+              <div class="card inv">
+                <div class="label"><span>Keyword coverage</span></div>
+                <div class="amount" id="invCover">0</div>
+                <div class="sub">Top terms found</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="extra">
+            <div class="card">
+              <div class="card-head">
+                <h3>Score distribution</h3>
+                <span class="chart-note" id="scoreNote">—</span>
+              </div>
+              <div class="line-box"><svg id="line" viewBox="0 0 800 200" preserveAspectRatio="none" role="img" aria-label="Score distribution line chart"></svg></div>
+              <div class="metric-grid" style="margin-top: 12px">
+                <div class="m"><b id="scoreHigh">0</b><span>Highest score</span></div>
+                <div class="m"><b id="scoreLow">0</b><span>Lowest score</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Deep: fanpagekarma + wisesight style -->
+          <div class="deep">
+            <div class="card">
+              <div class="card-head">
+                <h3>Follower growth (30 days)</h3>
+                <span class="chart-note">All channels</span>
+              </div>
+              <div class="line-box" style="height: 130px"><svg id="growthLine" viewBox="0 0 800 160" preserveAspectRatio="none" aria-hidden="true"></svg></div>
+              <div class="metric-grid" style="margin-top: 10px">
+                <div class="m"><b>12,450</b><span>Total followers (Facebook 5,850 · TikTok 4,120 · IG 2,480)</span></div>
+                <div class="m"><b style="color: var(--link)">+1,284 (+11.5%)</b><span>30-day growth (+6.2% vs prior month)</span></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-head">
+                <h3>Engagement rate</h3>
+                <span class="chart-note">Per post</span>
+              </div>
+              <div id="chanER"></div>
+              <div class="metric-grid" style="margin-top: 10px">
+                <div class="m"><b>4.82%</b><span>30-day average</span></div>
+                <div class="m"><b style="color: var(--link)">+0.64%</b><span>vs prior 30 days</span></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-head">
+                <h3>Sentiment</h3>
+                <span class="chart-note">Positive · Neutral · Negative</span>
+              </div>
+              <div id="sentiBox"></div>
+              <div class="metric-grid" style="margin-top: 10px">
+                <div class="m"><b>1,239</b><span>Posts mentioning this keyword (30 days)</span></div>
+                <div class="m"><b>38%</b><span>Share from 5 competitors</span></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ PAGE: แหล่งข้อมูล ============ -->
+        <section class="page" id="page-sources">
+          <div class="page-head">
+            <h2>Sources</h2>
+            <span class="hint">YouTube + Google News · mock figures by source</span>
+          </div>
+          <div class="src-grid" id="srcCards"></div>
+          <div class="card" style="margin-top: 16px">
+            <div class="card-head">
+              <h3>Per-source detail (mock)</h3>
+              <span class="select-like">Updated 3 min ago</span>
+            </div>
+            <div class="tbl-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Source</th>
+                    <th>Count</th>
+                    <th>Share</th>
+                    <th>Total score</th>
+                    <th>Avg score</th>
+                    <th>Last fetch</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="srcRows"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card" style="margin-top: 16px">
+            <div class="card-head">
+              <h3>Channel performance</h3>
+              <span class="select-like">Compare channels</span>
+            </div>
+            <div class="tbl-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Channel</th>
+                    <th>Followers</th>
+                    <th>Posts/wk</th>
+                    <th>Avg reach</th>
+                    <th>ER%</th>
+                    <th>30-day growth</th>
+                    <th>Benchmark</th>
+                  </tr>
+                </thead>
+                <tbody id="chanRows"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card" style="margin-top: 16px">
+            <div class="card-head">
+              <h3>Top mentioned pages</h3>
+              <span class="select-like">Top voices for this keyword</span>
+            </div>
+            <div class="tbl-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Page / Influencer</th>
+                    <th>Platform</th>
+                    <th>Followers</th>
+                    <th>Mentions</th>
+                    <th>Reach</th>
+                    <th>Sentiment</th>
+                  </tr>
+                </thead>
+                <tbody id="mentionRows"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ PAGE: คำยอดฮิต ============ -->
+        <section class="page" id="page-terms">
+          <div class="page-head">
+            <h2>Top Terms</h2>
+            <span class="hint">Counted offline from title + body on every fetch</span>
+          </div>
+          <div class="card">
+            <div class="tbl-head">
+              <h3 id="termsCount">12 terms</h3>
+              <input type="text" class="filter" id="filterTerms" placeholder="Search terms…" />
+            </div>
+            <div class="tbl-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Term</th>
+                    <th>Count</th>
+                    <th>Share</th>
+                    <th>7-day trend</th>
+                    <th>Sentiment</th>
+                    <th>Top channel</th>
+                    <th>Use for</th>
+                  </tr>
+                </thead>
+                <tbody id="termRows"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="deep" style="margin-top: 16px">
+            <div class="card">
+              <div class="card-head">
+                <h3>Mention volume (7 days)</h3>
+                <span class="select-like">keyword: Digital Marketing</span>
+              </div>
+              <div class="bars" id="volBars" style="height: 120px"></div>
+            </div>
+            <div class="card">
+              <div class="card-head">
+                <h3>Share of voice (SOV)</h3>
+                <span class="select-like">vs 4 competitors</span>
+              </div>
+              <div id="sovBox"></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h3>Trending hashtags</h3></div>
+              <div class="terms" id="hashBox"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ PAGE: ไอเดียคอนเทนต์ ============ -->
+        <section class="page" id="page-ideas">
+          <div class="page-head">
+            <h2>Content ideas</h2>
+            <span class="hint">Built from ITOPPLUS top source + top terms</span>
+          </div>
+          <div class="idea-grid" id="ideaGrid"></div>
+          <div class="deep" style="margin-top: 16px">
+            <div class="card">
+              <div class="card-head">
+                <h3>Best posting time</h3>
+                <span class="select-like">Hourly</span>
+              </div>
+              <div class="tbl-scroll">
+                <table class="heatmap">
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>6-9am</th>
+                      <th>9-12pm</th>
+                      <th>12-3pm</th>
+                      <th>3-6pm</th>
+                      <th>6-9pm</th>
+                      <th>9-12am</th>
+                    </tr>
+                  </thead>
+                  <tbody id="heatRows"></tbody>
+                </table>
+              </div>
+              <div class="heat-scale">
+                <span>Low</span><span style="display: inline-block; width: 60px; height: 8px; border-radius: 999px; background: linear-gradient(90deg, #dcfce7, #22c55e, #15803d)"></span
+                ><span>High = post here</span>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h3>Content performance (30 days)</h3></div>
+              <div class="tbl-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Content</th>
+                      <th>Type</th>
+                      <th>Reach</th>
+                      <th>Engagement</th>
+                      <th>ER%</th>
+                    </tr>
+                  </thead>
+                  <tbody id="perfRows"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h3>Posting plan (this week)</h3></div>
+              <div id="planBox" style="display: flex; flex-direction: column; gap: 8px"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ PAGE: รายการทั้งหมด ============ -->
+        <section class="page" id="page-items">
+          <div class="page-head">
+            <h2>All items (64)</h2>
+            <span class="hint">Sort by score desc · click opens source link · ER = score/followers (mock)</span>
+          </div>
+          <div class="card">
+            <div class="tbl-head">
+              <h3>All items</h3>
+              <div class="item-tools">
+                <input type="text" class="filter" id="filterFull" placeholder="Filter title/source…" aria-label="Filter all items" />
+                <span class="filter-lbl">วันที่</span>
+                <input type="date" class="filter date-filter" id="filterFrom" aria-label="From date" title="ตั้งแต่วันที่" />
+                <span class="date-sep" aria-hidden="true">–</span>
+                <input type="date" class="filter date-filter" id="filterTo" aria-label="To date" title="ถึงวันที่" />
+                <span class="quick-dates" role="group" aria-label="Quick date range">
+                  <button type="button" class="chip qd" data-quick="today">วันนี้</button>
+                  <button type="button" class="chip qd" data-quick="7">7 วัน</button>
+                  <button type="button" class="chip qd" data-quick="30">30 วัน</button>
+                </span>
+                <button class="btn btn-ghost" id="btnClearFilters">ล้าง</button>
+              </div>
+            </div>
+            <div class="tbl-tabs items-platform" id="itemsPlatformTabs" role="tablist" aria-label="Filter all items by platform"></div>
+            <div class="bulk-bar" id="bulkBar" hidden>
+              <b id="bulkCount">0 selected</b>
+              <div class="bulk-actions">
+                <button class="btn btn-ghost" id="bulkArchive">Archive</button>
+                <button class="btn btn-ghost" id="bulkMove">Move keyword…</button>
+                <button class="btn btn-danger" id="bulkDelete">Delete</button>
+                <button class="btn btn-ghost" id="bulkClear">Clear</button>
+              </div>
+            </div>
+            <div class="tbl-scroll" id="tableFullWrap"></div>
+            <div class="pager" id="pager" hidden>
+              <span id="pagerCount"></span>
+              <label class="filter-lbl" for="pageSize">แสดง</label>
+              <select class="filter" id="pageSize" aria-label="Page size" style="min-width: 88px; padding: 6px 8px">
+                <option value="50">50</option>
+                <option value="100" selected>100</option>
+                <option value="250">250</option>
+                <option value="0">All</option>
+              </select>
+              <button class="btn btn-ghost" id="btnLoadMore" style="min-height: 34px; padding: 6px 14px">Load more</button>
+            </div>
+          </div>
+          <div class="card" style="margin-top: 16px">
+            <div class="card-head">
+              <h3>Top 10 content</h3>
+              <span class="select-like">By reach</span>
+            </div>
+            <div class="tbl-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Reach</th>
+                    <th>Likes</th>
+                    <th>Comments</th>
+                    <th>Shares</th>
+                    <th>ER%</th>
+                  </tr>
+                </thead>
+                <tbody id="topContentRows"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ PAGE: Archive ============ -->
+        <section class="page" id="page-archive">
+          <div class="page-head">
+            <h2>Archive</h2>
+            <span class="hint" id="archiveHint">4 saved items · mock</span>
+          </div>
+          <div class="card">
+            <div class="tbl-head">
+              <h3>Archived items (mock)</h3>
+              <div class="item-tools">
+                <input type="text" class="filter" id="filterArchive" placeholder="Filter archive…" aria-label="Filter archive" />
+              </div>
+            </div>
+            <div class="tbl-tabs items-platform" id="archivePlatformTabs" role="tablist" aria-label="Filter archive by platform"></div>
+            <div class="bulk-bar" id="archiveBulkBar" hidden>
+              <b id="archiveBulkCount">0 selected</b>
+              <div class="bulk-actions">
+                <button class="btn btn-ghost" id="archiveRestoreAll">Restore all</button>
+                <button class="btn btn-ghost" id="archiveBulkRestore">Restore</button>
+                <button class="btn btn-danger" id="archiveBulkDelete">Delete permanently</button>
+                <button class="btn btn-ghost" id="archiveBulkClear">Clear</button>
+              </div>
+            </div>
+            <div class="tbl-scroll" id="archiveWrap"></div>
+          </div>
+        </section>
+
+        <!-- ============ PAGE: CRM / Leads ============ -->
+        <section class="page" id="page-crm">
+          <div class="page-head">
+            <h2>CRM / Leads</h2>
+            <span class="hint">lead funnel from FB / TikTok / LINE · by close-readiness</span>
+          </div>
+          <div class="kpis">
+            <div class="card kpi">
+              <div class="label">All leads (30 days)</div>
+              <div class="big">8</div>
+              <div class="delta up">↗ +3 vs last month</div>
+            </div>
+            <div class="card kpi">
+              <div class="label">Talking</div>
+              <div class="big">2</div>
+              <div class="delta"><small>Waiting on docs</small></div>
+            </div>
+            <div class="card kpi">
+              <div class="label">Quoted</div>
+              <div class="big">1</div>
+              <div class="delta"><small>Waiting 7 days</small></div>
+            </div>
+            <div class="card kpi">
+              <div class="label">Won</div>
+              <div class="big">1</div>
+              <div class="delta up">↗ Service fee 85,000</div>
+            </div>
+          </div>
+          <div class="kanban" id="crmBoard" style="margin-top: 16px"></div>
+        </section>
+
+        <!-- ============ PAGE: วิเคราะห์คู่แข่ง ============ -->
+        <section class="page" id="page-competitors">
+          <div class="page-head">
+            <h2>Competitors</h2>
+            <span class="hint">Tracking 4 competitors · SoV / ER / price / weaknesses — pick below</span>
+          </div>
+          <div class="kpis">
+            <div class="card kpi">
+              <div class="label">SoV ITOPPLUS</div>
+              <div class="big">38%</div>
+              <div class="delta up">↗ Up from 33% last month</div>
+            </div>
+            <div class="card kpi">
+              <div class="label">Tracked</div>
+              <div class="big">4</div>
+              <div class="delta"><small>A · B · C · DIY</small></div>
+            </div>
+            <div class="card kpi">
+              <div class="label">New alerts</div>
+              <div class="big">2</div>
+              <div class="delta"><small>Both run ads / discounts</small></div>
+            </div>
+            <div class="card kpi">
+              <div class="label">Top opportunity</div>
+              <div class="big">Local SEO</div>
+              <div class="delta up">Competitors idle</div>
+            </div>
+          </div>
+          <div class="card" style="margin-top: 16px">
+            <div class="card-head">
+              <h3>SoV vs 5 channels (Nov)</h3>
+              <span class="select-like">ITOPPLUS leads</span>
+            </div>
+            <div id="sovBars"></div>
+          </div>
+          <div class="card" style="margin-top: 16px">
+            <div class="card-head">
+              <h3>Per-competitor summary</h3>
+              <span class="select-like">Use tabs for detail</span>
+            </div>
+            <div class="tbl-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Competitor</th>
+                    <th>Top platform</th>
+                    <th>Followers</th>
+                    <th>ER</th>
+                    <th>Posts/wk</th>
+                    <th>Reach/post</th>
+                    <th>Pitch</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="compRows"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="comp-detail">
+            <div class="card">
+              <div class="comp-tabs" id="compTabs"></div>
+              <div id="compDetail"></div>
+            </div>
+            <div class="card">
+              <div class="card-head">
+                <h3>This week alerts</h3>
+                <span class="select-like">Auto-updated</span>
+              </div>
+              <div id="compAlerts"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ PAGE: Ads Manager ============ -->
+        <section class="page" id="page-ads">
+          <div class="page-head">
+            <h2>Ads Manager</h2>
+            <span class="hint">Current month ad spend · by FB/TikTok/IG/LINE · CPL/ROAS/CTR</span>
+          </div>
+          <div class="kpis">
+            <div class="card kpi">
+              <div class="label">Nov spend</div>
+              <div class="big">45,000</div>
+              <div class="delta up">↗ +15% vs last month</div>
+            </div>
+            <div class="card kpi">
+              <div class="label">Avg CPL</div>
+              <div class="big">฿210</div>
+              <div class="delta up">↘ −12% better</div>
+            </div>
+            <div class="card kpi">
+              <div class="label">ROAS</div>
+              <div class="big">3.4</div>
+              <div class="delta up">↗ Still profitable</div>
+            </div>
+            <div class="card kpi">
+              <div class="label">Clicks</div>
+              <div class="big">3,214</div>
+              <div class="delta"><small>CTR 2.8% · 21 clicks/day</small></div>
+            </div>
+          </div>
+          <div class="card" style="margin-top: 16px">
+            <div class="card-head">
+              <h3>Campaigns by channel</h3>
+              <span class="select-like">By budget</span>
+            </div>
+            <div class="tbl-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Campaign</th>
+                    <th>Channel</th>
+                    <th>Budget</th>
+                    <th>Reach</th>
+                    <th>Clicks</th>
+                    <th>CPL</th>
+                    <th>ROAS</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="adsRows"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ PAGE: Content Calendar ============ -->
+        <section class="page" id="page-calendar">
+          <div class="page-head">
+            <h2>Content Calendar</h2>
+            <span class="hint">7-day schedule · FB/TikTok/IG/LINE/YouTube · Draft/Approved/Scheduled</span>
+          </div>
+          <div class="kpis">
+            <div class="card kpi">
+              <div class="label">Posts this week</div>
+              <div class="big">15</div>
+              <div class="delta up">↗ All channels covered</div>
+            </div>
+            <div class="card kpi">
+              <div class="label">Approved</div>
+              <div class="big">8</div>
+              <div class="delta up">Ready to post</div>
+            </div>
+            <div class="card kpi">
+              <div class="label">Draft</div>
+              <div class="big">4</div>
+              <div class="delta"><small>Reviewing edits</small></div>
+            </div>
+            <div class="card kpi">
+              <div class="label">Scheduled</div>
+              <div class="big">3</div>
+              <div class="delta"><small>Shoot scheduled</small></div>
+            </div>
+          </div>
+          <div class="cal-week" id="calWeek" style="margin-top: 16px"></div>
+        </section>
+
+        <!-- ============ PAGE: Tasks ============ -->
+        <section class="page" id="page-tasks">
+          <div class="page-head">
+            <h2>Tasks</h2>
+            <span class="hint">Client work by team + status + SLA due</span>
+          </div>
+          <div class="kanban" id="taskBoard" style="margin-top: 4px"></div>
+        </section>
+
+        <!-- ============ PAGE: Reports ============ -->
+        <section class="page" id="page-reports">
+          <div class="page-head">
+            <h2>Reports</h2>
+            <span class="hint">Client-ready report · last 30 days on one page</span>
+          </div>
+          <div class="report-grid">
+            <div class="card">
+              <div class="card-head"><h3>ITOPPLUS overview (30 days)</h3></div>
+              <div class="metric-grid">
+                <div class="m"><b>182,600</b><span>Total reach, 5 channels</span></div>
+                <div class="m"><b>8.9%</b><span>Avg engagement</span></div>
+                <div class="m"><b>34</b><span>Real leads</span></div>
+                <div class="m"><b>12,450</b><span>Total followers (+11.5%)</span></div>
+                <div class="m"><b>4.2x</b><span>Avg ROAS, all campaigns</span></div>
+                <div class="m"><b>96%</b><span>Renewed this cycle</span></div>
+              </div>
+              <button class="btn btn-primary" style="margin-top: 14px" id="btnExport">Export PDF (demo)</button>
+            </div>
+            <div class="card">
+              <div class="card-head">
+                <h3>Client progress</h3>
+                <span class="select-like">% of target</span>
+              </div>
+              <div id="goalRowsMini"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ PAGE: Goal Tracker ============ -->
+        <section class="page" id="page-goals">
+          <div class="page-head">
+            <h2>Goal Tracker</h2>
+            <span class="hint">6 client targets vs actual — spot gaps before month-end</span>
+          </div>
+          <div class="card">
+            <div id="goalRows"></div>
+          </div>
+        </section>
+
+        <!-- ============ PAGE: ตั้งค่า ============ -->
+        <section class="page" id="page-settings">
+          <div class="page-head">
+            <h2>Settings</h2>
+            <span class="hint">Browser-only (localStorage) · mock sources: 5 ช่องทาง</span>
+          </div>
+          <div class="set-grid">
+            <div class="set-col">
+              <div class="card">
+                <div class="card-head"><h3>Keyword profiles</h3></div>
+                <div class="set-row">
+                  <div class="t"><b>Profile 1 — ITOPPLUS</b><span>Digital Marketing · SEO · Local SEO · เว็บขายของ · youtube, gnews, tiktok (mock)</span></div>
+                  <div style="display: flex; gap: 6px">
+                    <button class="btn btn-ghost" data-pfed-mock="1" style="padding: 6px 12px; font-size: 12px">Edit</button>
+                    <button class="btn btn-ghost" data-pfdel-mock="1" style="padding: 6px 12px; font-size: 12px">Delete</button>
+                  </div>
+                </div>
+                <div class="set-row wide">
+                  <div class="t"><b>ชื่อโปรไฟล์</b><span>รวมหลาย keyword + sources (mock — ไม่เก็บที่เซิร์เออร์)</span></div>
+                  <input type="text" class="set-input" id="pfNameM" placeholder="เช่น ITOPPLUS หลัก" aria-label="Mock profile name" />
+                </div>
+                <div class="set-row wide">
+                  <div class="t"><b>Keywords</b><span>บรรทัดละคำ หรือคั่นจุลภาค</span></div>
+                  <textarea id="pfKwsM" rows="4" aria-label="Mock profile keywords"></textarea>
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 8px">
+                  <button class="btn btn-primary" id="pfSaveM">Add profile</button>
+                </div>
+              </div>
+            </div>
+            <div class="set-col">
+              <div class="card">
+                <div class="card-head"><h3>Tracked keywords</h3></div>
+                <div id="kwList"></div>
+                <div class="set-row">
+                  <div class="t"><b>Add keyword</b><span>Adds a chip above</span></div>
+                  <div style="display: flex; gap: 8px">
+                    <input type="text" class="set-input" id="kwNew" placeholder="e.g. SEO" aria-label="New keyword" style="width: 130px" /><button class="btn btn-primary" id="kwAdd">Add</button>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-head"><h3>Sources (free)</h3></div>
+                <div id="srcToggles"></div>
+              </div>
+              <div class="card">
+                <div class="card-head"><h3>Data (mock)</h3></div>
+                <div class="set-row">
+                  <div class="t"><b>Reload sample data</b><span>Resets all pages to Digital Marketing mock</span></div>
+                  <button class="btn btn-ghost" id="btnResetMock">Load sample</button>
+                </div>
+                <div class="set-row">
+                  <div class="t"><b>Clear browser prefs</b><span>History + keyword + page (disk data stays)</span></div>
+                  <button class="btn btn-ghost" id="btnWipe">Reset</button>
+                </div>
+                <div class="set-row">
+                  <div class="t"><b>Theme</b><span>Light / Dark</span></div>
+                  <div style="display: flex; gap: 8px"><button class="btn btn-ghost" id="btnLight">Light</button><button class="btn btn-ghost" id="btnDark">Dark</button></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+
+      /* date pill */
+      (() => {
+        const d = new Date(),
+          p = (n) => String(n).padStart(2, "0");
+        const e = new Date(d);
+        e.setDate(e.getDate() - 29);
+        $("dateRange").textContent = `${p(e.getDate())}.${p(e.getMonth() + 1)}.${e.getFullYear()} - ${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()}`;
+      })();
+
+      /* theme */
+      const sw = $("themeSwitch");
+      function setTheme(t) {
+        document.documentElement.setAttribute("data-theme", t);
+        sw.setAttribute("aria-checked", String(t === "dark"));
+        try {
+          localStorage.setItem("st_theme", t);
+        } catch {}
+      }
+      try {
+        if (localStorage.getItem("st_theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");
+      } catch {}
+      sw.setAttribute("aria-checked", String(document.documentElement.getAttribute("data-theme") === "dark"));
+      sw.addEventListener("click", () => setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark"));
+      $("btnLight").addEventListener("click", () => setTheme("light"));
+      $("btnDark").addEventListener("click", () => setTheme("dark"));
+
+      /* ============ ROUTER — เปลี่ยนหน้าตามเมนู ============ */
+      const SUBS = {
+        overview: "Overview · Digital Marketing · sample data (mock)",
+        sources: "Sources · YouTube + Google News detail",
+        terms: "Top Terms · offline count · trends + angles",
+        ideas: "Content ideas · from ITOPPLUS data",
+        items: "All items · 64 rows · score high → low",
+        archive: "Archive · sample saved items",
+        crm: "CRM / Leads · FB/TikTok/LINE funnel · by close-readiness",
+        competitors: "Competitors · SoV / ER / price / weaknesses",
+        ads: "Ads Manager · spend/ROAS/CPL by channel · FB · TikTok · IG · LINE",
+        calendar: "Content Calendar · 7-day plan · Draft/Approved/Scheduled",
+        tasks: "Tasks · client work by team · SLA due",
+        reports: "Reports · client report · last 30 days, 1 page",
+        goals: "Goal Tracker · 6 client targets vs actual",
+        settings: "Settings · keywords / sources / fetch / data",
+      };
+      function goPage(p) {
+        document.querySelectorAll(".page").forEach((s) => s.classList.toggle("active", s.id === "page-" + p));
+        document.querySelectorAll(".nav a[data-page], .mobile-nav a[data-page]").forEach((a) => a.classList.toggle("active", a.dataset.page === p));
+        $("pageSub").textContent = SUBS[p] || "";
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      document.querySelectorAll("[data-page]").forEach((a) =>
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          goPage(a.dataset.page);
+        }),
+      );
+      document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => goPage(b.dataset.goto)));
+
+      /* ===== MOCK DATA — keyword Digital Marketing (ITOPPLUS) ===== */
+      const MOCK = {
+        keyword: "Digital Marketing",
+        total: 67,
+        by_source: { facebook: 16, tiktok: 15, instagram: 14, line: 12, youtube: 10 },
+        /* MOCK จากช่องที่คนไทยใช้จริง: Facebook/TikTok/IG/LINE/YouTube */
+        top_terms: [
+          ["marketing", 28],
+          ["ธุรกิจ", 24],
+          ["ลูกค้า", 18],
+          ["budget", 12],
+          ["social", 11],
+          ["content", 11],
+          ["ยอดขาย", 10],
+          ["websites", 8],
+          ["seo", 8],
+          ["brands", 7],
+          ["clients", 6],
+          ["ads", 6],
+        ],
+        hot: "How we get local clients with SEO + Google Business Profile",
+        suggestions: [
+          "คอนเทนต์: 'How we get local clients with SEO + Google Business Profile' — ITOPPLUS เล่าเคสจริง 30 วิ + ก่อน/หลัง + CTA ปรึกษาฟรี",
+          "หัวข้อ SEO/แฮชแท็ก: marketing, ธุรกิจ, ลูกค้า, budget, social, content, ยอดขาย — ทำเป็นชุดโพสต์/คลิปสั้นรายสัปดาห์",
+          "Angle ITOPPLUS: เอาคำถามยอดฮิต 'budget' มาทำ FAQ/บทความ/โพสต์ขายของ 3 ตอน (ตั้งงบยังไง คุ้มไหม ได้ลีดแค่ไหน)",
+        ],
+        errors: [],
+        items: [
+          {
+            source: "facebook",
+            title: "How we get local clients with SEO + Google Business Profile",
+            body: "seo marketing ลูกค้า ธุรกิจ local clients search",
+            url: "https://facebook.com/itopplus/posts/mock1",
+            score: 891,
+          },
+          {
+            source: "tiktok",
+            title: "Facebook Ads vs TikTok Ads: where should small businesses put budget in 2026?",
+            body: "ads budget marketing social ธุรกิจ",
+            url: "https://www.tiktok.com/@itopplus/video/mock1",
+            score: 642,
+          },
+          {
+            source: "facebook",
+            title: "Content strategy that actually brings leads (not just likes)",
+            body: "content marketing ลูกค้า leads ธุรกิจ social",
+            url: "https://facebook.com/itopplus/posts/mock2",
+            score: 534,
+          },
+          {
+            source: "instagram",
+            title: "ITOPPLUS case: 3x leads in 90 days with SEO and content",
+            body: "seo content marketing leads ธุรกิจ clients ITOPPLUS",
+            url: "https://www.instagram.com/p/mock1",
+            score: 521,
+          },
+          { source: "line", title: "How much should a small business spend on ads per month?", body: "ads budget marketing ธุรกิจ small business", url: "https://line.me/R/oat/mock", score: 461 },
+          { source: "youtube", title: "Social media manager checklist for Thai SMEs", body: "social media marketing content ธุรกิจ", url: "https://www.youtube.com/watch?v=mock1", score: 415 },
+          {
+            source: "tiktok",
+            title: "Why your website gets traffic but no customers",
+            body: "websites traffic ลูกค้า marketing conversion",
+            url: "https://www.tiktok.com/@itopplus/video/mock2",
+            score: 398,
+          },
+          {
+            source: "facebook",
+            title: "I replaced a brochure site with a lead gen landing page",
+            body: "websites leads marketing conversion ธุรกิจ",
+            url: "https://facebook.com/itopplus/posts/mock3",
+            score: 342,
+          },
+          { source: "line", title: "LINE OA + ads: turning followers into buyers", body: "ads social ลูกค้า ยอดขาย marketing", url: "https://line.me/R/oat/mock2", score: 329 },
+          {
+            source: "instagram",
+            title: "Branding that sells: simple playbook for small businesses",
+            body: "brands marketing ธุรกิจ small business",
+            url: "https://www.instagram.com/p/mock2",
+            score: 287,
+          },
+          { source: "tiktok", title: "ROAS explained for non-marketing business owners", body: "marketing budget ads ธุรกิจ clients", url: "https://www.tiktok.com/@itopplus/video/mock3", score: 276 },
+          {
+            source: "facebook",
+            title: "Review strategy: turning happy customers into free ads",
+            body: "ลูกค้า reviews social marketing ธุรกิจ",
+            url: "https://facebook.com/itopplus/posts/mock4",
+            score: 264,
+          },
+          { source: "instagram", title: "Short video content system: 1 shoot, 30 posts", body: "content social marketing ธุรกิจ", url: "https://www.instagram.com/reel/mock3", score: 233 },
+          {
+            source: "youtube",
+            title: "How agencies report results without vanity metrics",
+            body: "marketing clients reporting ธุรกิจ budget",
+            url: "https://www.youtube.com/watch?v=mock2",
+            score: 215,
+          },
+          { source: "tiktok", title: "Local SEO: rank in your area without paying for ads", body: "seo ads local marketing ลูกค้า", url: "https://www.tiktok.com/@itopplus/video/mock4", score: 198 },
+          { source: "line", title: "Email + chat automation for lead follow-up", body: "leads automation marketing ลูกค้า", url: "https://line.me/R/oat/mock3", score: 188 },
+          {
+            source: "facebook",
+            title: "How to pick a digital marketing agency: 7 questions",
+            body: "digital marketing clients budget ธุรกิจ",
+            url: "https://facebook.com/itopplus/posts/mock5",
+            score: 187,
+          },
+          { source: "instagram", title: "Blog vs social: where should you post first?", body: "content social marketing ธุรกิจ budget", url: "https://www.instagram.com/p/mock4", score: 176 },
+          { source: "facebook", title: "Paid search basics for service businesses", body: "search ads budget marketing ธุรกิจ", url: "https://facebook.com/itopplus/posts/mock6", score: 152 },
+          {
+            source: "tiktok",
+            title: "Case study: restaurant grew weekend bookings with ads",
+            body: "ads ยอดขาย restaurant marketing social",
+            url: "https://www.tiktok.com/@itopplus/video/mock5",
+            score: 98,
+          },
+          { source: "facebook", title: "ธุรกิจ SME ไทยเร่งทำตลาดดิจิทัล งบโฆษณาออนไลน์โต", body: "", url: "https://facebook.com/itopplus/posts/mock7", score: 0 },
+          { source: "tiktok", title: "ร้านค้าออนไลน์หันมาใช้ TikTok Ads ยอดขายพุ่ง", body: "", url: "https://www.tiktok.com/@trendvideo/mock6", score: 0 },
+          { source: "instagram", title: "SEO ท้องถิ่น กลยุทธ์ใหม่ของร้านบริการให้ลูกค้าเจอ", body: "", url: "https://www.instagram.com/p/mock5", score: 0 },
+          { source: "line", title: "ITOPPLUS ชี้แนวทางทำตลาดดิจิทัลยั่งยืนสำหรับธุรกิจเล็ก", body: "", url: "https://line.me/R/oat/mock4", score: 0 },
+          { source: "youtube", title: "วิธีตั้งงบยิงแอด Facebook TikTok สำหรับร้านเล็ก", body: "", url: "https://www.youtube.com/watch?v=mock3", score: 0 },
+          { source: "facebook", title: "รีวิวลูกค้าคือโฆษณาฟรีที่ผู้บริโภคเชื่อที่สุด", body: "", url: "https://facebook.com/itopplus/posts/mock8", score: 0 },
+          { source: "tiktok", title: "สินค้าคอนเทนต์สั้น ขายดิบขายดีในไทยปีนี้", body: "", url: "https://www.tiktok.com/@itopplus/video/mock7", score: 0 },
+          { source: "instagram", title: "การตลาดผ่านเนื้อหาได้ผลจริงสำหรับ SME ไทย", body: "", url: "https://www.instagram.com/p/mock6", score: 0 },
+          { source: "facebook", title: "การตลาดดิจิทัล", body: "digital marketing content ธุรกิจ", url: "https://facebook.com/itopplus/posts/mock9", score: 0 },
+          { source: "youtube", title: "การโฆษณาบนโซเชียลมีเดีย", body: "social media ads marketing", url: "https://www.youtube.com/watch?v=mock4", score: 0 },
+          { source: "tiktok", title: "การปรับแต่งเครื่องมือค้นหา", body: "seo websites search marketing", url: "https://www.tiktok.com/@itopplus/video/mock8", score: 0 },
+          { source: "line", title: "การตลาดผ่านเนื้อหา", body: "content marketing ธุรกิจ", url: "https://line.me/R/oat/mock5", score: 0 },
+          { source: "instagram", title: "การสร้างตราสินค้า", body: "brands marketing ธุรกิจ", url: "https://www.instagram.com/p/mock7", score: 0 },
+          /* เพิ่มเน็ตเติ้ลดิจิทัล: รายงานรายวัน 7 วัน */
+          {
+            source: "facebook",
+            title: "รายงาน Facebook Insights ประจำสัปดาห์: reach +12%",
+            body: "facebook insights reach ยอดขาย ธุรกิจ",
+            url: "https://facebook.com/itopplus/posts/mock10",
+            score: 0,
+          },
+          { source: "tiktok", title: "รายงาน TikTok Weekly: views แตะ 1.2M", body: "tiktok weekly views reach ยอดขาย", url: "https://www.tiktok.com/@itopplus/video/mock9", score: 0 },
+          { source: "instagram", title: "IG Reels รายงานยอดรีแอค 4,000 ครั้ง", body: "instagram reels engagement ยอดขาย", url: "https://www.instagram.com/reel/mock4", score: 0 },
+          { source: "line", title: "LINE OA broadcast รายงานอ่าน 92%", body: "line broadcast open rate ยอดขาย", url: "https://line.me/R/oat/mock6", score: 0 },
+          { source: "youtube", title: "YouTube Shorts รายสัปดาห์ subscribe เพิ่ม 180", body: "youtube shorts subscribe reach", url: "https://www.youtube.com/watch?v=mock5", score: 0 },
+          { source: "facebook", title: "Facebook Ads: ROAS 3.2 ในกลุ่มสินค้าอาหาร", body: "facebook ads roas ยอดขาย ร้านอาหาร", url: "https://facebook.com/itopplus/posts/mock11", score: 0 },
+          { source: "tiktok", title: "TikTok Shop: ยอดขายร้านพุ่งจากคลิป 30 วิ", body: "tiktok shop ยอดขาย ลงทุน", url: "https://www.tiktok.com/@itopplus/video/mock10", score: 0 },
+          { source: "instagram", title: "โพสต์คาร์ดเคสลูกค้าจริง ยอด save สูง", body: "instagram carousel engagement ลูกค้า", url: "https://www.instagram.com/p/mock8", score: 0 },
+          { source: "line", title: "LINE แชท automation ลดภาระฝ่ายขาย 40%", body: "line chat automation leads ลูกค้า", url: "https://line.me/R/oat/mock7", score: 0 },
+          { source: "youtube", title: "ไลฟ์: ตั้งงบยิงแอดจริง 20 นาที", body: "youtube live ads budget ทุน", url: "https://www.youtube.com/watch?v=mock6", score: 0 },
+          { source: "facebook", title: "วิดีโอเคส เจ้าของร้านกาแฟยอดขายโต 35%", body: "facebook video case before after coffee", url: "https://facebook.com/itopplus/posts/mock12", score: 0 },
+          { source: "tiktok", title: "วิดีโอรีวิวรีวิว: ขายของแบบใช้ TikTok", body: "tiktok review ขายของ พัด", url: "https://www.tiktok.com/@trendvideo/mock11", score: 0 },
+          { source: "instagram", title: "วิดีโอ IG Reels: ภาพอาหารที่ขายได้จริง", body: "instagram food photo marketing ยอดขาย", url: "https://www.instagram.com/reel/mock5", score: 0 },
+          { source: "line", title: "LINE rich menu ใหม่ คลิกเพิ่ม 60%", body: "line rich menu ยอดขาย ลูกค้า", url: "https://line.me/R/oat/mock8", score: 0 },
+          { source: "youtube", title: "คลิปสอนยิงแอด step-by-step ฟรี", body: "youtube สอน ยิงแอด budget", url: "https://www.youtube.com/watch?v=mock7", score: 0 },
+          { source: "facebook", title: "โพสต์รูปก่อน/หลังทำแบรนดิ้งร้านเสื้อผ้า", body: "facebook brand case before after clothing", url: "https://facebook.com/itopplus/posts/mock13", score: 0 },
+          { source: "tiktok", title: "คลิปโชว์โครงการจริง ขายของออนไลน์", body: "tiktok โชว์ โครงการ ขายของ", url: "https://www.tiktok.com/@itopplus/video/mock12", score: 0 },
+          { source: "instagram", title: "IG story เทสต์ขายวันนี้: 50 ออเดอร์", body: "instagram story ขายของ ออเดอร์", url: "https://www.instagram.com/p/mock9", score: 0 },
+          { source: "line", title: "LINE coupon: สมาชิกเดิมเท่านั้น ใช้ได้ 3 วัน", body: "line coupon สมาชิก ยอดขาย", url: "https://line.me/R/oat/mock9", score: 0 },
+          { source: "youtube", title: "รีวิวธุรกิจจริง: ร้านล้างรถใช้ AI ช่วยจอง", body: "youtube review ธุรกิจ car wash ai", url: "https://www.youtube.com/watch?v=mock8", score: 0 },
+          { source: "facebook", title: "ไลฟ์เสาร์นี้: ถามตอบยิงแอดกับทีม ITOPPLUS", body: "facebook live ITOPPLUS Q&A ยิงแอด", url: "https://facebook.com/itopplus/posts/mock14", score: 0 },
+          { source: "tiktok", title: "คลิปสั้นแนะนำสเปกกล้องสำหรับ Content Creator", body: "tiktok camera gear content marketing", url: "https://www.tiktok.com/@itopplus/video/mock13", score: 0 },
+          { source: "instagram", title: "Reel: 3 ทริคถ่ายภาพร้านอาหารให้ขายดี", body: "instagram food photo tips marketing", url: "https://www.instagram.com/reel/mock6", score: 0 },
+          { source: "line", title: "LINE OA automation ตอบรีวิวใน 5 นาที", body: "line automation review ลูกค้า", url: "https://line.me/R/oat/mock10", score: 0 },
+          { source: "youtube", title: "คลิป SEO ตัวจริง: ทำฟรีด้วยตัวเองใน 1 ชั่วโมง", body: "youtube seo ฟรี marketing", url: "https://www.youtube.com/watch?v=mock9", score: 0 },
+          { source: "facebook", title: "Facebook carousel: 10 รูปก่อนหลังปรับร้านค้า", body: "facebook carousel before after shop", url: "https://facebook.com/itopplus/posts/mock15", score: 0 },
+          { source: "tiktok", title: "TikTok trend จับปุ๊ปขายปั๊ป ฮิตใหม่สัปดาห์นี้", body: "tiktok trend ฮิต ขายของ", url: "https://www.tiktok.com/@trendvideo/mock14", score: 0 },
+          { source: "instagram", title: "IG guide: เลือกอาหารให้ถ่ายสวยขายดี", body: "instagram guide food photo marketing", url: "https://www.instagram.com/p/mock10", score: 0 },
+          { source: "line", title: "LINE broadcast: โปรสิ้นเดือน ทักแล้วได้ของ", body: "line broadcast โปรสิ้นเดือน ยอดขาย", url: "https://line.me/R/oat/mock11", score: 0 },
+          { source: "youtube", title: "คลิปวิเคราะห์: ทำไม ROAS ต่ำกว่า 2.0 ถึงควรพัก", body: "youtube roas วิเคราะห์ ads budget", url: "https://www.youtube.com/watch?v=mock10", score: 0 },
+          { source: "facebook", title: "โพสต์แจ้งโปร: ลูกค้าเดิมได้ส่วนลดพิเศษ", body: "facebook promo loyalty ยอดขาย", url: "https://facebook.com/itopplus/posts/mock16", score: 0 },
+          { source: "tiktok", title: "คลิปเปรียบเทียบ: ยิงแอด FB vs TikTok ตัวจริง", body: "tiktok compare facebook ads งบ", url: "https://www.tiktok.com/@itopplus/video/mock15", score: 0 },
+          { source: "instagram", title: "IG insights: เวลาโพสต์ดีที่สุด 5 ช่อง", body: "instagram insights เวลา โพสต์", url: "https://www.instagram.com/p/mock11", score: 0 },
+          { source: "line", title: "LINE OA: ระบบแท็กลูกค้าช่วยขายได้ 25%", body: "line tag ลูกค้า ยอดขาย", url: "https://line.me/R/oat/mock12", score: 0 },
+        ],
+      };
+
+      /* ===== PAGE MOCK — รายละเอียดทุกเมนู ===== */
+      const SRC_DETAIL = [
+        {
+          name: "facebook",
+          label: "Facebook",
+          color: "#1877F2",
+          api: "Page insights · TH followers",
+          count: 10,
+          total: 3622,
+          avg: 362,
+          last: "2 min ago",
+          status: "Connected",
+          sample: "How we get local clients with SEO + Google Business Profile",
+        },
+        {
+          name: "tiktok",
+          label: "TikTok",
+          color: "#000000",
+          api: "TikTok Ads · short clips",
+          count: 9,
+          total: 3300,
+          avg: 367,
+          last: "2 min ago",
+          status: "Connected",
+          sample: "FB Ads vs TikTok งบเท่ากัน คุ้มช่องไหน",
+        },
+        { name: "instagram", label: "Instagram", color: "#BE185D", api: "Reels/Posts · photo+shorts", count: 6, total: 0, avg: 0, last: "2 min ago", status: "Connected", sample: "การสร้างตราสินค้า" },
+        {
+          name: "line",
+          label: "LINE OA",
+          color: "#00B900",
+          api: "Broadcast + chat",
+          count: 5,
+          total: 0,
+          avg: 0,
+          last: "2 min ago",
+          status: "Connected",
+          sample: "LINE OA + ads: turning followers into buyers",
+        },
+        { name: "youtube", label: "YouTube", color: "#FF0000", api: "Shorts + long · clip SEO", count: 3, total: 0, avg: 0, last: "2 min ago", status: "Connected", sample: "การตลาดผ่านเนื้อหา" },
+      ];
+
+      /* ===== DEEP MOCK — fanpagekarma style (profile/channel) ===== */
+      const CHAN_PERF = [
+        { chan: "Facebook", followers: "5,850", posts: "4/wk", reach: "8,240", er: "3.92%", growth: "+642", bench: "Above industry +18%" },
+        { chan: "TikTok", followers: "4,120", posts: "5/wk", reach: "18,900", er: "6.74%", growth: "+518", bench: "Above industry +32%" },
+        { chan: "Instagram", followers: "2,480", posts: "3/wk", reach: "5,610", er: "4.28%", growth: "+124", bench: "At industry avg" },
+        { chan: "LINE OA", followers: "1,940", posts: "2/wk", reach: "3,150", er: "7.15%", growth: "+96", bench: "Above industry +45%" },
+        { chan: "YouTube", followers: "1,230", posts: "1/wk", reach: "4,780", er: "2.31%", growth: "+44", bench: "Below industry -5%" },
+      ];
+      const MENTIONS = [
+        { page: "ITOPPLUS Official", plat: "Facebook", fol: "5,850", n: 486, reach: "52,400", senti: ["Positive", "pill-green"] },
+        { page: "SME Digital TH", plat: "Facebook", fol: "38,200", n: 214, reach: "31,800", senti: ["Positive", "pill-green"] },
+        { page: "Marketing Hacks Club", plat: "Facebook", fol: "91,000", n: 128, reach: "19,600", senti: ["Neutral", "pill-yellow"] },
+        { page: "Tech Startup TH", plat: "YouTube", fol: "—", n: 96, reach: "12,300", senti: ["Neutral", "pill-yellow"] },
+        { page: "นายห้างดิจิทัล", plat: "TikTok", fol: "64,500", n: 84, reach: "28,900", senti: ["Positive", "pill-green"] },
+        { page: "BizTalk Channel", plat: "YouTube", fol: "112,000", n: 61, reach: "15,200", senti: ["Neutral", "pill-yellow"] },
+        { page: "SME Online โซน", plat: "LINE OA", fol: "—", n: 47, reach: "9,800", senti: ["Negative", "pill-red"] },
+        { page: "SEO Story Blog", plat: "IG Reels", fol: "—", n: 33, reach: "6,700", senti: ["Positive", "pill-green"] },
+        { page: "SME ไทยก้าวหน้า", plat: "YouTube", fol: "—", n: 12, reach: "1,900", senti: ["Neutral", "pill-yellow"] },
+        { page: "Affiliate เล่าต่อ", plat: "TikTok", fol: "8,400", n: 9, reach: "1,400", senti: ["Neutral", "pill-yellow"] },
+        { page: "ขาวฟ้าออนไลน์", plat: "TikTok", fol: "52,000", n: 98, reach: "31,000", senti: ["Positive", "pill-green"] },
+        { page: "ไทยMarketing", plat: "Facebook", fol: "24,600", n: 73, reach: "16,900", senti: ["Neutral", "pill-yellow"] },
+        { page: "คลิปเต็มออนไลน์", plat: "YouTube", fol: "18,400", n: 57, reach: "12,100", senti: ["Positive", "pill-green"] },
+        { page: "Reels นายชัย", plat: "Instagram", fol: "41,000", n: 42, reach: "24,600", senti: ["Positive", "pill-green"] },
+        { page: "LINE SME ไทย", plat: "LINE OA", fol: "—", n: 31, reach: "6,200", senti: ["Positive", "pill-green"] },
+        { page: "TikTok สรุปยิงแอด", plat: "TikTok", fol: "92,000", n: 124, reach: "37,500", senti: ["Positive", "pill-green"] },
+        { page: "FB ภาษาคนไทย", plat: "Facebook", fol: "76,000", n: 89, reach: "29,800", senti: ["Neutral", "pill-yellow"] },
+        { page: "YouTube ต้นทุนยิงแอด", plat: "YouTube", fol: "33,000", n: 54, reach: "18,700", senti: ["Neutral", "pill-yellow"] },
+        { page: "คอนเทนต์ขายดีคนไทย", plat: "TikTok", fol: "128,000", n: 158, reach: "48,200", senti: ["Positive", "pill-green"] },
+        { page: "ไลน์OA ไทยแนะนำ", plat: "LINE OA", fol: "—", n: 28, reach: "5,400", senti: ["Positive", "pill-green"] },
+        { page: "IG แนวทาง SME", plat: "Instagram", fol: "58,000", n: 61, reach: "33,400", senti: ["Positive", "pill-green"] },
+        { page: "Facebook หาดใหญ่", plat: "Facebook", fol: "63,000", n: 79, reach: "27,100", senti: ["Neutral", "pill-yellow"] },
+        { page: "YouTube อีคอมเมิร์ซไทย", plat: "YouTube", fol: "71,000", n: 67, reach: "22,600", senti: ["Positive", "pill-green"] },
+        { page: "TikTok คนถ่ายภาพ", plat: "TikTok", fol: "39,000", n: 45, reach: "20,800", senti: ["Neutral", "pill-yellow"] },
+      ];
+      const VOLUME7 = [
+        ["จ.", 142],
+        ["อ.", 158],
+        ["พ.", 171],
+        ["พฤ.", 166],
+        ["ศ.", 198],
+        ["ส.", 184],
+        ["อา.", 165],
+        ["จ.", 151],
+        ["อ.", 167],
+        ["พ.", 180],
+        ["พฤ.", 172],
+        ["ศ.", 204],
+        ["ส.", 191],
+        ["อา.", 176],
+      ];
+      const SOV = [
+        { name: "ITOPPLUS", v: 38, color: "#22c55e" },
+        { name: "Agency A", v: 27, color: "#ffb800" },
+        { name: "Agency B", v: 21, color: "#14b8a6" },
+        { name: "Agency C", v: 14, color: "#94a3b8" },
+      ];
+      const HASHES = [
+        "#DigitalMarketing",
+        "#การตลาดดิจิทัล",
+        "#SEO",
+        "#ยิงแอด",
+        "#TikTokMarketing",
+        "#ทำตลาดออนไลน์",
+        "#SMEไทย",
+        "#ContentMarketing",
+        "#ขายออนไลน์",
+        "#ITOPPLUS",
+        "#GoogleBusiness",
+        "#รีวิวลูกค้า",
+        "#LINEOA",
+        "#InstagramReels",
+        "#TikTokShop",
+        "#FacebookAds",
+        "#ยิงแอดคุ้ม",
+        "#คอนเทนต์สั้น",
+      ];
+      const HEAT = [
+        ["จันทร์", [0.3, 0.5, 0.4, 0.6, 0.9, 0.5]],
+        ["อังคาร", [0.3, 0.6, 0.5, 0.7, 1, 0.6]],
+        ["พุธ", [0.3, 0.7, 0.6, 0.8, 1, 0.5]],
+        ["พฤหัสฯ", [0.4, 0.7, 0.5, 0.8, 0.9, 0.6]],
+        ["ศุกร์", [0.4, 0.6, 0.6, 0.9, 0.8, 0.5]],
+        ["เสาร์", [0.5, 0.8, 0.7, 0.6, 0.7, 0.4]],
+        ["อาทิตย์", [0.4, 0.7, 0.8, 0.5, 0.6, 0.4]],
+      ];
+      const PERF = [
+        ["คลิป SEO ฟรี 3 ข้อที่ร้านทำเองได้", "Video", 18200, 1240, 182, 96, "6.81%"],
+        ["FB Ads vs TikTok Ads คุ้มช่องไหน", "Carousel", 14600, 986, 142, 88, "6.75%"],
+        ["เคส ITOPPLUS 3x ลีดใน 90 วัน", "Blog", 11200, 864, 121, 74, "7.71%"],
+        ["ระบบคอนเทนต์ 1 ถ่าย 30 โพสต์", "Video", 9800, 742, 98, 61, "7.57%"],
+        ["รีวิวลูกค้า = โฆษณาฟรี", "Post", 8600, 698, 87, 55, "8.12%"],
+        ["ร้านอาหาร: ยิงแอดแล้วจองเต็ม", "Case", 7400, 521, 66, 42, "7.04%"],
+        ["ROAS อธิบายง่าย", "Infographic", 6200, 431, 58, 37, "6.95%"],
+        ["เลือกเอเจนซี่ 7 คำถาม", "Article", 5400, 388, 49, 31, "7.19%"],
+      ];
+      const PLAN = [
+        ["จันทร์", "โพสต์: คลิป SEO ฟรี 3 ข้อ", "TikTok 19:00", "pill-red"],
+        ["อังคาร", "ไลฟ์/ตอบคำถามเรื่องงบยิงแอด", "FB 20:00", "pill-yellow"],
+        ["พุธ", "Carousel: FB vs TikTok งบเท่ากัน", "IG 18:00", "pill-blue"],
+        ["พฤหัสฯ", "Blog: เคส 3x ลีด 90 วัน", "Web 09:00", "pill-green"],
+        ["ศุกร์", "รีวิวลูกค้า + Stories โพลล์", "IG/FB 12:00", "pill-purple"],
+        ["เสาร์", "ถ่ายคอนเทนต์ชุด 1:30 โพสต์", "—", "pill-gray"],
+        ["อาทิตย์", "สรุปยอดกราฟประจำสัปดาห์ + ECN", "LINE OA 10:00", "pill-green"],
+        ["จันทร์หน้า", "คลิปสั้น: กลยุทธ์เว็บขายดี", "TikTok 19:30", "pill-red"],
+        ["อังคารหน้า", "ตัวอย่าง: ROI สมาชิกใหม่ vs เก่า", "FB 21:00", "pill-yellow"],
+      ];
+      const GROWTH30 = [
+        11250, 11290, 11340, 11390, 11440, 11490, 11540, 11590, 11635, 11685, 11730, 11780, 11830, 11875, 11920, 11970, 12020, 12070, 12115, 12160, 12210, 12260, 12310, 12360, 12405, 12450, 12510,
+        12580, 12650, 12730, 12805, 12890, 12975, 13060, 13150, 13240, 13330, 13415, 13500, 13590, 13680, 13770, 13860, 13950, 14040, 14130, 14220, 14310, 14400, 14490, 14580, 14660, 14735, 14790,
+        14845, 14890, 14930, 14960, 14990, 15010, 15025, 15035, 15045, 15055, 15065,
+      ];
+
+      const TERM_SENTI = [
+        "Positive",
+        "Positive",
+        "Positive",
+        "Neutral",
+        "Neutral",
+        "Positive",
+        "Positive",
+        "Neutral",
+        "Positive",
+        "Neutral",
+        "Positive",
+        "Neutral",
+        "Positive",
+        "Positive",
+        "Neutral",
+        "Positive",
+        "Positive",
+        "Positive",
+        "Neutral",
+        "Positive",
+        "Positive",
+      ];
+      const TERM_CHAN = [
+        "TikTok",
+        "Facebook",
+        "FB/LINE",
+        "TikTok",
+        "LINE OA",
+        "Facebook",
+        "TikTok",
+        "Blog",
+        "YouTube",
+        "FB",
+        "Blog",
+        "TikTok",
+        "Facebook",
+        "LINE OA",
+        "TikTok",
+        "TikTok",
+        "TikTok",
+        "Facebook",
+        "Facebook",
+        "Facebook",
+        "Facebook",
+      ];
+      const TERM_DETAIL = [
+        ["marketing", 28, "↗ +18%", "ชื่อคลิป/แฮชแท็กหลักทุกโพสต์"],
+        ["ธุรกิจ", 24, "↗ +12%", "มุม SME/เจ้าของร้าน — กลุ่มลูกค้า ITOPPLUS"],
+        ["ลูกค้า", 18, "↗ +9%", "FAQ/รีวิว/เคสจริงที่ลูกค้าถามบ่อย"],
+        ["budget", 12, "↗ +22%", "โพสต์ตั้งงบยิงแอด + เครื่องคิด ROAS"],
+        ["social", 11, "→ 0%", "แพลตฟอร์ม Facebook/TikTok/LINE OA"],
+        ["content", 11, "↗ +7%", "ระบบคอนเทนต์ 1 ถ่าย 30 โพสต์"],
+        ["ยอดขาย", 10, "↗ +15%", "ก่อน/หลัง + ตัวเลขลีด/ยอดจอง"],
+        ["websites", 8, "↘ -3%", "บทความ conversion website → ลีด"],
+        ["seo", 8, "↗ +31%", "คลิป local SEO 3 นาที จบ"],
+        ["brands", 7, "→ 0%", "Branding เรียบง่ายสำหรับร้านเล็ก"],
+        ["clients", 6, "↘ -4%", "ผลลัพธ์ลูกค้า + การรายงานผล"],
+        ["ads", 6, "↗ +6%", "เทียบงบ Facebook Ads vs TikTok Ads"],
+        ["รีวิว", 6, "↗ +25%", "โพสต์รีวิวลูกค้าทุกสัปดาห์"],
+        ["LINE OA", 5, "↗ +11%", "Line automation + CRM"],
+        ["แคปชั่น", 4, "↘ -8%", "คอนเทนต์แคปชั่นดึงดูด"],
+        ["คอนเทนต์สั้น", 4, "↗ +33%", "คลิปสั้น TikTok/Reels"],
+        ["ผู้ติดตาม", 7, "↗ +14%", "ไอเดียโตผู้ติดตาม"],
+        ["ยิงแอด", 9, "↗ +28%", "ยิงแอดคุ้ม รวมงบ ROAS"],
+        ["โพสต์", 8, "→ 0%", "โพสต์ประจำสัปดาห์"],
+        ["โปรโม", 5, "↗ +19%", "โปรโมออนไลน์/เทศกาล"],
+        ["ไลฟ์", 3, "↗ +37%", "ไลฟ์ขายสด"],
+      ];
+
+      /* ===== MOCK เมนูใหม่: CRM / Ads / Calendar / Tasks / Reports / Goals ===== */
+      const COMP_DATA = [
+        {
+          key: "ITOPPLUS",
+          name: "ITOPPLUS",
+          short: "ITOPPLUS",
+          plat: "FB + TikTok",
+          fol: "12,450",
+          er: "4.82%",
+          posts: "15",
+          reach: "18,240",
+          pitch: "Local SEO + คอนเทนต์",
+          status: ["ชั้นนำ", "pill-green"],
+          followers: 1250000,
+          sov: 38,
+          top: [
+            ["Local SEO: 3 ข้อที่ทำได้วันนี้", "182,000", "FB Reels", "2,410"],
+            ["ทำ ROAS ให้ 2x+ ด้วยงบเดิม", "146,000", "TikTok", "1,980"],
+            ["เคสเปิดร้านก๋วยเตี๋ยว new in", "112,000", "Blog + FB", "1,720"],
+            ["รีวิวลูกค้า = ชื่อโรง", "86,000", "IG Reels", "1,340"],
+            ["เปิดร้านจริง ใช้เวลาเท่าไหร่", "74,000", "Facebook Live", "980"],
+          ],
+          pricing: "฿35,000–120,000 / 6 เดือน",
+          strength: "คนรู้เยอะคอนเทนต์ฟรี · Local SEO ชั้นนำ",
+          weakness: "งบวิจิตรใหญ่ยังน้อย + ไม่ครอบคลุม Property",
+          note: "นำใน SoV — เสริมรีวิวลูกค้าให้มากขึ้น",
+        },
+        {
+          key: "A",
+          name: "Agency A (marketing agency กรุงเทพ)",
+          short: "Agency A",
+          plat: "Facebook",
+          fol: "38,200",
+          er: "3.61%",
+          posts: "12",
+          reach: "24,600",
+          pitch: "Ads + Strategy",
+          status: ["ตาม", "pill-yellow"],
+          followers: 3820000,
+          sov: 22,
+          top: [
+            ["ยิงแอดพัง ทำยังไง", "96,000", "Facebook", "1,240"],
+            ["FB Ads หลอกขาย", "88,000", "Facebook", "1,180"],
+            ["Agency เรา ทำไมลูกค้าหาย", "61,000", "Blog", "870"],
+            ["งบแอด 500 ต่อวันดีไหม", "54,000", "FB Reels", "760"],
+            ["เลือก agency ยังไง", "47,000", "Article", "640"],
+          ],
+          pricing: "฿50,000–200,000 / เดือน",
+          strength: "มีชื่อเสียง ลูกค้าองค์กรใหญ่",
+          weakness: "ราคาสูง + ไม่ตั้งเป้า Local",
+          note: "โอกาส: ลูกค้าเล็ก/ร้านรายย่อย",
+        },
+        {
+          key: "B",
+          name: "Agency B (influencer marketing)",
+          short: "Agency B",
+          plat: "TikTok + IG",
+          fol: "91,000",
+          er: "6.40%",
+          posts: "21",
+          reach: "48,000",
+          pitch: "Influencer + UGC",
+          status: ["เสี่ยง", "pill-red"],
+          followers: 9100000,
+          sov: 17,
+          top: [
+            ["UGC ขายของจริงไหม", "210,000", "TikTok", "2,980"],
+            ["TikTok Shop เปิดวันนี้", "180,000", "TikTok", "2,610"],
+            ["Influencer ตัวจริงในไทย", "154,000", "IG Reels", "2,120"],
+            ["รีวิวล้านวิว ขายของ", "128,000", "TikTok", "1,940"],
+            ["UGC แพ็คสูตร", "96,000", "IG Reels", "1,520"],
+          ],
+          pricing: "฿80,000–300,000 / แคมเปญ",
+          strength: "ดึงอินฟลูเอนเซอร์จริงร่วมงาน",
+          weakness: "ราคาแพง + ไม่รับลูกค้าเล็ก",
+          note: "เสี่ยงสำหรับ ITOPPLUS — ต่างที่ service (agency vs UGC)",
+        },
+        {
+          key: "C",
+          name: "Agency C (SEO + content)",
+          short: "Agency C",
+          plat: "YouTube + Blog",
+          fol: "33,000",
+          er: "2.91%",
+          posts: "8",
+          reach: "9,600",
+          pitch: "SEO + Content",
+          status: ["เทียบ", "pill-blue"],
+          followers: 3300000,
+          sov: 16,
+          top: [
+            ["Local SEO: ลองเองไม่ได้ผลทำไม", "58,000", "YouTube", "1,050"],
+            ["Content SEO โรงเรียนฟรี", "49,000", "Blog", "920"],
+            ["Keyword Research ฟรี", "41,000", "YouTube", "780"],
+            ["ลิงก์ใน vs นอก", "36,000", "Blog", "640"],
+            ["บทความ SEO กี่เดือนเห็นผล", "28,000", "YouTube", "510"],
+          ],
+          pricing: "฿30,000–80,000 / เดือน",
+          strength: "คอนเทนต์คุณภาพ ราคาถูก",
+          weakness: "โพสต์ไม่ถี่ + ไม่มี TikTok",
+          note: "เทียบคุ้ม — ITOPPLUS ทะยานกว่า Local SEO",
+        },
+        {
+          key: "DIY",
+          name: "DIY Tools (Canva / CapCut / Meta)",
+          short: "DIY",
+          plat: "ทุกช่อง",
+          fol: "—",
+          er: "—",
+          posts: "—",
+          reach: "—",
+          pitch: "เครื่องมือฟรีทำเอง",
+          status: ["ทางเลือก", "pill-gray"],
+          followers: 0,
+          sov: 7,
+          top: [["Canva template ขายดี", "—", "—", "—"]],
+          pricing: "ฟรี – ฿500/เดือน",
+          strength: "ต้นทุนเป็นศูนย์",
+          weakness: "ไม่มีคนทำให้ + ไม่คุมผล",
+          note: "ส่วนใหญ่ ITOPPLUS ดึงกลับมาเป็นลูกค้าจริง",
+        },
+      ];
+
+      const COMP_RELEASES = [""];
+      COMP_RELEASES[0] = [
+        ["Agency B ยิงแอด TikTok 100% จากแคปชั่นสร้างเอง", "สัปดาห์นี้ · จุดที่มือสมัครเล่นเทียบไม่ได้"],
+        ["Agency A ลดราคา SMM โปรโมชั่น 20% เดือนนี้", "สัปดาห์นี้ · ราคาเริ่ม 32,000 บาท"],
+        ["Agency C เพิ่งออกคอร์ส SEO ออนไลน์ฟรี 3 ตอน", "สำคัญ · ดึง leads ฟรีไป pipeline"],
+        ["DIY Meta เพิ่มฟีเจอร์ AI caption สำหรับ SMBs", "ติดตามต่อ · ใครใช้แล้วได้ผล?"],
+        ["ยังไม่มีคู่แข่งโพสต์ local SEO ในไทย — โอกาสของ ITOPPLUS", "จังหวะดี · รีบทำก่อน"],
+      ];
+      const COMP_SOV = [
+        ["ITOPPLUS", 38, "#22c55e"],
+        ["Agency A", 22, "#ffd34d"],
+        ["Agency B", 17, "#14b8a6"],
+        ["Agency C", 16, "#f59e0b"],
+        ["DIY Tools", 7, "#94a3b8"],
+      ];
+
+      const CRM_LEADS = [
+        { id: "L-001", stage: "new", name: "คุณต้น (ร้านก๋วยเตี๋ยวเหนือ)", src: "Facebook Ads", value: 25000, last: "คลิกจากโพสต์เมื่อวาน", next: "ทัก DM วันนี้ 10:00" },
+        { id: "L-002", stage: "new", name: "คุณเฟิร์น (คลินิก<คุณหมอให้เบอร์>)", src: "TikTok", value: 60000, last: "ขอใบเสนอราคาหลังดูคลิป", next: "ส่งตัวอย่างเคส + ราคา" },
+        { id: "L-003", stage: "new", name: "คุณวี (ร้านกาแฟล่าสุดที่ขอนครปฐม)", src: "LINE OA", value: 35000, last: "ทักหลังดู Reels", next: "ถามเป้า + เว็บเดิม" },
+        { id: "L-004", stage: "new", name: "คุณแนน (ร้านมือถือมือสอง)", src: "Facebook", value: 18000, last: "ถามยิงแอด FB เปิดหน้าร้าน", next: "โทรกลับเร็วที่สุด" },
+        { id: "L-005", stage: "active", name: "คุณจิ๋ว (สุกี้หมูจุ่ม 3 สาขา)", src: "TikTok", value: 90000, last: "คุยกับทีมการตลาด 2 รอบ", next: "ส่งข้อเสนอ Flash Sale คุ้ม" },
+        { id: "L-006", stage: "active", name: "คุณก้อย (น้ำหอมน้ำ)", src: "Facebook", value: 45000, last: "นัดทั่วหน้า 15 พ.ย.", next: "รอเอกสารร้าน + พิกัด" },
+        { id: "L-007", stage: "quoted", name: "คุณผึ้ง (โรงงานขนม)", src: "LINE OA", value: 120000, last: "ส่งข้อเสนอ + 3 เคส", next: "โทร follow-up + ขอตัวอย่าง" },
+        { id: "L-008", stage: "won", name: "คุณพี (ร้านเสื้อผ้าแฟชั่น)", src: "Instagram", value: 85000, last: "เซ็นสัญญา 6 เดือน", next: "เริ่มคอนเทนต์อาทิตย์หน้า" },
+      ];
+      const CRM_STAGES = [
+        { k: "new", label: "New", cnt: 4 },
+        { k: "active", label: "Talking", cnt: 2 },
+        { k: "quoted", label: "Quoted", cnt: 1 },
+        { k: "won", label: "Won", cnt: 1 },
+      ];
+      const ADS_CAMPAIGNS = [
+        { name: "FB — ขายของออนไลน์", plat: "Facebook", budget: 15000, reach: 48000, clicks: 1120, cpl: 190, roas: 3.8, status: "Live" },
+        { name: "TikTok — โปรโมตคลิปสั้น", plat: "TikTok", budget: 12000, reach: 62000, clicks: 1540, cpl: 168, roas: 4.1, status: "Live" },
+        { name: "IG — Reels สินค้าใหม่", plat: "Instagram", budget: 8000, reach: 31000, clicks: 840, cpl: 225, roas: 2.6, status: "Live" },
+        { name: "LINE OA — Broadcast นวดผิว", plat: "LINE OA", budget: 6000, reach: 15000, clicks: 260, cpl: 380, roas: 1.9, status: "Testing" },
+        { name: "YouTube — ไลฟ์ขายของ", plat: "YouTube", budget: 4000, reach: 21000, clicks: 391, cpl: 245, roas: 2.2, status: "Paused" },
+        { name: "Google Display — Branding", plat: "Google", budget: 5000, reach: 45000, clicks: 62, cpl: 520, roas: 0.8, status: "Paused" },
+      ];
+      const CALENDAR_WEEK = [
+        {
+          day: "จ. 10 พ.ย.",
+          today: false,
+          posts: [
+            { t: "09:00 · FB — คลิป 30 วิ SEO", st: "ok" },
+            { t: "12:00 · IG — แคปชั่นดึงคอมเมนต์", st: "ok" },
+            { t: "18:00 · TikTok — 1 ถ่าย 30 โพสต์", st: "ok" },
+          ],
+        },
+        {
+          day: "อ. 11 พ.ย.",
+          today: false,
+          posts: [
+            { t: "10:00 · LINE OA — โปรนวดผิว", st: "ok" },
+            { t: "13:00 · FB — ROAS อธิบาย", st: "ok" },
+            { t: "19:00 · YT — ไลฟ์ขายของ", st: "draft" },
+          ],
+        },
+        {
+          day: "พ. 12 พ.ย.",
+          today: true,
+          posts: [
+            { t: "09:30 · FB — เคส 3x ลีด", st: "ok" },
+            { t: "11:00 · IG — รีวิวลูกค้า + Stories", st: "ok" },
+            { t: "15:00 · TikTok — คลิปสั้น TikTok Shop", st: "ok" },
+          ],
+        },
+        {
+          day: "พฤ. 13 พ.ย.",
+          today: false,
+          posts: [
+            { t: "09:00 · FB — โปรโมสิ้นเดือน", st: "draft" },
+            { t: "13:00 · LINE OA — coupon VIP", st: "ok" },
+            { t: "20:00 · YT — ยาว 20 นาที", st: "draft" },
+          ],
+        },
+        {
+          day: "ศ. 14 พ.ย.",
+          today: false,
+          posts: [
+            { t: "10:00 · FB — คาเฟ่รายหน้า", st: "ok" },
+            { t: "12:00 · TikTok — คลิปตะลึงยอดจอง", st: "ok" },
+          ],
+        },
+        {
+          day: "ส. 15 พ.ย.",
+          today: false,
+          posts: [
+            { t: "11:00 · IG — รีลส์ร้านอาหาร", st: "ok" },
+            { t: "17:00 · FB — บทความ 7 คำถามเลือกเอเจนซี่", st: "draft" },
+          ],
+        },
+        {
+          day: "อา. 16 พ.ย.",
+          today: false,
+          posts: [
+            { t: "09:00 · LINE OA — โปรวันอาทิตย์", st: "ok" },
+            { t: "15:00 · FB — รีวิวรวมพฤศจิกา", st: "draft" },
+          ],
+        },
+      ];
+      const TASKS = [
+        { col: "ing", title: "แก้ไขรูปคอนเทนต์", owner: "คุณแอน", sla: "2 วัน", body: "ร้านกาแฟ เช็คสี + ใส่ข้อความ 3 ลูกค้า" },
+        { col: "ing", title: "เขียนแคปชั่นรายสัปดาห์", owner: "คุณนัท", sla: "1 วัน", body: "10 แคปชั่น FB/IG + กัปชั่น TikTok" },
+        { col: "ing", title: "ยิงแอดร้านก๋วยเตี๋ยว", owner: "คุณต้น", sla: "วันนี้", body: "งบ 5,000 บาท ป. 2.8 target FB+IG" },
+        { col: "ing", title: "15-slide plan ภาพถ่าย", owner: "คุณพลอย", sla: "3 วัน", body: "ร้านเสื้อผ้า ก่อน/หลัง rebrand" },
+        { col: "ing", title: "สรุปยอดแคมเปญเดือนนี้", owner: "คุณก้อย", sla: "5 วัน", body: "เอเจนซี่ Omni เดือน+ROAS ทุกช่อง" },
+        { col: "approval", title: "ขออนุมัติข้อเสนอร้านเขียว", owner: "คุณจิ๋ว", sla: "1 วัน", body: "Slide เสนอ price หลัก + ตัวอย่าง + ราคา" },
+        { col: "approval", title: "ส่งใบเสนอราคา ROBOT-shop", owner: "คุณเฟิร์น", sla: "1 วัน", body: "รอคำตอบ 3 วัน (นับตั้งแต่วันส่ง)" },
+        { col: "done", title: "โพสต์ leaderboard กลุ่ม SME", owner: "คุณวี", sla: "เสร็จแล้ว", body: "โพสต์ลงกลุ่ม 12,000 คน" },
+      ];
+      const GOALS = [
+        { client: "ร้านก๋วยเตี๋ยวเหนือ", target: "30 ลิด/เดือน", actual: "24 ลีด", pct: 80 },
+        { client: "ร้านเสื้อผ้าแฟชั่น", target: "ยอดขาย +30%", actual: "+26%", pct: 87 },
+        { client: "สุกี้หมูจุ่ม 3 สาขา", target: "จองโต +20%", actual: "+13%", pct: 65 },
+        { client: "คลินิก คุณหมอ", target: "ปรึกษาออนไลน์ 50/wk", actual: "41/wk", pct: 82 },
+        { client: "ร้านกาแฟเพกา", target: "ผู้ติดตาม IG +500", actual: "+390", pct: 78 },
+        { client: "โรงงานขนมแสนสบาย", target: "ROAS 3.0 ข้ามแคมเปญ", actual: "2.4", pct: 80 },
+      ];
+
+      const IDEAS = [
+        {
+          prio: "สูง",
+          color: "pill-red",
+          title: "คลิป 30 วิ: SEO ฟรี 3 ข้อที่ร้านทำเองได้วันนี้",
+          format: "Short video",
+          platform: "TikTok / Reels",
+          hook: "ลูกค้าหาเราเจอใน Google โดยไม่ต้องยิงแอด",
+          angle: "ITOPPLUS เล่าเคส local clients score 891",
+          effort: "ถ่าย 1 ครั้ง · ตัด 1 วัน",
+        },
+        {
+          prio: "สูง",
+          color: "pill-red",
+          title: "เทียบงบ Facebook Ads vs TikTok Ads คุ้มช่องไหน",
+          format: "Carousel 5 หน้า",
+          platform: "Facebook / IG",
+          hook: "بودجهเท่ากัน ได้ลีดต่างกันแค่ไหน",
+          angle: "เจาะคำ budget (12 ครั้ง) + ads (6 ครั้ง)",
+          effort: "ทำสไลด์ 1 ชุด",
+        },
+        {
+          prio: "สูง",
+          color: "pill-red",
+          title: "เคส ITOPPLUS: 3x ลีดใน 90 วัน ทำอะไรบ้าง",
+          format: "Blog + สรุปคลิป",
+          platform: "Website / TikTok",
+          hook: "ไม่ใช่ยอดไลก์ แต่เป็นยอดลีดจริง",
+          angle: "story score 521 — พร้อมใส่ตัวเลขก่อน/หลัง",
+          effort: "เขียน blog 1 บทความ",
+        },
+        {
+          prio: "กลาง",
+          color: "pill-yellow",
+          title: "คอนเทนต์ระบบ 1 ถ่าย 30 โพสต์",
+          format: "เบื้องหลัง/How-to",
+          platform: "YouTube / Blog",
+          hook: "ทีมเล็กก็โพสต์ได้ทุกวันโดยไม่หมดแรง",
+          angle: "หัวข้อ content (11 ครั้ง)",
+          effort: "ถ่ายครึ่งวัน",
+        },
+        {
+          prio: "กลาง",
+          color: "pill-yellow",
+          title: "ร้านอาหาร: ยิงแอดแล้วจองเต็มเสาร์-อาทิตย์",
+          format: "Case study",
+          platform: "Facebook / LINE",
+          hook: "ยอดขายขึ้นแบบวัดได้ ไม่ใช่ยอดวิว",
+          angle: "score 98 + คำ ยอดขาย (10 ครั้ง)",
+          effort: "ขออนุญาตลูกค้าก่อน",
+        },
+        {
+          prio: "กลาง",
+          color: "pill-yellow",
+          title: "รีวิวลูกค้า = โฆษณาฟรีที่คนเชื่อสุด",
+          format: "โพสต์ + Stories",
+          platform: "Google / IG",
+          hook: "เอารีวิวเดิมมาสร้างคอนเทนต์ได้ไม่จำกัด",
+          angle: "ข่าวรีวิวลูกค้า — ความน่าเชื่อถือ",
+          effort: "ทำได้ทันที 1 ชั่วโมง",
+        },
+        {
+          prio: "ต่ำ",
+          color: "pill-gray",
+          title: "ROAS อธิบายง่ายสำหรับเจ้าของร้าน",
+          format: "Infographic",
+          platform: "IG / Blog",
+          hook: "เงิน 100 บาท กลับมาเท่าไหร่ใน 1 เดือน",
+          angle: "score 276 + budget",
+          effort: "ทำ infographic 1 หน้า",
+        },
+        {
+          prio: "ต่ำ",
+          color: "pill-gray",
+          title: "เลือกเอเจนซี่ดิจิทัล 7 คำถามก่อนเซ็นสัญญา",
+          format: "บทความ",
+          platform: "Website (SEO)",
+          hook: "คำถามที่ช่วยประหยัดงบหลักหมื่น",
+          angle: "score 187 — เข้ากลุ่ม clients",
+          effort: "เขียนบทความยาว 1 ชิ้น",
+        },
+        {
+          prio: "สูง",
+          color: "pill-red",
+          title: "โพสต์: 5 คำผิดที่คนยิงแอดตัวจริงเจอทุกวัน",
+          format: "Carousel",
+          platform: "Facebook",
+          hook: "งบวันละ 500 แต่เสียใจกับมือห้าม?",
+          angle: "เจาะ audience/budget/target ที่ผิดบ่อย",
+          effort: "ทำสไลด์ 6 หน้า",
+        },
+        {
+          prio: "สูง",
+          color: "pill-red",
+          title: "Reels: ขายของแบบยังไม่ต้องมีหน้าร้าน",
+          format: "Reels",
+          platform: "TikTok",
+          hook: "ไม่มีหน้าร้านก็ขายได้ด้วยคอนเทนต์สั้น",
+          angle: "เทคนิค 'ขายของแบบไม่มีหน้าร้าน' 8 ขั้น",
+          effort: "ถ่าย 30 นาที",
+        },
+        {
+          prio: "กลาง",
+          color: "pill-yellow",
+          title: "Live: ตอบคำถามยิงแอดให้คนดู 100 คน",
+          format: "Facebook Live",
+          platform: "Facebook",
+          hook: "ถามเรื่องที่คุณยิงแอดแล้วไม่ได้ผล",
+          angle: "ประสบการณ์จริงจากทีม ITOPPLUS",
+          effort: "ไลฟ์ 1 ชั่วโมง",
+        },
+        {
+          prio: "กลาง",
+          color: "pill-yellow",
+          title: "LINE OA: ระบบปิดการขายอัตโนมัติผ่านแชท",
+          format: "บทความ",
+          platform: "LINE OA",
+          hook: "ไม่ต้องนั่งตอบแชทตลอด 24 ชั่วโมง",
+          angle: "ROI จาก LINE automation",
+          effort: "เขียน 1 ชั่วโมง",
+        },
+        {
+          prio: "กลาง",
+          color: "pill-yellow",
+          title: "Shorts: ภาพร้านอาหารที่ขายดีที่สุด",
+          format: "Shorts",
+          platform: "YouTube",
+          hook: "ภาพแค่ 2 วินาที ก็ทำให้ลูกค้าสั่ง",
+          angle: "ตัวอย่างจริงจากร้านลูกค้า",
+          effort: "ตัดคลิป 1 วัน",
+        },
+        {
+          prio: "ต่ำ",
+          color: "pill-gray",
+          title: "บทความ: จบงบยิงแอด เลิกเสียเงิน",
+          format: "Blog",
+          platform: "Website",
+          hook: "ทำไม ROAS ยิ่งดีขึ้นถ้ายิงต่อเนื่อง",
+          angle: "อธิบาย ROI budget ad",
+          effort: "เขียน blog 1 ชิ้น",
+        },
+        {
+          prio: "ต่ำ",
+          color: "pill-gray",
+          title: "ไกด์: เช็คลิสต์ร้าน online ที่ขายดิบขายดี",
+          format: "Guide",
+          platform: "PDF / Website",
+          hook: "รายชื่อสิ่งที่ร้าน online ต้องมีก่อนเปิด",
+          angle: "ตัวอย่างร้านจริง",
+          effort: "เขียน 2 ชั่วโมง",
+        },
+        {
+          prio: "ต่ำ",
+          color: "pill-gray",
+          title: "FAQ: 10 คำถามที่ถูกถามบ่อยที่สุด",
+          format: "FAQ",
+          platform: "Website",
+          hook: "คำถามที่ลูกค้ากำลังสงสัยวันนี้",
+          angle: "รวมคำถามจริง",
+          effort: "เขียน 1 ชั่วโมง",
+        },
+        {
+          prio: "สูง",
+          color: "pill-red",
+          title: "โพสต์: ถ้าเงินงบไม่พอ ลองทำดูก่อน",
+          format: "Carousel",
+          platform: "Instagram",
+          hook: "ไม่ต้องยิงแอดตั้งแต่วันแรกก็ขายได้",
+          angle: "Organic + Paid แบบไม่ต้อง ROI สูง",
+          effort: "ทำสไลด์ 6 หน้า",
+        },
+        {
+          prio: "กลาง",
+          color: "pill-yellow",
+          title: "Reels: 3 ร้านที่ขายดิบขายดีในร้านเล็ก",
+          format: "Reels",
+          platform: "TikTok",
+          hook: "ร้านเล็ก ลูกค้าว้าว ขายดิบขายดี",
+          angle: "ตัวอย่างจริง 3 ร้าน",
+          effort: "ถ่าย 1 ชั่วโมง",
+        },
+      ];
+
+      /* ===== render overview ===== */
+      let currentItems = [];
+      let mockPlatformFilter = "";
+      let currentKeyword = "Digital Marketing";
+      const SRC_CHART = { facebook: "#1877F2", tiktok: "#64748b", instagram: "#E1306C", line: "#22c55e", youtube: "#ef4444", reddit: "#FF4500", hn: "#FB5414", gnews: "#4285F4", wiki: "#64748b" };
+      const srcLabel = (k) => (SRC_DETAIL.find((s) => s.name === k) || {}).label || k;
+      function drawDonut(el, legendEl, bySource) {
+        const entries = Object.entries(bySource || {})
+          .filter(([, v]) => v > 0)
+          .sort((a, b) => b[1] - a[1]);
+        const total = entries.reduce((s, [, v]) => s + v, 0);
+        if (!total) {
+          el.style.background = "conic-gradient(var(--donut-track) 0 100%)";
+          el.setAttribute("role", "img");
+          el.setAttribute("aria-label", "No source data");
+          legendEl.innerHTML = "";
+          return;
+        }
+        let acc = 0,
+          used = 0;
+        const pcts = entries.map(([, v], i) => {
+          const pct = i === entries.length - 1 ? Math.max(0, 100 - used) : Math.round((v / total) * 100);
+          used += pct;
+          return pct;
+        });
+        const stops = entries
+          .map(([k, v], i) => {
+            const color = SRC_CHART[k] || PALETTE[i % PALETTE.length];
+            const a = acc * 360,
+              b = (acc + v / total) * 360;
+            acc += v / total;
+            return `${color} ${a}deg ${b}deg`;
+          })
+          .join(",");
+        el.style.background = `conic-gradient(${stops})`;
+        el.setAttribute("role", "img");
+        el.setAttribute("aria-label", entries.map(([k], i) => `${srcLabel(k)} ${pcts[i]}%`).join(", "));
+        legendEl.innerHTML = entries.map(([k], i) => `<span><i style="background:${SRC_CHART[k] || PALETTE[i % PALETTE.length]}"></i><b>${pcts[i]}%</b> ${esc(srcLabel(k))}</span>`).join("");
+      }
+      function setBadge(page, n) {
+        const b = document.querySelector(`.nav a[data-page="${page}"] .badge-n`);
+        if (b) b.textContent = n;
+      }
+      function render(d, isFetch) {
+        currentItems = d.items || [];
+        currentKeyword = d.keyword || currentKeyword;
+        const by = Object.keys(d.by_source || {}).length
+          ? d.by_source
+          : currentItems.reduce((m, i) => {
+              m[i.source] = (m[i.source] || 0) + 1;
+              return m;
+            }, {});
+        const totalScore = currentItems.reduce((s, i) => s + (+i.score || 0), 0);
+        const scored = currentItems.filter((i) => (+i.score || 0) > 0);
+        const topItem = [...currentItems].sort((a, b) => (+b.score || 0) - (+a.score || 0))[0];
+        const topScore = topItem ? +topItem.score || 0 : 0;
+        const avgScore = scored.length ? Math.round(totalScore / scored.length) : 0;
+        const srcKeys = Object.keys(by).sort((a, b) => (by[b] || 0) - (by[a] || 0));
+        $("stTotal").textContent = (d.total ?? currentItems.length).toLocaleString();
+        $("stSrc").textContent = srcKeys.length;
+        $("stSrcNote").textContent = srcKeys.length ? srcKeys.slice(0, 3).map(srcLabel).join(" · ") + (srcKeys.length > 3 ? ` +${srcKeys.length - 3}` : "") : "No sources";
+        $("stScore").textContent = totalScore.toLocaleString();
+        $("stTop").textContent = topScore.toLocaleString();
+        if (topItem) {
+          $("stTopTitle").innerHTML = topItem.url ? `<a href="${esc(topItem.url)}" target="_blank" rel="noopener">${esc(topItem.title)}</a>` : esc(topItem.title);
+          $("stTopMeta").textContent = `${srcLabel(topItem.source)} · highest score`;
+        } else {
+          $("stTopTitle").textContent = "No data yet";
+          $("stTopMeta").textContent = "—";
+        }
+        const scoreShare = {};
+        currentItems.forEach((i) => {
+          scoreShare[i.source] = (scoreShare[i.source] || 0) + (+i.score || 0);
+        });
+        drawDonut($("donutUsers"), $("legendUsers"), scoreShare);
+        $("invScore").textContent = avgScore.toLocaleString();
+        $("invCover").textContent = (d.top_terms || []).length + " terms";
+        const bars = Object.entries(scoreShare).sort((a, b) => b[1] - a[1]);
+        const maxBar = Math.max(1, ...bars.map(([, v]) => v));
+        $("bars").innerHTML = bars.length
+          ? bars
+              .map(
+                ([k, v]) => `<div class="bar-col"><div class="bar-val">${v.toLocaleString()}</div><div class="bar-track">
+        <div class="bar-fill" style="height:${Math.max(3, Math.round((v / maxBar) * 100))}%;background:${SRC_CHART[k] || PALETTE[0]}" title="${esc(k)}: ${v.toLocaleString()} score"></div>
+      </div><div class="bar-label">${esc(srcLabel(k))}</div></div>`,
+              )
+              .join("")
+          : '<div class="empty">No data yet</div>';
+        const ranked = [...scored].sort((a, b) => (+b.score || 0) - (+a.score || 0));
+        const vals = ranked.map((i) => +i.score || 0);
+        if (vals.length) {
+          const high = Math.max(...vals),
+            low = Math.min(...vals);
+          const span = high - low || 1;
+          const pts = vals.map((v, i) => `${((i * 800) / Math.max(1, vals.length - 1)).toFixed(1)},${(185 - ((v - low) / span) * 155).toFixed(1)}`).join(" ");
+          $("line").innerHTML =
+            `<line x1="0" y1="60" x2="800" y2="60" stroke="var(--line-2)" vector-effect="non-scaling-stroke"/><line x1="0" y1="110" x2="800" y2="110" stroke="var(--line-2)" vector-effect="non-scaling-stroke"/><line x1="0" y1="160" x2="800" y2="160" stroke="var(--line-2)" vector-effect="non-scaling-stroke"/><polygon fill="rgba(34,197,94,.12)" points="0,200 ${pts} 800,200"/><polyline fill="none" stroke="#22c55e" stroke-width="2.5" vector-effect="non-scaling-stroke" points="${pts}"/>`;
+          $("scoreNote").textContent = `${scored.length}/${currentItems.length} scored · ${low.toLocaleString()}–${high.toLocaleString()}`;
+          $("scoreHigh").textContent = high.toLocaleString();
+          $("scoreLow").textContent = low.toLocaleString();
+        } else {
+          $("line").innerHTML = "";
+          $("scoreNote").textContent = "No scored items";
+          $("scoreHigh").textContent = "0";
+          $("scoreLow").textContent = "0";
+        }
+        $("termsBox").innerHTML = (d.top_terms || []).length ? d.top_terms.map(([w, n]) => `<span class="term">${esc(w)}<b>${n}</b></span>`).join("") : '<div class="empty">No data yet</div>';
+        $("suggest").innerHTML = (d.suggestions || []).length ? d.suggestions.map((s) => `<li>${esc(s)}</li>`).join("") : '<li class="empty">No ideas yet — fetch a keyword first</li>';
+        computeBands(currentItems);
+        renderItemsTabs();
+        renderPlatformTabs();
+        renderTable();
+        renderFullTable();
+        const mode = "sample data (mock)";
+        SUBS.overview = `Overview · ${currentKeyword} · ${currentItems.length} items · ${mode}`;
+        if ($("page-overview").classList.contains("active")) $("pageSub").textContent = SUBS.overview;
+        setBadge("items", d.total ?? currentItems.length);
+        const err = (d.errors || []).join(", ");
+        $("status").textContent = "Sample data (mock) · ไม่เรียกเซิร์ฟเวอร์";
+        $("status").className = err ? "status err" : "status";
+      }
+      const PALETTE = ["#2f6bff", "#06b6d4", "#a855f7", "#f59e0b", "#22c55e", "#ec4899", "#64748b", "#14b8a6"];
+      const SRC_COLORS = { facebook: "#1877F2", tiktok: "#000000", instagram: "#BE185D", line: "#00B900", youtube: "#FF0000", reddit: "#FF4500", hn: "#FB5414", gnews: "#4285F4", wiki: "#64748b" };
+      /* relative bands: rank by percentile within the current list (live logic) */
+      let scoreCut = { hot: Infinity, rising: Infinity };
+      function computeBands(items) {
+        const vals = items
+          .map((i) => +i.score || 0)
+          .filter((v) => v > 0)
+          .sort((a, b) => b - a);
+        const at = (p) => (vals.length ? vals[Math.min(vals.length - 1, Math.floor(vals.length * p))] : Infinity);
+        scoreCut = { hot: at(0.2), rising: at(0.5) };
+      }
+      function band(score) {
+        score = +score || 0;
+        if (!score) return ["Unscored", "pill-gray", ""];
+        if (score >= scoreCut.hot) return ["Hot", "pill-green", "row-green"];
+        if (score >= scoreCut.rising) return ["Rising", "pill-yellow", "row-yellow"];
+        return ["Steady", "pill-gray", ""];
+      }
+      const SRC_ICONS = {
+        youtube: "/assets/icons/youtube.png",
+        gnews: "/assets/icons/gnews.png",
+        tiktok: "/assets/icons/tiktok.png",
+        facebook: "/assets/icons/facebook.png",
+        fbads: "/assets/icons/facebook.png",
+        ttads: "/assets/icons/tiktok.png",
+      };
+      const srcIcon = (key, size = 16, cls = "mini-icon") => (SRC_ICONS[key] ? `<img class="src-img ${cls}" src="${SRC_ICONS[key]}" width="${size}" height="${size}" alt="" loading="lazy">` : "");
+      const srcBadge = (key, size = 18) => srcIcon(key, size) || `<span class="mini-avatar" style="background:${SRC_COLORS[key] || "#64748b"}">${esc(srcLabel(key).slice(0, 2).toUpperCase())}</span>`;
+      document.querySelectorAll("#srcPicker .src-option").forEach((l) => {
+        const cb = l.querySelector("input[type=checkbox]");
+        const key = cb && cb.value;
+        if (!key || !SRC_ICONS[key]) return;
+        cb.insertAdjacentHTML("afterend", `<img class="src-ic" src="${SRC_ICONS[key]}" width="18" height="18" alt="" loading="lazy">`);
+      });
+      const METRIC_LABELS = { views: "views", plays: "plays", likes: "likes" };
+      const itemKey = (i) => `${i.keyword || currentKeyword || ""}::${i.url || ""}`;
+      function fmtDateShort(iso) {
+        const d = new Date(iso || "");
+        return isNaN(d.getTime()) ? "—" : d.toLocaleDateString("th-TH", { day: "2-digit", month: "short", year: "numeric" });
+      }
+      function rowHtml(i, withSignal = true, plainTint = false, withActions = false, withSelect = false) {
+        const b = plainTint ? ["", "", ""] : band(+i.score || 0);
+        const c = SRC_COLORS[i.source] || PALETTE[0];
+        const metric = METRIC_LABELS[i.metric] || "";
+        const scoreValue = +i.score || 0;
+        const score = scoreValue ? `${scoreValue.toLocaleString()}${metric ? ` <span class="metric-unit">${metric}</span>` : ""}` : "—";
+        const channel = i.author ? `<div class="row-channel-wrap"><span class="row-channel">${esc(i.author)}</span></div>` : "";
+        const dateLine = `<div class="row-date">${fmtDateShort(i.published || i.created_at || "")}</div>`;
+        const actions = withActions
+          ? `<td><div class="row-actions"><button class="mini-btn" data-item-edit data-url="${esc(i.url)}" data-keyword="${esc(i.keyword || currentKeyword || "")}">Edit</button><button class="mini-btn danger" data-item-del data-url="${esc(i.url)}" data-keyword="${esc(i.keyword || currentKeyword || "")}">Delete</button></div></td>`
+          : "";
+        const selectCell = withSelect
+          ? `<td class="sel-cell"><input type="checkbox" class="row-select" data-url="${esc(i.url)}" data-keyword="${esc(i.keyword || currentKeyword || "")}"${selectedItems.has(itemKey(i)) ? " checked" : ""}></td>`
+          : "";
+        return `<tr class="${b[2]}"${withSelect ? ' tabindex="0"' : ""}>${selectCell}
+    <td>${srcBadge(i.source, 18)}<span class="src-name">${esc(srcLabel(i.source))}</span></td>
+    <td title="${esc(i.title)}"><a class="row-title" href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a>${channel}${withSelect ? dateLine : ""}</td>
+    <td><b>${score}</b></td>
+    ${withSignal ? `<td><span class="pill ${b[1]}">${b[0]}</span></td>` : ""}
+    <td><a href="${esc(i.url)}" target="_blank" rel="noopener">Open →</a></td>${actions}</tr>`;
+      }
+
+      /* platform tabs for Top items (live parity) */
+      let itemsTab = "all";
+      function renderItemsTabs() {
+        const box = $("topItemsTabs");
+        if (!box) return;
+        const keys = [...new Set(currentItems.map((i) => i.source))].sort();
+        if (!keys.length) {
+          box.style.display = "none";
+          box.innerHTML = "";
+          return;
+        }
+        if (itemsTab !== "all" && !keys.includes(itemsTab)) itemsTab = "all";
+        box.style.display = "flex";
+        box.innerHTML = ["all", ...keys]
+          .map((k) => `<button class="chip" data-items-tab="${esc(k)}" role="tab" aria-selected="${k === itemsTab}">${k === "all" ? "All" : esc(srcLabel(k))}</button>`)
+          .join("");
+        const paint = () =>
+          box.querySelectorAll("[data-items-tab]").forEach((x) => {
+            const on = x.dataset.itemsTab === itemsTab;
+            x.style.borderColor = on ? "var(--link)" : "";
+            x.style.color = on ? "var(--link)" : "";
+            x.setAttribute("aria-selected", on ? "true" : "false");
+          });
+        box.querySelectorAll("[data-items-tab]").forEach((b) =>
+          b.addEventListener("click", () => {
+            itemsTab = b.dataset.itemsTab;
+            paint();
+            renderTable();
+          }),
+        );
+        paint();
+      }
+      function renderTable() {
+        const base = itemsTab === "all" ? currentItems : currentItems.filter((i) => i.source === itemsTab);
+        const rows = [...base].sort((a, b) => (+b.score || 0) - (+a.score || 0)).slice(0, 8);
+        $("topItemsTitle").textContent = `Top items (${rows.length})`;
+        $("tableWrap").innerHTML = rows.length
+          ? `<table aria-label="Top items by score"><thead><tr><th>Source</th><th>Title</th><th>Score</th><th>Link</th></tr></thead><tbody>${rows.map((i) => rowHtml(i, false, true)).join("")}</tbody></table>`
+          : '<div class="empty">No items found</div>';
+      }
+      /* 2.15 mock parity state (in-memory, refresh resets — no persistence) */
+      let selectedItems = new Map();
+      let mockTrash = [];
+      let itemsSort = { key: "score", dir: "desc" };
+      let itemsPageSize = 100;
+      let visibleCount = 100;
+      let lastSelectedIndex = -1;
+      let lastClickShift = false;
+      let filterTimer = null;
+
+      function itemDateOk(i, from, to) {
+        if (!from && !to) return true;
+        const t = Date.parse(i.published || i.created_at || "");
+        if (isNaN(t)) return false;
+        if (from && t < Date.parse(from + "T00:00:00")) return false;
+        if (to && t > Date.parse(to + "T23:59:59.999")) return false;
+        return true;
+      }
+      const SORT_KEYS = ["score", "published", "created_at", "source", "title"];
+      function itemSortDate(i) {
+        const t = Date.parse(i.published || i.created_at || "");
+        return isNaN(t) ? -1 : t;
+      }
+      function sortRows(rows) {
+        const { key, dir } = itemsSort;
+        const mul = dir === "asc" ? 1 : -1;
+        const isDate = key === "published" || key === "created_at";
+        const isNum = key === "score";
+        return [...rows].sort((a, b) => {
+          if (isDate) {
+            const na = itemSortDate(a),
+              nb = itemSortDate(b);
+            if (na === -1 && nb === -1) return 0;
+            if (na === -1) return 1;
+            if (nb === -1) return -1;
+            return (na - nb) * mul;
+          }
+          if (isNum) {
+            const va = +a.score || 0,
+              vb = +b.score || 0;
+            return (va - vb) * mul;
+          }
+          return (
+            String(a[key] || "")
+              .toLowerCase()
+              .localeCompare(String(b[key] || "").toLowerCase()) * mul
+          );
+        });
+      }
+      function filteredItems() {
+        const f = ($("filterFull")?.value || "").toLowerCase();
+        const src = mockPlatformFilter;
+        const from = $("filterFrom")?.value || "";
+        const to = $("filterTo")?.value || "";
+        const rows = currentItems.filter((i) => (!src || i.source === src) && itemDateOk(i, from, to) && (!f || (i.title + " " + i.body + " " + i.source).toLowerCase().includes(f)));
+        return sortRows(rows);
+      }
+      function resetVisible() {
+        visibleCount = itemsPageSize || filteredItems().length;
+      }
+      function renderPager(total) {
+        const pager = $("pager");
+        if (!pager) return;
+        const show = itemsPageSize > 0 && total > itemsPageSize;
+        pager.hidden = !show;
+        if (show && $("pagerCount")) $("pagerCount").textContent = `แสดง ${Math.min(visibleCount, total)} จาก ${total} รายการ`;
+        const lm = $("btnLoadMore");
+        if (lm) lm.hidden = visibleCount >= total;
+      }
+      function updateBulkBar() {
+        const bar = $("bulkBar");
+        if (!bar) return;
+        bar.hidden = selectedItems.size === 0;
+        if ($("bulkCount")) $("bulkCount").textContent = `${selectedItems.size} selected`;
+      }
+      function clearSelection() {
+        selectedItems.clear();
+        renderFullTable();
+      }
+      function selectedPayload() {
+        return [...selectedItems.values()].map(({ keyword, url }) => ({ keyword, url }));
+      }
+      function toggleSelect(i, on) {
+        const key = itemKey(i);
+        if (on) selectedItems.set(key, { keyword: i.keyword || currentKeyword || "", url: i.url || "" });
+        else selectedItems.delete(key);
+      }
+      function mockDeleteToUndo(items, doneMsg = "ลบ") {
+        const urls = new Set(items.map((s) => s.url));
+        const doomed = currentItems.filter((i) => urls.has(i.url));
+        const n = doomed.length;
+        mockTrash.push(...doomed);
+        currentItems = currentItems.filter((i) => !urls.has(i.url));
+        toast(`${doneMsg} ${n} รายการแล้ว`, {
+          action: "Undo",
+          onAction: () => {
+            const restored = [];
+            doomed.forEach((d) => {
+              const idx = mockTrash.findIndex((t) => t.url === d.url);
+              if (idx >= 0) restored.push(mockTrash.splice(idx, 1)[0]);
+            });
+            currentItems.push(...restored);
+            toast(`กู้คืน ${restored.length} รายการแล้ว`);
+            renderPlatformTabs();
+            resetVisible();
+            renderFullTable();
+          },
+        });
+        return n;
+      }
+      function renderPlatformTabs() {
+        const box = $("itemsPlatformTabs");
+        if (!box) return;
+        const counts = {};
+        currentItems.forEach((i) => {
+          counts[i.source] = (counts[i.source] || 0) + 1;
+        });
+        if (mockPlatformFilter && !counts[mockPlatformFilter]) mockPlatformFilter = "";
+        const tabs = [{ key: "", label: "All", n: currentItems.length }].concat(
+          Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .map(([key, n]) => ({ key, label: MOCK_SRC_LABELS[key] || key, n })),
+        );
+        box.innerHTML = tabs
+          .map(
+            (t) =>
+              `<button class="chip${t.key === mockPlatformFilter ? " active" : ""}" data-platform="${esc(t.key)}" role="tab" aria-selected="${t.key === mockPlatformFilter}">${esc(t.label)} <b>${t.n}</b></button>`,
+          )
+          .join("");
+        box.querySelectorAll("[data-platform]").forEach((b) =>
+          b.addEventListener("click", () => {
+            mockPlatformFilter = b.dataset.platform;
+            renderPlatformTabs();
+            resetVisible();
+            renderFullTable();
+          }),
+        );
+      }
+      function renderFullTable() {
+        const rows = filteredItems();
+        const visible = itemsPageSize > 0 ? rows.slice(0, visibleCount) : rows;
+        const checkedCount = rows.filter((i) => selectedItems.has(itemKey(i))).length;
+        const allChecked = rows.length > 0 && checkedCount === rows.length;
+        const th = (key, label) => {
+          const active = itemsSort.key === key;
+          const arrow = active ? (itemsSort.dir === "asc" ? "↑" : "↓") : "";
+          const sort = active ? (itemsSort.dir === "asc" ? "ascending" : "descending") : "none";
+          return `<th aria-sort="${sort}" data-sort-key="${key}"><button class="sort-btn" data-sort="${key}">${label}<span class="sort-arrow">${arrow}</span></button></th>`;
+        };
+        $("tableFullWrap").innerHTML = rows.length
+          ? `<table aria-label="All items by score"><thead><tr><th class="sel-cell"><input type="checkbox" id="selectAll" aria-label="Select all visible"${allChecked ? " checked" : ""}></th>${th("source", "Source")}${th("title", "Title")}${th("score", "Metric")}<th>Signal</th><th>Link</th><th>Actions</th></tr></thead><tbody>${visible.map((i) => rowHtml(i, true, true, true, true)).join("")}</tbody></table>`
+          : currentItems.length
+            ? `<div class="empty">ไม่มีผลตาม filter — <button class="btn btn-ghost" data-clear-filters style="padding:5px 10px;font-size:12px">ล้างตัวกรอง</button></div>`
+            : '<div class="empty">ไม่มีข้อมูล — กด Search Now เพื่อดึงจากช่องทางที่เลือก</div>';
+        const all = $("selectAll");
+        if (all && checkedCount > 0 && !allChecked) all.indeterminate = true;
+        renderPager(rows.length);
+        updateBulkBar();
+      }
+      $("filterFull").addEventListener("input", () => {
+        clearTimeout(filterTimer);
+        filterTimer = setTimeout(() => {
+          resetVisible();
+          renderFullTable();
+        }, 250);
+      });
+      ["filterFrom", "filterTo"].forEach((id) => {
+        $(id).addEventListener("change", () => {
+          resetVisible();
+          renderFullTable();
+        });
+        $(id).addEventListener("input", () => {
+          resetVisible();
+          renderFullTable();
+        });
+      });
+      function isoDate(d) {
+        const p = (n) => String(n).padStart(2, "0");
+        return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+      }
+      document.querySelectorAll("[data-quick]").forEach((b) =>
+        b.addEventListener("click", () => {
+          const days = b.dataset.quick;
+          const to = new Date();
+          let from = new Date();
+          if (days === "today") from = to;
+          else from.setDate(from.getDate() - (+days - 1));
+          $("filterFrom").value = isoDate(from);
+          $("filterTo").value = isoDate(to);
+          resetVisible();
+          renderFullTable();
+        }),
+      );
+      $("btnClearFilters").addEventListener("click", () => {
+        $("filterFull").value = "";
+        $("filterFrom").value = "";
+        $("filterTo").value = "";
+        mockPlatformFilter = "";
+        itemsSort = { key: "score", dir: "desc" };
+        renderPlatformTabs();
+        resetVisible();
+        renderFullTable();
+      });
+      $("pageSize")?.addEventListener("change", (e) => {
+        itemsPageSize = +e.target.value || 0;
+        resetVisible();
+        renderFullTable();
+      });
+      $("btnLoadMore")?.addEventListener("click", () => {
+        visibleCount += 100;
+        renderFullTable();
+      });
+
+      /* ===== 2.15 mock parity: toast (in-memory, 6s, stack ≤3) ===== */
+      const TOAST_MS = 6000;
+      function toast(msg, opts = {}) {
+        const host = $("toastHost");
+        if (!host) return;
+        while (host.children.length >= 3) host.firstChild.remove();
+        const el = document.createElement("div");
+        el.className = "toast" + (opts.error ? " toast-err" : "");
+        el.setAttribute("role", opts.error ? "alert" : "status");
+        const msgEl = document.createElement("div");
+        msgEl.className = "toast-msg";
+        msgEl.textContent = msg;
+        el.appendChild(msgEl);
+        if (opts.action && typeof opts.onAction === "function") {
+          const b = document.createElement("button");
+          b.className = "toast-action";
+          b.textContent = opts.action;
+          b.addEventListener("click", () => {
+            opts.onAction();
+            el.remove();
+          });
+          el.appendChild(b);
+        }
+        const x = document.createElement("button");
+        x.className = "toast-x";
+        x.setAttribute("aria-label", "ปิด");
+        x.textContent = "×";
+        x.addEventListener("click", () => el.remove());
+        el.appendChild(x);
+        host.appendChild(el);
+        if (!opts.error) setTimeout(() => el.remove(), TOAST_MS);
+      }
+
+      /* ===== 2.15 mock parity: confirm dialog (replaces native confirm) ===== */
+      let confirmResolve = null;
+      function askConfirm({ title = "ยืนยัน", msg = "", okText = "ยืนยัน", danger = false } = {}) {
+        $("confirmTitle").textContent = title;
+        $("confirmMsg").textContent = msg;
+        const ok = $("confirmOk");
+        ok.textContent = okText;
+        ok.classList.toggle("btn-danger", danger);
+        ok.classList.toggle("btn-primary", !danger);
+        $("confirmModal").hidden = false;
+        document.body.style.overflow = "hidden";
+        $("confirmCancel").focus();
+        return new Promise((resolve) => {
+          confirmResolve = resolve;
+        });
+      }
+      function closeConfirm(val) {
+        $("confirmModal").hidden = true;
+        if ($("loadModal").hidden && $("moveModal").hidden) document.body.style.overflow = "";
+        if (confirmResolve) {
+          const r = confirmResolve;
+          confirmResolve = null;
+          r(val);
+        }
+      }
+      $("confirmOk").addEventListener("click", () => closeConfirm(true));
+      $("confirmCancel").addEventListener("click", () => closeConfirm(false));
+      $("confirmClose").addEventListener("click", () => closeConfirm(false));
+      $("confirmModal").addEventListener("click", (e) => {
+        if (e.target === $("confirmModal")) closeConfirm(false);
+      });
+
+      /* ===== 2.15 mock parity: move keyword dialog (replaces native prompt) ===== */
+      let moveResolve = null;
+      function askMove(items) {
+        $("moveSub").textContent = `${items.length} รายการที่เลือก`;
+        $("moveNewField").hidden = true;
+        $("moveNew").value = "";
+        const kws = [...new Set(currentItems.map((i) => i.keyword || currentKeyword || ""))];
+        const sel = $("moveSelect");
+        sel.innerHTML =
+          '<option value="">เลือก keyword เดิม…</option>' + kws.map((k) => `<option value="${esc(k)}">${esc(k)}</option>`).join("") + '<option value="__new">+ สร้าง keyword ใหม่…</option>';
+        $("moveModal").hidden = false;
+        document.body.style.overflow = "hidden";
+        sel.focus();
+        return new Promise((resolve) => {
+          moveResolve = resolve;
+        });
+      }
+      function closeMove(val) {
+        $("moveModal").hidden = true;
+        if ($("loadModal").hidden && $("confirmModal").hidden) document.body.style.overflow = "";
+        if (moveResolve) {
+          const r = moveResolve;
+          moveResolve = null;
+          r(val);
+        }
+      }
+      function moveResolveOk() {
+        const sel = $("moveSelect").value;
+        if (sel === "__new") {
+          const v = $("moveNew").value.trim();
+          if (!v) {
+            toast("พิมพ์ชื่อ keyword ใหม่ก่อน", { error: true });
+            return;
+          }
+          closeMove(v);
+          return;
+        }
+        if (!sel) {
+          toast("เลือก keyword หรือสร้างใหม่", { error: true });
+          return;
+        }
+        closeMove(sel);
+      }
+      $("moveSelect").addEventListener("change", () => {
+        $("moveNewField").hidden = $("moveSelect").value !== "__new";
+        if (!$("moveNewField").hidden) $("moveNew").focus();
+      });
+      $("moveOk").addEventListener("click", moveResolveOk);
+      $("moveCancel").addEventListener("click", () => closeMove(null));
+      $("moveClose").addEventListener("click", () => closeMove(null));
+      $("moveModal").addEventListener("click", (e) => {
+        if (e.target === $("moveModal")) closeMove(null);
+      });
+
+      /* ===== 2.15 mock parity: bulk actions (in-memory) ===== */
+      async function mockRunBulk(action, extra = {}) {
+        const items = selectedPayload();
+        if (!items.length) return;
+        if (action === "move") {
+          const target = await askMove(items);
+          if (!target) return;
+          extra = { ...extra, to_keyword: target };
+        } else {
+          const ok = await askConfirm({
+            title: action === "archive" ? "เก็บใน Archive" : "ลบรายการ",
+            msg: action === "archive" ? `เก็บ ${items.length} รายการใน Archive?` : `ลบ ${items.length} รายการ? (mock — กู้คืนได้)`,
+            okText: action === "archive" ? "เก็บ" : "ลบ",
+            danger: action !== "archive",
+          });
+          if (!ok) return;
+        }
+        const urls = new Set(items.map((s) => s.url));
+        if (action === "delete") {
+          mockDeleteToUndo(items);
+        } else if (action === "archive") {
+          const doomed = currentItems.filter((i) => urls.has(i.url));
+          doomed.forEach((d) =>
+            MOCK_ARCHIVE.push({
+              label: srcLabel(d.source),
+              url: d.url,
+              title: d.title,
+              author: d.author || "",
+              metric: d.metric || "none",
+              score: +d.score || 0,
+              keyword: d.keyword || currentKeyword || "",
+              archived: fmtDateShort(new Date().toISOString()),
+            }),
+          );
+          currentItems = currentItems.filter((i) => !urls.has(i.url));
+          toast(`เก็บ ${doomed.length} รายการใน Archive แล้ว`);
+          renderArchiveMock();
+        } else if (action === "move") {
+          items.forEach((s) => {
+            const it = currentItems.find((i) => i.url === s.url);
+            if (it) it.keyword = extra.to_keyword;
+          });
+          toast(`ย้าย ${items.length} รายการไป "${extra.to_keyword}"`);
+        }
+        selectedItems.clear();
+        $("bulkBar").hidden = true;
+        renderPlatformTabs();
+        resetVisible();
+        renderFullTable();
+      }
+      $("bulkArchive").addEventListener("click", () => mockRunBulk("archive"));
+      $("bulkDelete").addEventListener("click", () => mockRunBulk("delete"));
+      $("bulkMove").addEventListener("click", () => mockRunBulk("move"));
+      $("bulkClear").addEventListener("click", clearSelection);
+
+      /* 2.15 mock parity: selection, sort, shift-click range, keyboard */
+      $("tableFullWrap").addEventListener("click", (e) => {
+        if (e.target.closest(".row-select")) lastClickShift = e.shiftKey;
+      });
+      $("tableFullWrap").addEventListener("change", (e) => {
+        const cb = e.target.closest(".row-select");
+        if (!cb) return;
+        const rows = filteredItems();
+        const idx = rows.findIndex((i) => i.url === cb.dataset.url);
+        if (lastClickShift && lastSelectedIndex >= 0 && idx >= 0 && lastSelectedIndex !== idx) {
+          const [a, b] = [lastSelectedIndex, idx].sort((x, y) => x - y);
+          const on = cb.checked;
+          for (let j = a; j <= b; j++) toggleSelect(rows[j], on);
+        } else {
+          toggleSelect(rows[idx] || { keyword: cb.dataset.keyword || "", url: cb.dataset.url || "" }, cb.checked);
+          lastSelectedIndex = idx;
+        }
+        lastClickShift = false;
+        updateBulkBar();
+        const all = $("selectAll");
+        if (all) {
+          const count = rows.filter((i) => selectedItems.has(itemKey(i))).length;
+          all.checked = rows.length > 0 && count === rows.length;
+          all.indeterminate = count > 0 && count < rows.length;
+        }
+      });
+      $("tableFullWrap").addEventListener("change", (e) => {
+        if (e.target.id !== "selectAll") return;
+        const on = e.target.checked;
+        filteredItems().forEach((i) => toggleSelect(i, on));
+        renderFullTable();
+      });
+      $("tableFullWrap").addEventListener("keydown", (e) => {
+        const tr = e.target.closest("tr[tabindex]");
+        if (!tr) return;
+        if (e.key !== " " && e.key !== "Enter") return;
+        e.preventDefault();
+        const cb = tr.querySelector(".row-select");
+        if (cb) {
+          cb.checked = !cb.checked;
+          cb.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      });
+      $("tableFullWrap").addEventListener("click", async (e) => {
+        const clear = e.target.closest("[data-clear-filters]");
+        if (clear) {
+          $("btnClearFilters").click();
+          return;
+        }
+        const btn = e.target.closest("[data-sort]");
+        if (btn) {
+          const key = btn.dataset.sort;
+          if (itemsSort.key === key) itemsSort.dir = itemsSort.dir === "asc" ? "desc" : "asc";
+          else itemsSort = { key, dir: "desc" };
+          resetVisible();
+          renderFullTable();
+          return;
+        }
+        const ed = e.target.closest("[data-item-edit]");
+        if (ed) {
+          toast("แก้ไขรายการ (mock — ไม่มี persistence)", { error: true });
+          return;
+        }
+        const del = e.target.closest("[data-item-del]");
+        if (del) {
+          const ok = await askConfirm({ title: "ลบ item", msg: "ลบรายการนี้? (mock — กู้คืนได้)", okText: "ลบ", danger: true });
+          if (!ok) return;
+          mockDeleteToUndo([{ url: del.dataset.url }]);
+          resetVisible();
+          renderFullTable();
+        }
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          if (!$("confirmModal").hidden) closeConfirm(false);
+          else if (!$("moveModal").hidden) closeMove(null);
+        }
+        const t = e.target;
+        const typing = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable);
+        if (e.key === "/" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k")) {
+          e.preventDefault();
+          $("q").focus();
+          return;
+        }
+        if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+          e.preventDefault();
+          fetchNow();
+          return;
+        }
+        if (typing) return;
+        if (e.key === "Delete" && selectedItems.size > 0) {
+          e.preventDefault();
+          mockRunBulk("delete");
+          return;
+        }
+        if (e.key.toLowerCase() === "a" && selectedItems.size > 0) {
+          e.preventDefault();
+          mockRunBulk("archive");
+        }
+      });
+
+      /* ===== render detailed pages (mock) ===== */
+      function renderSources() {
+        $("srcCards").innerHTML = SRC_DETAIL.map(
+          (s) => `
+    <div class="card src-card" style="--src:${s.color}">
+      <div class="src-top">${srcIcon(s.name, 38, "src-logo-img") || `<div class="src-logo" style="background:${s.color}">${esc(s.label.slice(0, 1))}</div>`}
+        <div><h4>${esc(s.label)}</h4><div class="api-note">${esc(s.api)}</div></div>
+        <span class="pill pill-green" style="margin-left:auto">Connected</span></div>
+      <div class="src-metrics">
+        <div class="m"><b>${s.count}</b><span>items</span></div>
+        <div class="m"><b>${s.total.toLocaleString()}</b><span>total score</span></div>
+        <div class="m"><b>${s.avg.toLocaleString()}</b><span>avg score</span></div>
+        <div class="m"><b>${s.last}</b><span>last fetch</span></div>
+      </div>
+      <div style="margin-top:10px;font-size:12px;color:var(--muted)">Sample: ${esc(s.sample)}</div>
+    </div>`,
+        ).join("");
+        const tot = SRC_DETAIL.reduce((s, x) => s + x.count, 0);
+        $("srcRows").innerHTML = SRC_DETAIL.map(
+          (s) => `
+    <tr><td>${srcBadge(s.name, 18)}<b>${esc(s.label)}</b></td>
+      <td>${s.count}</td><td>${Math.round((s.count / tot) * 100)}%</td>
+      <td>${s.total.toLocaleString()}</td><td>${s.avg.toLocaleString()}</td>
+      <td>${s.last}</td><td><span class="pill pill-green">${s.status}</span></td></tr>`,
+        ).join("");
+      }
+      function renderTermsPage() {
+        const max = Math.max(...TERM_DETAIL.map(([, , c]) => c));
+        $("termsCount").textContent = TERM_DETAIL.length + " terms (from 64 items)";
+        $("termRows").innerHTML = TERM_DETAIL.map(
+          ([w, c, chg, use], i) => `
+    <tr><td class="rank">#${i + 1}</td><td><b>${esc(w)}</b></td><td>${c}</td>
+      <td><div class="term-bar"><i style="width:${Math.round((c / max) * 100)}%"></i></div></td>
+      <td class="${chg.includes("↘") ? "chg-down" : "chg-up"}">${esc(chg)}</td>
+      <td>${esc(TERM_SENTI[i] || "")}</td><td>${esc(TERM_CHAN[i] || "")}</td><td>${esc(use)}</td></tr>`,
+        ).join("");
+      }
+      $("filterTerms").addEventListener("input", () => {
+        const f = $("filterTerms").value.toLowerCase();
+        document.querySelectorAll("#termRows tr").forEach((r) => {
+          r.style.display = r.textContent.toLowerCase().includes(f) ? "" : "none";
+        });
+      });
+      let MOCK_ARCHIVE = [
+        {
+          label: "YouTube",
+          url: "https://www.youtube.com/watch?v=mock-arch-1",
+          title: "13 จิตวิทยาการขายที่ใช้ได้ตลอดชีวิต",
+          author: "Marketing Lab",
+          metric: "views",
+          score: 1011182,
+          keyword: "Digital Marketing",
+          archived: "09 พ.ย. 2026",
+        },
+        {
+          label: "TikTok",
+          url: "https://www.tiktok.com/@itopplus/video/mock2",
+          title: "3 hook เปิดคลิปให้คนหยุดดู",
+          author: "@itopplus",
+          metric: "plays",
+          score: 84200,
+          keyword: "TikTok Ads",
+          archived: "08 พ.ย. 2026",
+        },
+        {
+          label: "FB Ads",
+          url: "https://www.facebook.com/ads/library/?id=mock3",
+          title: "ตัวอย่างโฆษณา Lead Form ที่ ROAS ดี",
+          author: "ITOPPLUS",
+          metric: "likes",
+          score: 38,
+          keyword: "Facebook Ads",
+          archived: "07 พ.ย. 2026",
+        },
+        {
+          label: "Google News",
+          url: "https://example.com/news/mock4",
+          title: "ตลาด E-commerce ไทย โตต่อเนื่องปี 2026",
+          author: "Thai PBS",
+          metric: "none",
+          score: 0,
+          keyword: "SEO",
+          archived: "06 พ.ย. 2026",
+        },
+      ];
+      /* 2.15 mock parity: archive multi-select + platform tabs (in-memory) */
+      let archiveSelected = new Map();
+      let archivePlatformFilter = "";
+      const archiveKey = (i) => i.url || "";
+      function archiveFiltered() {
+        const f = ($("filterArchive")?.value || "").toLowerCase();
+        return MOCK_ARCHIVE.filter((i) => {
+          if (archivePlatformFilter && i.label !== archivePlatformFilter) return false;
+          return !f || `${i.title || ""} ${i.keyword || ""} ${i.label || ""} ${i.author || ""}`.toLowerCase().includes(f);
+        });
+      }
+      function renderArchiveTabs() {
+        const box = $("archivePlatformTabs");
+        if (!box) return;
+        const counts = {};
+        MOCK_ARCHIVE.forEach((i) => {
+          counts[i.label] = (counts[i.label] || 0) + 1;
+        });
+        if (archivePlatformFilter && !counts[archivePlatformFilter]) archivePlatformFilter = "";
+        const tabs = [{ key: "", label: "All", n: MOCK_ARCHIVE.length }].concat(
+          Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .map(([key, n]) => ({ key, label: key, n })),
+        );
+        box.innerHTML = tabs
+          .map(
+            (t) =>
+              `<button class="chip${t.key === archivePlatformFilter ? " active" : ""}" data-archive-platform="${esc(t.key)}" role="tab" aria-selected="${t.key === archivePlatformFilter}">${esc(t.label)} <b>${t.n}</b></button>`,
+          )
+          .join("");
+        box.querySelectorAll("[data-archive-platform]").forEach((b) =>
+          b.addEventListener("click", () => {
+            archivePlatformFilter = b.dataset.archivePlatform;
+            renderArchiveTabs();
+            renderArchiveMock();
+          }),
+        );
+      }
+      function updateArchiveBulkBar() {
+        const bar = $("archiveBulkBar");
+        if (!bar) return;
+        bar.hidden = archiveSelected.size === 0;
+        if ($("archiveBulkCount")) $("archiveBulkCount").textContent = `${archiveSelected.size} selected`;
+      }
+      function renderArchiveMock() {
+        const wrap = $("archiveWrap");
+        if (!wrap) return;
+        if ($("archiveHint")) $("archiveHint").textContent = `${MOCK_ARCHIVE.length} saved items · mock`;
+        setBadge("archive", MOCK_ARCHIVE.length);
+        const rows = archiveFiltered();
+        const allChecked = rows.length > 0 && rows.every((i) => archiveSelected.has(archiveKey(i)));
+        const someChecked = rows.some((i) => archiveSelected.has(archiveKey(i)));
+        wrap.innerHTML = rows.length
+          ? `<table aria-label="Archived items (mock)">
+    <thead><tr><th class="sel-cell"><input type="checkbox" id="archiveSelectAll" aria-label="Select all archived"${allChecked ? " checked" : ""}></th><th>Source</th><th>Title</th><th>Metric</th><th>Keyword</th><th>Archived</th><th>Actions</th></tr></thead>
+    <tbody>${rows
+      .map((i) => {
+        const sel = archiveSelected.has(archiveKey(i));
+        return `<tr class="${sel ? "selected" : ""}">
+      <td class="sel-cell"><input type="checkbox" class="archive-select" data-url="${esc(i.url)}"${sel ? " checked" : ""}></td>
+      <td>${esc(i.label)}</td>
+      <td><a class="row-title" href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a>
+        <div class="row-channel-wrap"><span class="row-channel">${esc(i.author)}</span></div></td>
+      <td><b>${i.score.toLocaleString()} <span class="metric-unit">${esc(i.metric)}</span></b></td>
+      <td>${esc(i.keyword)}</td><td>${esc(i.archived)}</td>
+      <td><div class="row-actions">
+        <button class="mini-btn" data-arch-restore data-url="${esc(i.url)}">Restore</button>
+        <button class="mini-btn danger" data-arch-del data-url="${esc(i.url)}">Delete</button>
+      </div></td></tr>`;
+      })
+      .join("")}</tbody></table>`
+          : '<div class="empty">Archive ว่าง — เลือกรายการใน All items แล้วกด Archive</div>';
+        const selAll = $("archiveSelectAll");
+        if (selAll && someChecked && !allChecked) selAll.indeterminate = true;
+        renderArchiveTabs();
+        updateArchiveBulkBar();
+      }
+      function archiveRestoreItems(items) {
+        const urls = new Set(items.map((s) => s.url));
+        const restored = MOCK_ARCHIVE.filter((i) => urls.has(i.url));
+        MOCK_ARCHIVE = MOCK_ARCHIVE.filter((i) => !urls.has(i.url));
+        currentItems.push(...restored.map((i) => ({ source: i.label, title: i.title, body: "", url: i.url, score: i.score, keyword: i.keyword })));
+        toast(`กู้คืน ${restored.length} รายการแล้ว`);
+        renderPlatformTabs();
+        renderArchiveMock();
+        renderFullTable();
+      }
+      $("archiveWrap")?.addEventListener("click", async (e) => {
+        const restore = e.target.closest("[data-arch-restore]");
+        const del = e.target.closest("[data-arch-del]");
+        if (!restore && !del) return;
+        const items = [{ url: (restore || del).dataset.url }];
+        if (del) {
+          const ok = await askConfirm({ title: "ลบถาวร", msg: "ลบรายการนี้ออกจาก Archive ถาวร? (mock — ไม่เข้า Trash)", okText: "ลบ", danger: true });
+          if (!ok) return;
+          MOCK_ARCHIVE = MOCK_ARCHIVE.filter((i) => i.url !== items[0].url);
+          toast("ลบจาก Archive แล้ว");
+          archiveSelected.delete(items[0].url);
+          renderArchiveMock();
+          return;
+        }
+        archiveRestoreItems(items);
+      });
+      $("archiveWrap")?.addEventListener("change", (e) => {
+        const cb = e.target.closest(".archive-select");
+        if (cb) {
+          const key = cb.dataset.url;
+          if (cb.checked) archiveSelected.set(key, { url: key });
+          else archiveSelected.delete(key);
+          renderArchiveMock();
+          return;
+        }
+        if (e.target.id === "archiveSelectAll") {
+          const on = e.target.checked;
+          archiveFiltered().forEach((i) => {
+            if (on) archiveSelected.set(archiveKey(i), { url: archiveKey(i) });
+            else archiveSelected.delete(archiveKey(i));
+          });
+          renderArchiveMock();
+        }
+      });
+      $("filterArchive")?.addEventListener("input", () => renderArchiveMock());
+      $("archiveBulkRestore")?.addEventListener("click", async () => {
+        const items = [...archiveSelected.values()];
+        if (!items.length) return;
+        const ok = await askConfirm({ title: "ยืนยัน", msg: `กู้คืน ${items.length} รายการกลับสู่ All items?`, okText: "ยืนยัน" });
+        if (!ok) return;
+        archiveRestoreItems(items);
+        archiveSelected.clear();
+        renderArchiveMock();
+      });
+      $("archiveBulkDelete")?.addEventListener("click", async () => {
+        const items = [...archiveSelected.values()];
+        if (!items.length) return;
+        const ok = await askConfirm({ title: "ลบถาวร", msg: `ลบ ${items.length} รายการออกจาก Archive ถาวร?`, okText: "ลบ", danger: true });
+        if (!ok) return;
+        const urls = new Set(items.map((s) => s.url));
+        MOCK_ARCHIVE = MOCK_ARCHIVE.filter((i) => !urls.has(i.url));
+        toast(`ลบ ${items.length} รายการจาก Archive แล้ว`);
+        archiveSelected.clear();
+        renderArchiveMock();
+      });
+      $("archiveBulkClear")?.addEventListener("click", () => {
+        archiveSelected.clear();
+        renderArchiveMock();
+      });
+      $("archiveRestoreAll")?.addEventListener("click", async () => {
+        const items = archiveFiltered().map((i) => ({ url: i.url }));
+        if (!items.length) return;
+        const ok = await askConfirm({ title: "ยืนยัน", msg: `กู้คืน ${items.length} รายการที่กรองอยู่ทั้งหมด?`, okText: "ยืนยัน" });
+        if (!ok) return;
+        archiveRestoreItems(items);
+        archiveSelected.clear();
+        renderArchiveMock();
+      });
+      function renderIdeas() {
+        $("ideaGrid").innerHTML = IDEAS.map(
+          (d) => `
+    <div class="card idea">
+      <div class="tags"><span class="pill ${d.color}">Priority: ${d.prio}</span>
+        <span class="pill pill-blue">${esc(d.format)}</span>
+        <span class="pill pill-purple">${esc(d.platform)}</span></div>
+      <h4>${esc(d.title)}</h4><p><b>Hook:</b> ${esc(d.hook)}<br><b>ITOPPLUS angle:</b> ${esc(d.angle)}</p>
+      <div class="meta"><span>⏱ ${esc(d.effort)}</span><span>Do this week</span></div>
+    </div>`,
+        ).join("");
+      }
+
+      /* ===== render deep widgets (static mock — ไม่ขึ้นกับ fetch) ===== */
+      function renderDeep() {
+        /* follower growth line */
+        const g = $("growthLine");
+        if (g) {
+          const max = Math.max(...GROWTH30),
+            min = Math.min(...GROWTH30);
+          const pts = GROWTH30.map((v, i) => `${((i * 800) / (GROWTH30.length - 1)).toFixed(1)},${(150 - ((v - min) / (max - min || 1)) * 125).toFixed(1)}`).join(" ");
+          g.innerHTML = `<polyline fill="none" stroke="#22c55e" stroke-width="2.5" points="${pts}"/>`;
+        }
+        /* engagement by channel */
+        if ($("chanER"))
+          $("chanER").innerHTML = CHAN_PERF.map((c) => {
+            const er = parseFloat(c.er);
+            return `<div class="senti-row"><div class="name">${esc(c.chan)}</div>
+      <div class="senti-track"><div class="senti-fill" style="width:${((er / 8) * 100).toFixed(0)}%;background:#22c55e"></div></div>
+      <b style="width:44px;text-align:right">${c.er}</b></div>`;
+          }).join("");
+        /* sentiment */
+        if ($("sentiBox"))
+          $("sentiBox").innerHTML = [
+            ["Positive", 68, "#22c55e", "843 posts"],
+            ["Neutral", 22, "#94a3b8", "273 posts"],
+            ["Negative", 10, "#ff6b6b", "123 posts"],
+          ]
+            .map(
+              ([n, v, col, c]) => `<div class="senti-row"><div class="name">${n}</div>
+    <div class="senti-track"><div class="senti-fill" style="width:${v}%;background:${col}"></div></div>
+    <b style="width:44px;text-align:right">${v}%</b><span style="color:var(--muted);font-size:11px">${c}</span></div>`,
+            )
+            .join("");
+        /* channel performance */
+        if ($("chanRows"))
+          $("chanRows").innerHTML = CHAN_PERF.map(
+            (c) => `
+    <tr><td><b>${esc(c.chan)}</b></td><td>${c.followers}</td><td>${c.posts}</td><td>${c.reach}</td>
+      <td><b>${c.er}</b></td><td style="color:var(--green)">${c.growth}</td><td>${esc(c.bench)}</td></tr>`,
+          ).join("");
+        /* mentions */
+        if ($("mentionRows"))
+          $("mentionRows").innerHTML = MENTIONS.map(
+            (m, i) => `
+    <tr><td class="rank">#${i + 1}</td><td><b>${esc(m.page)}</b></td><td>${esc(m.plat)}</td><td>${m.fol}</td>
+      <td>${m.n}</td><td>${m.reach}</td><td><span class="pill ${m.senti[1]}">${m.senti[0]}</span></td></tr>`,
+          ).join("");
+        /* mentions volume 7 days */
+        if ($("volBars"))
+          $("volBars").innerHTML = VOLUME7.map(
+            ([d, v]) => `
+    <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:${Math.round((v / 220) * 100)}%" title="${v} mentions"></div></div>
+    <div class="bar-label">${d}</div></div>`,
+          ).join("");
+        /* share of voice */
+        if ($("sovBox"))
+          $("sovBox").innerHTML = SOV.map(
+            (s) => `
+    <div class="senti-row"><div class="name">${esc(s.name)}</div>
+      <div class="senti-track"><div class="senti-fill" style="width:${s.v}%;background:${s.color}"></div></div>
+      <b style="width:40px;text-align:right">${s.v}%</b></div>`,
+          ).join("");
+        /* hashtags */
+        if ($("hashBox")) $("hashBox").innerHTML = HASHES.map((h) => `<span class="term">${esc(h)}</span>`).join("");
+        /* heatmap */
+        if ($("heatRows"))
+          $("heatRows").innerHTML = HEAT.map(
+            ([d, cells]) => `
+    <tr><td style="background:none"><b>${d}</b></td>${cells
+      .map((v) => {
+        const a = 0.12 + v * 0.88;
+        return `<td class="cell" style="background:rgba(34,197,94,${a.toFixed(2)})">${v}</td>`;
+      })
+      .join("")}</tr>`,
+          ).join("");
+        /* content performance */
+        if ($("perfRows"))
+          $("perfRows").innerHTML = PERF.map(
+            (p) => `
+    <tr><td>${esc(p[0])}</td><td><span class="pill pill-blue">${p[1]}</span></td><td>${p[2]}</td>
+      <td>${p[3] + p[4] + p[5]}</td><td><b>${p[6]}</b></td></tr>`,
+          ).join("");
+        /* publish plan */
+        if ($("planBox"))
+          $("planBox").innerHTML = PLAN.map(
+            ([d, t, when, p]) => `
+    <div style="display:flex;gap:10px;align-items:center;background:var(--panel-2);border:1px solid var(--line-2);border-radius:10px;padding:9px 12px">
+      <b style="width:62px;flex:0 0 62px">${esc(d)}</b><span style="flex:1">${esc(t)}</span>
+      <span class="pill ${p}" style="white-space:nowrap">${esc(when)}</span></div>`,
+          ).join("");
+        /* top 10 contents in items page */
+        if ($("topContentRows"))
+          $("topContentRows").innerHTML = PERF.concat([
+            ["ทำไมเว็บมี traffic แต่ไม่มีลูกค้า", "Article", 4800, 342, 41, 28, "6.72%"],
+            ["เว็บขายของใหม่ แทนเว็บโบรชัวร์เดิม", "Case", 4600, 318, 39, 25, "6.91%"],
+          ])
+            .slice(0, 10)
+            .map(
+              (p, i) => `
+    <tr><td class="rank">#${i + 1}</td><td>${esc(p[0])}</td><td><span class="pill pill-blue">${p[1]}</span></td>
+      <td>${p[2]}</td><td>${p[3]}</td><td>${p[4]}</td><td>${p[5]}</td><td><b>${p[6]}</b></td></tr>`,
+            )
+            .join("");
+      }
+
+      /* ===== render เมนูใหม่ ===== */
+      function renderCrm() {
+        $("crmBoard").innerHTML = CRM_STAGES.map((s) => {
+          const cards = CRM_LEADS.filter((l) => l.stage === s.k);
+          return (
+            `<div class="kcol"><h4>${esc(s.label)} <span class="kcount">${cards.length}</span></h4>` +
+            cards
+              .map(
+                (l) => `<div class="lead"><b>${esc(l.name)}</b><span>id ${esc(l.id)} · ${esc(l.src)}</span>
+        <span>Value ฿${l.value.toLocaleString()}</span><span>Updated: ${esc(l.last)}</span>
+        <span><b>Next:</b> ${esc(l.next)}</span><span class="lead-src pill pill-blue">${esc(l.src)}</span></div>`,
+              )
+              .join("") +
+            "</div>"
+          );
+        }).join("");
+      }
+      function renderAds() {
+        const pill = (s) => (s === "Live" ? "pill-green" : s === "Testing" ? "pill-yellow" : "pill-gray");
+        $("adsRows").innerHTML = ADS_CAMPAIGNS.map(
+          (c) => `
+    <tr><td><b>${esc(c.name)}</b></td><td>${esc(c.plat)}</td><td>฿${c.budget.toLocaleString()}</td>
+      <td>${c.reach.toLocaleString()}</td><td>${c.clicks.toLocaleString()}</td>
+      <td>฿${c.cpl}</td><td>${c.roas}x</td><td><span class="pill ${pill(c.status)}">${esc(c.status)}</span></td></tr>`,
+        ).join("");
+      }
+      function renderCalendar() {
+        $("calWeek").innerHTML = CALENDAR_WEEK.map(
+          (d) =>
+            `
+    <div class="cal-day${d.today ? " today" : ""}"><h5>${esc(d.day)}${d.today ? " — today" : ""}</h5>` +
+            d.posts.map((p) => `<div class="post ${p.st}">${esc(p.t)}</div>`).join("") +
+            "</div>",
+        ).join("");
+      }
+      function renderTasks() {
+        const cols = [
+          { k: "ing", label: "Doing" },
+          { k: "approval", label: "Pending approval" },
+          { k: "done", label: "Done" },
+        ];
+        $("taskBoard").innerHTML = cols
+          .map((c) => {
+            const cards = TASKS.filter((t) => t.col === c.k);
+            return (
+              `<div class="kcol"><h4>${esc(c.label)} <span class="kcount">${cards.length}</span></h4>` +
+              cards.map((t) => `<div class="lead"><b>${esc(t.title)}</b><span>${esc(t.owner)} · SLA: ${esc(t.sla)}</span><span>${esc(t.body)}</span></div>`).join("") +
+              "</div>"
+            );
+          })
+          .join("");
+      }
+      function renderGoals() {
+        const rows = GOALS.map(
+          (g) => `
+    <div class="progress-row"><div class="lbl">${esc(g.client)}<br><span style="color:var(--muted);font-size:11px">เป้า: ${esc(g.target)} → จริง: ${esc(g.actual)}</span></div>
+      <div class="bar"><i style="width:${g.pct}%"></i></div><div class="pct">${g.pct}%</div></div>`,
+        ).join("");
+        if ($("goalRows")) $("goalRows").innerHTML = rows;
+        if ($("goalRowsMini")) $("goalRowsMini").innerHTML = rows;
+      }
+      function renderReports() {
+        const btn = $("btnExport");
+        if (btn)
+          btn.addEventListener("click", () => {
+            $("status").textContent = "Export PDF — demo complete";
+            $("status").className = "status";
+          });
+      }
+
+      function renderCompetitors() {
+        /* SoV bars */
+        const max = Math.max(...COMP_SOV.map((s) => s[1]));
+        $("sovBars").innerHTML = COMP_SOV.map(
+          ([n, v, col]) => `
+    <div class="senti-row"><div class="name">${esc(n)}</div>
+      <div class="senti-track"><div class="senti-fill" style="width:${Math.round((v / max) * 100)}%;background:${col}"></div></div>
+      <b style="width:44px;text-align:right">${v}%</b></div>`,
+        ).join("");
+        /* table */
+        $("compRows").innerHTML = COMP_DATA.map(
+          (c) => `
+    <tr><td><b>${esc(c.name)}</b><br><span class="tag">${esc(c.pitch)}</span></td>
+      <td>${esc(c.plat)}</td><td>${c.fol}</td><td>${c.er}</td><td>${c.posts}</td><td>${c.reach}</td>
+      <td>${esc(c.note)}</td><td><span class="pill ${c.status[1]}">${esc(c.status[0])}</span></td></tr>`,
+        ).join("");
+        /* detail tabs + body */
+        const tabs = COMP_DATA.map((c) => `<button class="comp-tab${c.key === (window.__compTab || "A") ? " active" : ""}" data-comp="${c.key}">${esc(c.short)}</button>`).join("");
+        $("compTabs").innerHTML = tabs;
+        const cur = COMP_DATA.find((c) => c.key === (window.__compTab || "A")) || COMP_DATA[0];
+        $("compDetail").innerHTML = `
+    <h4 style="margin:0 0 6px;font-size:17px">${esc(cur.name)}</h4>
+    <div class="kv"><span>Top platform</span><b>${esc(cur.plat)}</b></div>
+    <div class="kv"><span>Followers</span><b>${esc(cur.fol)}</b></div>
+    <div class="kv"><span>ER</span><b>${esc(cur.er)}</b></div>
+    <div class="kv"><span>Posts/week</span><b>${esc(cur.posts)}</b></div>
+    <div class="kv"><span>Reach/post</span><b>${esc(cur.reach)}</b></div>
+    <div class="kv"><span>Pricing</span><b>${esc(cur.pricing)}</b></div>
+    <div class="kv"><span>Strengths</span><b>${esc(cur.strength)}</b></div>
+    <div class="kv"><span>Weaknesses</span><b>${esc(cur.weakness)}</b></div>
+    <div class="card-head" style="margin-top:14px"><h3>Top 5 posts</h3></div>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>#</th><th>Post</th><th>Views</th><th>Channel</th><th>Engagement</th></tr></thead>
+      <tbody>${cur.top.map((p, i) => `<tr><td>#${i + 1}</td><td>${esc(p[0])}</td><td>${p[1].toLocaleString()}</td><td>${esc(p[2])}</td><td>${p[3].toLocaleString()}</td></tr>`).join("")}</tbody>
+    </table></div>`;
+        document.querySelectorAll("#compTabs .comp-tab").forEach((b) =>
+          b.addEventListener("click", () => {
+            window.__compTab = b.dataset.comp;
+            renderCompetitors();
+          }),
+        );
+        /* alerts */
+        $("compAlerts").innerHTML = COMP_RELEASES[0].map(([a, b]) => `<div class="alert"><b>${esc(a)}</b><br><span style="color:var(--muted);font-size:11px">${esc(b)}</span></div>`).join("");
+      }
+
+      const SOURCES = [
+        { name: "youtube", label: "YouTube", api: "youtube.com/results · scrape ytInitialData (stdlib)" },
+        { name: "gnews", label: "ข่าว (GNews)", api: "news.google.com/rss/search · RSS" },
+        { name: "tiktok", label: "TikTok", api: "tiktok.com/search · Playwright + JSON (public/session)" },
+        { name: "fbads", label: "FB Ads", api: "facebook.com/ads/library · Playwright public (TH, active)" },
+        { name: "ttads", label: "TikTok Ads", api: "ads.tiktok.com/business/creativecenter/inspiration/topads/pc/en · Playwright public (TH)" },
+      ];
+      const MOCK_SRC_LABELS = { youtube: "YouTube", gnews: "Google News", tiktok: "TikTok", fbads: "FB Ads", ttads: "TikTok Ads", facebook: "Facebook", instagram: "Instagram", line: "LINE OA" };
+      function renderSrcSummary() {
+        const el = $("srcSummary");
+        if (!el) return;
+        const list = [...document.querySelectorAll("#srcPicker input")];
+        const on = list.filter((cb) => cb.checked);
+        const names = on.map((cb) => MOCK_SRC_LABELS[cb.value] || cb.value);
+        el.textContent =
+          on.length === list.length ? `ทั้งหมด (${on.length})` : !on.length ? "ยังไม่เลือก" : names.length <= 2 ? names.join(", ") : `${names.slice(0, 2).join(", ")} +${names.length - 2}`;
+      }
+      /* ===== fetch / db (mock: ใช้ข้อมูลจำลองในหน้าอย่างเดียว ไม่เรียกเน็ต) ===== */
+      const HIST_KEY = "st_history";
+      function getHistory() {
+        try {
+          return JSON.parse(localStorage.getItem(HIST_KEY) || '["Digital Marketing"]');
+        } catch {
+          return ["Digital Marketing"];
+        }
+      }
+      function renderChips() {
+        $("chips").innerHTML = getHistory()
+          .map(
+            (k) =>
+              `<span class="chip"><button class="chip-label" data-q="${esc(k)}">${esc(k)}</button><button class="chip-x" data-del="${esc(k)}" aria-label="ลบ keyword ${esc(k)}" title="ลบ">×</button></span>`,
+          )
+          .join("");
+      }
+      function pushHistory(q) {
+        const h = [q, ...getHistory().filter((x) => x !== q)].slice(0, 8);
+        try {
+          localStorage.setItem(HIST_KEY, JSON.stringify(h));
+        } catch {}
+        renderChips();
+      }
+      function removeHistory(k) {
+        const h = getHistory().filter((x) => x !== k);
+        try {
+          localStorage.setItem(HIST_KEY, JSON.stringify(h));
+        } catch {}
+        renderChips();
+        renderSettings();
+        $("status").textContent = `ลบ recent keyword "${k}" แล้ว`;
+        $("status").className = "status";
+      }
+      function showKwTabs(kws) {
+        const box = $("kwTabs");
+        if (!box || !kws.length) {
+          if (box) {
+            box.style.display = "none";
+            box.innerHTML = "";
+          }
+          return;
+        }
+        box.style.display = "flex";
+        box.innerHTML = kws.map((k) => `<button class="chip" data-kw="${esc(k)}">${esc(k)}</button>`).join("");
+        const paint = (b) =>
+          box.querySelectorAll("[data-kw]").forEach((x) => {
+            const on = x === b;
+            x.style.borderColor = on ? "var(--link)" : "";
+            x.style.color = on ? "var(--link)" : "";
+          });
+        box.querySelectorAll("[data-kw]").forEach((b) =>
+          b.addEventListener("click", () => {
+            paint(b);
+            $("q").value = b.dataset.kw;
+            renderMockSample(b.dataset.kw);
+          }),
+        );
+        paint(box.querySelector("[data-kw]"));
+      }
+      function mockFiltered(q) {
+        const kw = (q || "Digital Marketing").trim();
+        /* mock: checkbox หน้าติดตาม live แต่ข้อมูลจำลองเป็น Digital Marketing ชุดเดียว — ไม่กรองตาม source */
+        const all = MOCK.items.slice();
+        const byKw = JSON.parse(JSON.stringify(MOCK));
+        byKw.keyword = kw;
+        byKw.items = all;
+        byKw.total = all.length;
+        return byKw;
+      }
+      function renderMockSample(kw) {
+        const d = mockFiltered(kw || $("q").value);
+        const kws = $("profileSel") && $("profileSel").value ? ["Digital Marketing", "SEO", "Local SEO", "การตลาดดิจิทัล"] : [];
+        showKwTabs(kws);
+        render(d, false);
+      }
+      function setBusy(b) {
+        $("btnFetch").disabled = b;
+      }
+      /* loading modal สำหรับ mock — จำลองรอบให้ user เห็น animation */
+      let loadStartedAt = 0,
+        loadClockTimer = null;
+      function fmtClock(sec) {
+        const m = Math.floor(sec / 60),
+          s = Math.floor(sec % 60);
+        return `${m}:${String(s).padStart(2, "0")}`;
+      }
+      function updateClock() {
+        const el = $("loadClock");
+        if (el) el.textContent = fmtClock((Date.now() - loadStartedAt) / 1000);
+      }
+      function showLoading(text, sub) {
+        const m = $("loadModal");
+        if (!m) return;
+        $("loadTitle").textContent = text || "กำลังดึงข้อมูล…";
+        if (sub) $("loadSub").textContent = sub;
+        const stage = $("loadStage");
+        if (stage) stage.textContent = "mock: จำลองการโหลด";
+        loadStartedAt = Date.now();
+        updateClock();
+        clearInterval(loadClockTimer);
+        loadClockTimer = setInterval(updateClock, 1000);
+        m.hidden = false;
+        document.body.style.overflow = "hidden";
+      }
+      function setLoadingProgress(done, total, label) {
+        const fill = $("loadFill"),
+          name = $("loadName"),
+          count = $("loadCount");
+        if (!fill) return;
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+        fill.style.width = pct + "%";
+        if (name) name.textContent = label || "—";
+        if (count) count.textContent = `${done}/${total} · ${pct}%`;
+      }
+      function hideLoading() {
+        const m = $("loadModal");
+        if (m) m.hidden = true;
+        clearInterval(loadClockTimer);
+        loadClockTimer = null;
+        document.body.style.overflow = "";
+      }
+      let mockTimer = null;
+      function fetchNow() {
+        const pid = $("profileSel") ? $("profileSel").value : "";
+        const q = $("q").value.trim() || "Digital Marketing";
+        $("status").textContent = `Fetching… (mock ${pid ? "profile" : "keyword"})`;
+        $("status").className = "status";
+        showLoading("กำลังดึงข้อมูล…", "mock sample · ไม่เรียกเซิร์ฟเวอร์");
+        setLoadingProgress(0, 1, q);
+        setBusy(true);
+        clearTimeout(mockTimer);
+        mockTimer = setTimeout(() => {
+          setLoadingProgress(1, 1, q);
+          pushHistory(q);
+          renderMockSample(q);
+          $("status").textContent = `Fetched +${mockFiltered(q).items.length} items · mock sample (no network)`;
+          goPage("overview");
+          setBusy(false);
+          hideLoading();
+        }, 900);
+      }
+      $("loadCancel")?.addEventListener("click", () => {
+        clearTimeout(mockTimer);
+        setBusy(false);
+        hideLoading();
+        $("status").textContent = "ยกเลิกการค้นหาแล้ว (mock)";
+        $("status").className = "status";
+      });
+      $("chips").addEventListener("click", (e) => {
+        const del = e.target.closest("[data-del]");
+        if (del) {
+          removeHistory(del.dataset.del);
+          return;
+        }
+        const b = e.target.closest("[data-q]");
+        if (!b) return;
+        $("q").value = b.dataset.q;
+        renderMockSample(b.dataset.q);
+      });
+      $("btnFetch").addEventListener("click", fetchNow);
+      $("q").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") fetchNow();
+      });
+      $("profileSel")?.addEventListener("change", () => {
+        const active = !!$("profileSel").value;
+        $("q").disabled = active;
+        renderMockSample(active ? "Digital Marketing" : $("q").value);
+      });
+      $("q").addEventListener("input", () => {
+        if ($("profileSel").value) {
+          $("profileSel").value = "";
+          $("q").disabled = false;
+          showKwTabs([]);
+          renderSrcSummary();
+        }
+      });
+      document.querySelectorAll("#srcPicker input").forEach((el) =>
+        el.addEventListener("change", () => {
+          renderSrcSummary();
+        }),
+      );
+
+      /* ===== settings page logic ===== */
+      function renderSettings() {
+        $("kwList").innerHTML = getHistory()
+          .map(
+            (k) => `
+    <div class="set-row"><div class="t"><b>${esc(k)}</b><span>Click a chip to use</span></div>
+      <div class="kw-actions">
+        <button class="btn btn-ghost" data-use="${esc(k)}" style="padding:6px 12px;font-size:12px">Use</button>
+        <button class="btn btn-ghost" data-del-kw="${esc(k)}" style="padding:6px 12px;font-size:12px">Delete</button>
+      </div></div>`,
+          )
+          .join("");
+        document.querySelectorAll("[data-use]").forEach((b) =>
+          b.addEventListener("click", () => {
+            $("q").value = b.dataset.use;
+            goPage("overview");
+            renderMockSample(b.dataset.use);
+          }),
+        );
+        document.querySelectorAll("[data-del-kw]").forEach((b) =>
+          b.addEventListener("click", () => {
+            removeHistory(b.dataset.delKw);
+          }),
+        );
+        $("srcToggles").innerHTML = SOURCES.map((s, i) => {
+          const cb = document.querySelector(`#srcPicker input[value="${s.name}"]`);
+          const on = cb ? cb.checked : false;
+          return `<div class="set-row"><div class="t"><b>${esc(s.label)}</b><span>${esc(s.api)}</span></div>
+      <button class="toggle${on ? " on" : ""}" data-src="${i}" aria-pressed="${on}" aria-label="toggle ${esc(s.label)}"></button></div>`;
+        }).join("");
+        document.querySelectorAll(".toggle[data-src]").forEach((t) =>
+          t.addEventListener("click", () => {
+            const s = SOURCES[+t.dataset.src];
+            const cb = document.querySelector(`#srcPicker input[value="${s.name}"]`);
+            const on = !(cb && cb.checked);
+            if (cb) cb.checked = on;
+            t.classList.toggle("on", on);
+            t.setAttribute("aria-pressed", String(on));
+            renderSrcSummary();
+            $("status").textContent = `${s.label} ${on ? "On" : "Off"} (applies next fetch)`;
+            $("status").className = "status";
+          }),
+        );
+      }
+      $("kwAdd").addEventListener("click", () => {
+        const v = $("kwNew").value.trim();
+        if (!v) return;
+        pushHistory(v);
+        $("kwNew").value = "";
+        renderSettings();
+        $("status").textContent = `Keyword "${v}" added`;
+      });
+      $("btnResetMock").addEventListener("click", () => {
+        $("q").value = "Digital Marketing";
+        renderMockSample("Digital Marketing");
+        $("status").textContent = "Sample data (mock) reloaded";
+      });
+      $("pfSaveM")?.addEventListener("click", () => {
+        const name = $("pfNameM").value.trim();
+        const kws = $("pfKwsM")
+          .value.split(/\n|,/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+        if (!name || !kws.length) {
+          $("status").textContent = "Mock profile: กรอกชื่อ + keywords ก่อน";
+          $("status").className = "status err";
+          return;
+        }
+        const opt = document.createElement("option");
+        opt.value = "mock-" + Date.now().toString(36);
+        opt.textContent = `${name} (${kws.length} คำ)`;
+        $("profileSel").appendChild(opt);
+        $("profileSel").value = opt.value;
+        $("q").disabled = true;
+        showKwTabs(kws);
+        $("status").textContent = "Profile (mock) saved";
+        $("status").className = "status";
+      });
+      document.querySelectorAll("[data-pfed-mock]").forEach((b) =>
+        b.addEventListener("click", () => {
+          $("pfNameM").value = "Profile 1 — ITOPPLUS";
+          $("pfKwsM").value = "Digital Marketing\nSEO\nLocal SEO\nเว็บขายของ";
+          $("status").textContent = "Edit (mock): แก้ชื่อ/keywords แล้วกด Add profile";
+        }),
+      );
+      document.querySelectorAll("[data-pfdel-mock]").forEach((b) =>
+        b.addEventListener("click", () => {
+          $("status").textContent = "Delete (mock) — ปุ่มนี้ไม่ลบจริงในหน้า mock";
+          $("status").className = "status";
+        }),
+      );
+      $("btnWipe").addEventListener("click", () => {
+        try {
+          localStorage.removeItem(HIST_KEY);
+        } catch {}
+        $("q").value = "Digital Marketing";
+        renderChips();
+        renderSettings();
+        renderMockSample("Digital Marketing");
+        $("status").textContent = "Reset: keyword = Digital Marketing + mock loaded";
+      });
+
+      /* init — mock ทุกหน้า */
+      if (new URLSearchParams(location.search).get("loadDemo")) {
+        showLoading("กำลังดึงข้อมูล…", "YouTube, TikTok · 30 วัน");
+        setLoadingProgress(1, 3, "เว็บขายของ");
+      }
+      renderSrcSummary();
+      renderChips();
+      renderSettings();
+      renderMockSample("Digital Marketing");
+      renderSources();
+      renderArchiveMock();
+      renderTermsPage();
+      renderIdeas();
+      renderDeep();
+      renderCrm();
+      renderAds();
+      renderCalendar();
+      renderTasks();
+      renderGoals();
+      renderReports();
+      renderCompetitors();
+      setBadge("sources", SRC_DETAIL.length);
+      setBadge("ideas", IDEAS.length);
+      setBadge("items", MOCK.total);
+      setBadge("crm", CRM_LEADS.length);
+      setBadge("competitors", COMP_DATA.length);
+      setBadge("ads", ADS_CAMPAIGNS.length);
+      setBadge("tasks", TASKS.length);
+      $("status").textContent = `Sample data (mock) · keyword: Digital Marketing · ITOPPLUS · ${MOCK.items.length} items - press Search Now to simulate`;
+      $("status").className = "status";
+      /* deep-link: เปิด /?page=sources หรือ __START= มาตรงหน้า (ใช้แคปภาพด้วย) */
+      (() => {
+        const p = new URLSearchParams(location.search).get("page") || window.__START;
+        if (p && SUBS[p]) goPage(p);
+      })();
+    </script>
+  </body>
 </html>

@@ -1,0 +1,3580 @@
+﻿<!doctype html>
+<html lang="th" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Business · Social Tracker Analytics — ITOPPLUS</title>
+    <meta
+      name="description"
+      content="Localhost social trend tracker for ITOPPLUS: fetch YouTube, Google News, TikTok, FB Ads and TikTok Ads by keyword, then read scores, top terms and content ideas from disk."
+    />
+    <meta property="og:title" content="Business · Social Tracker Analytics — ITOPPLUS">
+    <meta property="og:description" content="Fetch Thai social trends by keyword and turn them into content angles." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="theme-color" content="#22c55e" />
+    <meta name="api-base" content="" />
+    <link rel="icon" href="../app/logo.svg" type="image/svg+xml" />
+    <!-- Offline localhost: ไม่มี CDN นอกเครื่อง ใช้ system font ล้วน (ก่อนหน้าใช้ Inter/Anuphan จาก Google Fonts — ตัดออกเพื่อเปิดแบบไม่มีเน็ตได้) -->
+    <link rel="stylesheet" href="../assets/css/variables.css" />
+    <link rel="stylesheet" href="../assets/css/base.css" />
+    <link rel="stylesheet" href="../assets/css/component.css" />
+    <link rel="stylesheet" href="../assets/css/layout-live.css" />
+      <script>
+      (() => {
+        const base = (document.querySelector('meta[name="api-base"]')?.content || "").replace(/\/$/, "");
+        if (base) {
+          const f = window.fetch;
+          window.fetch = (url, opts) =>
+            typeof url === "string" && url.startsWith("/api/") ? f(base + url, opts) : f(url, opts);
+        }
+      })();
+    </script>
+</head>
+  <body>
+    <a class="skip-link" href="#page-overview">Skip to content</a>
+    <div class="app">
+      <!-- ================= Sidebar ================= -->
+      <aside class="sidebar" aria-label="Primary">
+        <div class="logo">
+          <svg class="logo-img" viewBox="0 0 320 92" role="img" aria-label="ITOPPLUS logo" style="color: var(--text)">
+            <rect class="logo-badge" x="2" y="14" width="64" height="64" rx="16" fill="#0f172a" />
+            <rect x="14" y="52" width="7" height="14" rx="2" fill="#94a3b8" />
+            <rect x="26" y="46" width="7" height="20" rx="2" fill="#cbd5e1" />
+            <rect x="38" y="40" width="7" height="26" rx="2" fill="#ffffff" />
+            <rect x="50" y="32" width="7" height="34" rx="2" fill="#22c55e" />
+            <text x="82" y="54" font-size="40" font-weight="800" letter-spacing="-1" fill="currentColor">
+              ITOP
+              <tspan fill="#22c55e">PLUS</tspan>
+            </text>
+            <text class="logo-sub" x="84" y="76" font-size="11.5" font-weight="600" letter-spacing="3.4" fill="#64748b">DIGITAL MARKETING</text>
+          </svg>
+        </div>
+        <nav class="nav">
+          <a href="#page-overview" data-page="overview" class="active"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+              <rect x="3" y="3" width="7" height="7" rx="1.5" />
+              <rect x="14" y="3" width="7" height="7" rx="1.5" />
+              <rect x="3" y="14" width="7" height="7" rx="1.5" />
+              <rect x="14" y="14" width="7" height="7" rx="1.5" /></svg
+            >Overview</a
+          >
+          <a href="#page-sources" data-page="sources"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M4 7h16M4 7v13h16V7M4 7l2-4h12l2 4" /></svg>Sources<span class="badge-n">0</span></a
+          >
+          <a href="#page-terms" data-page="terms"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.5L3 21l2-5.6A8.5 8.5 0 1 1 21 11.5z" /></svg>Top Terms</a
+          >
+          <a href="#page-ideas" data-page="ideas"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+              <circle cx="9" cy="8" r="3.5" />
+              <path d="M2.5 20c.8-3.4 3.4-5 6.5-5s5.7 1.6 6.5 5" /></svg
+            >Content Ideas<span class="badge-n">0</span></a
+          >
+          <a href="#page-items" data-page="items"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01" /></svg>All Items<span class="badge-n"
+              >0</span
+            ></a
+          >
+          <a href="#page-archive" data-page="archive"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+              <rect x="3" y="4" width="18" height="5" rx="1" />
+              <path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9M10 13h4" /></svg
+            >Archive<span class="badge-n">0</span></a
+          >
+          <a href="#page-crm" data-page="crm" class="locked" aria-disabled="true" tabindex="-1" data-tip="not compatible"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+              <circle cx="9" cy="7" r="3.5" />
+              <path d="M3.5 20c.8-3.4 3.2-5 5.5-5s4.7 1.6 5.5 5" />
+              <circle cx="17" cy="9" r="2.6" />
+              <path d="M15.7 15.2c1.5-.6 3.4-.3 4.8 1.2" /></svg
+            >CRM / Leads<svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="4" y="10.5" width="16" height="9.5" rx="2" />
+              <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" /></svg
+            ><span class="badge-n">0</span></a
+          >
+          <a href="#page-competitors" data-page="competitors" class="locked" aria-disabled="true" tabindex="-1" data-tip="not compatible"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+              <path d="M16 21v-4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v4" />
+              <circle cx="12" cy="7" r="4" />
+              <path d="M22 21v-4a2 2 0 0 0-1.5-1.94M16.5 3.05a4 4 0 0 1 0 7.9" /></svg
+            >Competitors<svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="4" y="10.5" width="16" height="9.5" rx="2" />
+              <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" /></svg
+            ><span class="badge-n">0</span></a
+          >
+          <a href="#page-ads" data-page="ads"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M3 11l18-5-5 18-2.5-7.5L3 11z" /></svg>Ads Manager<span class="badge-n">0</span></a
+          >
+          <a href="#page-calendar" data-page="calendar" class="locked" aria-disabled="true" tabindex="-1" data-tip="not compatible"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <path d="M8 2v4M16 2v4M3 10h18" /></svg
+            >Content Calendar<svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="4" y="10.5" width="16" height="9.5" rx="2" />
+              <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" /></svg
+          ></a>
+          <a href="#page-tasks" data-page="tasks" class="locked" aria-disabled="true" tabindex="-1" data-tip="not compatible"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+              <path d="M9 11l3 3L22 4" />
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg
+            >Tasks<svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="4" y="10.5" width="16" height="9.5" rx="2" />
+              <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" /></svg
+            ><span class="badge-n">0</span></a
+          >
+          <a href="#page-reports" data-page="reports" class="locked" aria-disabled="true" tabindex="-1" data-tip="not compatible"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <path d="M14 2v6h6M9 15l2 2 4-4" /></svg
+            >Reports<svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="4" y="10.5" width="16" height="9.5" rx="2" />
+              <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" /></svg
+          ></a>
+          <a href="#page-goals" data-page="goals" class="locked" aria-disabled="true" tabindex="-1" data-tip="not compatible"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+              <circle cx="12" cy="12" r="9" />
+              <circle cx="12" cy="12" r="5" />
+              <circle cx="12" cy="12" r="1.3" fill="currentColor" /></svg
+            >Goal Tracker<svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="4" y="10.5" width="16" height="9.5" rx="2" />
+              <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" /></svg
+          ></a>
+          <hr class="divider" />
+          <a href="#page-settings" data-page="settings"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.97 19.2a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.8 8.97a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.01A1.7 1.7 0 0 0 10.2 3.05V3a2 2 0 1 1 4 0v.09c0 .68.4 1.3 1.03 1.56.6.25 1.3.13 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.01c.26.63.88 1.03 1.56 1.03H21a2 2 0 1 1 0 4h-.09c-.68 0-1.3.4-1.56 1.03z"
+              /></svg
+            >Settings</a
+          >
+        </nav>
+        <div class="help-card ver-card">
+          <div class="ver-top">
+            <span class="ver-label">Version</span>
+            <span class="ver-num">0.1V</span>
+          </div>
+          <div class="ver-date">10 พ.ย. 2026</div>
+          <button class="btn btn-ghost ver-btn" id="btnNotes" aria-haspopup="dialog" aria-controls="notesModal">Patch notes</button>
+        </div>
+      </aside>
+
+      <!-- ================= Main ================= -->
+      <div class="main" id="top">
+        <div class="topbar">
+          <h1>Analytics</h1>
+          <span class="date-pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <path d="M16 2v4M8 2v4M3 10h18" />
+            </svg>
+            <span id="dateRange">—</span>
+          </span>
+          <div class="top-actions">
+            <div class="theme-toggle" aria-label="Toggle theme">
+              <svg class="tgl-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+              </svg>
+              <button class="switch" id="themeSwitch" role="switch" aria-checked="false" aria-label="Dark mode"></button>
+              <svg class="tgl-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>
+            </div>
+            <div class="user"><span class="avatar">IT</span><span class="uname">ITOPPLUS</span></div>
+          </div>
+          <div class="page-sub" id="pageSub">Overview · live data</div>
+        </div>
+
+        <nav class="mobile-nav" aria-label="Mobile">
+          <a href="#page-overview" data-page="overview" class="active">Overview</a><a href="#page-sources" data-page="sources">Sources</a> <a href="#page-terms" data-page="terms">Top Terms</a
+          ><a href="#page-ideas" data-page="ideas">Ideas</a> <a href="#page-items" data-page="items">Items</a><a href="#page-archive" data-page="archive">Archive</a
+          ><a href="#page-crm" data-page="crm" class="locked" aria-disabled="true" tabindex="-1" data-tip="not compatible"
+            >CRM<svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="4" y="10.5" width="16" height="9.5" rx="2" />
+              <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" /></svg
+          ></a>
+          <a href="#page-ads" data-page="ads">Ads</a
+          ><a href="#page-competitors" data-page="competitors" class="locked" aria-disabled="true" tabindex="-1" data-tip="not compatible"
+            >Competitors<svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="4" y="10.5" width="16" height="9.5" rx="2" />
+              <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" /></svg></a
+          ><a href="#page-calendar" data-page="calendar" class="locked" aria-disabled="true" tabindex="-1" data-tip="not compatible"
+            >Calendar<svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="4" y="10.5" width="16" height="9.5" rx="2" />
+              <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" /></svg
+          ></a>
+          <a href="#page-tasks" data-page="tasks" class="locked" aria-disabled="true" tabindex="-1" data-tip="not compatible"
+            >Tasks<svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="4" y="10.5" width="16" height="9.5" rx="2" />
+              <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" /></svg></a
+          ><a href="#page-reports" data-page="reports" class="locked" aria-disabled="true" tabindex="-1" data-tip="not compatible"
+            >Reports<svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="4" y="10.5" width="16" height="9.5" rx="2" />
+              <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" /></svg
+          ></a>
+          <a href="#page-goals" data-page="goals" class="locked" aria-disabled="true" tabindex="-1" data-tip="not compatible"
+            >Goals<svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="4" y="10.5" width="16" height="9.5" rx="2" />
+              <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" /></svg></a
+          ><a href="#page-settings" data-page="settings">Settings</a>
+        </nav>
+
+        <!-- Fetch strip (global) -->
+        <div class="fetch-strip">
+          <div class="fetch-main">
+            <div class="field">
+              <label for="profileSel">โปรไฟล์</label>
+              <select id="profileSel">
+                <option value="">Keyword ใหม่</option>
+              </select>
+            </div>
+            <div class="field grow">
+              <label for="q">Keyword</label>
+              <input type="text" id="q" value="" placeholder="Keyword…" list="kwSuggest">
+              <!-- 2.8 keyword autocomplete: history + profile keywords (updated on change) -->
+              <datalist id="kwSuggest"></datalist>
+            </div>
+            <div class="field">
+              <span class="field-label" id="srcLabel">Sources</span>
+              <details class="src-pop" id="srcPop">
+                <summary aria-labelledby="srcLabel">
+                  <span id="srcSummary">เลือกช่องทาง</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+                </summary>
+                <div class="src-picker" id="srcPicker" role="group" aria-label="fetch sources">
+                  <label class="src-option"
+                    ><input type="checkbox" value="youtube" checked /><span class="src-main"
+                      ><span class="src-name">YouTube</span><span class="src-detail" title="youtube.com/results — scrape ytInitialData (stdlib)">youtube.com/results · stdlib scrape</span></span
+                    ></label
+                  >
+                  <label class="src-option"
+                    ><input type="checkbox" value="gnews" /><span class="src-main"
+                      ><span class="src-name">ข่าว (GNews)</span><span class="src-detail" title="news.google.com/rss/search — RSS">news.google.com/rss · RSS</span></span
+                    ></label
+                  >
+                  <label class="src-option"
+                    ><input type="checkbox" value="tiktok" /><span class="src-main"
+                      ><span class="src-name">TikTok</span><span class="src-detail" title="tiktok.com/search — Playwright + JSON (public/session)">tiktok.com/search · Playwright</span></span
+                    ></label
+                  >
+                  <label class="src-option"
+                    ><input type="checkbox" value="fbads" /><span class="src-main"
+                      ><span class="src-name">FB Ads</span><span class="src-detail" title="facebook.com/ads/library — Playwright public (TH, active)">facebook.com/ads/library · Playwright</span></span
+                    ></label
+                  >
+                  <label class="src-option"
+                    ><input type="checkbox" value="ttads" /><span class="src-main"
+                      ><span class="src-name">TikTok Ads</span
+                      ><span class="src-detail" title="ads.tiktok.com/business/creativecenter/inspiration/topads/pc/en — Playwright public (TH)">ads.tiktok.com/creativecenter · Playwright</span></span
+                    ></label
+                  >
+                </div>
+              </details>
+            </div>
+            <div class="field">
+              <label for="fetchMode">Mode</label>
+              <select id="fetchMode">
+                <option value="public">Public</option>
+                <option value="session">Login session</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="freshDays">Fresh</label>
+              <select id="freshDays">
+                <option value="1">1 วัน</option>
+                <option value="3">3 วัน</option>
+                <option value="7">7 วัน</option>
+                <option value="15">15 วัน</option>
+                <option value="30" selected>30 วัน</option>
+                <option value="0">ทั้งหมด</option>
+              </select>
+            </div>
+            <button class="btn btn-primary fetch-btn" id="btnFetch">Search Now</button>
+          </div>
+          <div class="chips" id="chips"></div>
+          <div class="status" id="status" role="status" aria-live="polite"></div>
+        </div>
+        <div class="kw-tabs" id="kwTabs" style="display: none; gap: 7px; flex-wrap: wrap; margin: -2px 2px 12px"></div>
+        <div class="loading-overlay" id="loadModal" hidden>
+          <div class="loading-card" role="dialog" aria-modal="true" aria-labelledby="loadTitle">
+            <div class="loading-head">
+              <div class="loading-spin" aria-hidden="true"></div>
+              <div>
+                <div class="loading-title" id="loadTitle">กำลังดึงข้อมูล…</div>
+                <div class="loading-sub" id="loadSub">กำลังเก็บข้อมูลจากช่องทางที่เลือก</div>
+              </div>
+            </div>
+            <div class="loading-bar"><div class="loading-fill" id="loadFill"></div></div>
+            <div class="loading-stage" id="loadStage">กำลังเริ่ม…</div>
+            <div class="loading-meta">
+              <span class="loading-name" id="loadName">—</span>
+              <span class="loading-count" id="loadCount"></span>
+            </div>
+            <div class="loading-hint">รอจนจบ — อย่าปิดหน้านี้ · <span id="loadClock">0:00</span></div>
+            <button class="btn btn-ghost loading-cancel" id="loadCancel">หยุดการค้นหา</button>
+          </div>
+        </div>
+        <div class="loading-overlay" id="notesModal" hidden>
+          <div class="loading-card notes-card" role="dialog" aria-modal="true" aria-labelledby="notesTitle">
+            <div class="notes-head">
+              <div>
+                <div class="loading-title" id="notesTitle">Patch notes</div>
+                <div class="loading-sub">เวอร์ชัน 0.1V · 10 พ.ย. 2026</div>
+              </div>
+              <button class="btn btn-ghost notes-close" id="notesClose" aria-label="ปิด patch notes">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+              </button>
+            </div>
+            <ol class="timeline">
+              <li class="tl-item current">
+                <div class="tl-top"><b>0.1V</b><span class="tl-date">10 พ.ย. 2026</span><span class="pill pill-green">current</span></div>
+                <p class="tl-note">Dashboard ใช้งานจริงบนเครื่อง</p>
+                <ul class="tl-list">
+                  <li>ค้นเทรนด์จาก 5 ช่องทาง: YouTube, Google News, TikTok, Facebook Ads และ TikTok Ads</li>
+                  <li>ตั้งโปรไฟล์คำค้นได้หลายคำ พร้อมความคืบหน้าทีละคำ (ตัวอย่าง: Profile 1 — ITOPPLUS, 10 คำ)</li>
+                  <li>เลือกช่วงเวลาข้อมูล 1 / 3 / 7 / 15 / 30 วัน หรือทั้งหมด</li>
+                  <li>หน้าต่างกำลังโหลดบอกขั้นตอน เวลาที่ใช้ เตือนเมื่อระบบไม่ตอบสนอง และกดหยุดการค้นหาได้</li>
+                  <li>ภาพรวมผลลัพธ์: KPI, รายการยอดนิยมแยกแพลตฟอร์ม, คำที่ถูกพูดถึง, ไอเดียคอนเทนต์, รายการทั้งหมด</li>
+                  <li>All items: เพิ่ม/แก้ไข/ลบรายการได้เอง, เลือกหลายรายการเพื่อ Archive/ย้าย keyword/ลบ, กรองตามช่องทาง/ช่วงเวลา และ export CSV</li>
+                  <li>Archive สำหรับเก็บเนื้อหาไว้ดูภายหลัง พร้อมกู้คืนหรือลบถาวร</li>
+                  <li>ล้างข้อมูลทั้งหมด (items/analysis/รูป) หรือล้างเฉพาะ keyword / prune ข่าวเก่าได้</li>
+                  <li>Ads library ดูโฆษณา Facebook/TikTok ที่เก็บไว้ พร้อมผู้ลงโฆษณาและลิงก์</li>
+                  <li>แสดงยอดวิว/plays/ไลก์ของแต่ละรายการ พร้อมช่อง/เพจที่มา และกด Refresh views เพื่ออัปเดต</li>
+                  <li>เปิดหน้าแล้วเห็นข้อมูลทั้งหมดในเครื่องทันที (พิมพ์ Keyword เพื่อกรอง)</li>
+                  <li>สำรอง/นำเข้าข้อมูลเป็น JSON หรือ ZIP (รวมรูป) และดูพื้นที่ดิสก์ที่ใช้</li>
+                  <li>หน้า Sources และ Settings สำหรับดูช่องทางและตั้งค่าการใช้งาน</li>
+                  <li>ธีมสว่าง/มืด จำค่าไว้ และใช้งานบนมือถือได้</li>
+                  <li>เมนูที่ยังไม่เปิด: CRM, Competitors, Calendar, Tasks, Reports, Goals</li>
+                </ul>
+              </li>
+              <li class="tl-item">
+                <div class="tl-top"><b>Prototype</b><span class="tl-date">6 พ.ย. 2026</span></div>
+                <p class="tl-note">จุดเริ่มต้นของ dashboard</p>
+                <ul class="tl-list">
+                  <li>หน้าจอตัวอย่าง ให้เห็นหน้าตาและเมนูทั้งหมด</li>
+                  <li>ผลสรุปเบื้องต้น: แหล่งที่มา, โพสต์ยอดนิยม, คำที่พูดถึงบ่อย, ไอเดียคอนเทนต์</li>
+                </ul>
+              </li>
+            </ol>
+          </div>
+        </div>
+        <div class="loading-overlay" id="itemModal" hidden>
+          <div class="loading-card item-card" role="dialog" aria-modal="true" aria-labelledby="itemTitle">
+            <div class="notes-head">
+              <div>
+                <div class="loading-title" id="itemTitle">Edit item</div>
+                <div class="loading-sub" id="itemSub">—</div>
+              </div>
+              <button class="btn btn-ghost notes-close" id="itemClose" aria-label="ปิด">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+              </button>
+            </div>
+            <div class="item-form">
+              <label class="item-field"><span>URL</span><input type="url" id="itemUrl" placeholder="https://…"></label>
+              <label class="item-field"><span>Title</span><input type="text" id="itemTitleInput" placeholder="หัวข้อ" /></label>
+              <label class="item-field"><span>Author / channel</span><input type="text" id="itemAuthor" placeholder="ชื่อช่อง/เพจ"></label>
+              <label class="item-field"><span>Channel URL</span><input type="url" id="itemChannel" placeholder="https://…"></label>
+              <label class="item-field"><span>Keyword</span><input type="text" id="itemKeyword" placeholder="keyword" /></label>
+              <label class="item-field"
+                ><span>Source</span
+                ><select id="itemSource">
+                  <option value="youtube">YouTube</option>
+                  <option value="gnews">Google News</option>
+                  <option value="tiktok">TikTok</option>
+                  <option value="fbads">FB Ads</option>
+                  <option value="ttads">TikTok Ads</option>
+                  <option value="manual">Manual</option>
+                </select></label
+              >
+              <label class="item-field"><span>Score / views</span><input type="number" min="0" id="itemScore" placeholder="0" /></label>
+            </div>
+            <div class="item-actions">
+              <button class="btn btn-primary" id="itemSave">Save</button>
+              <button class="btn btn-ghost" id="itemCancel">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2.6 confirm dialog (replaces native confirm) -->
+        <div class="loading-overlay" id="confirmModal" hidden>
+          <div class="loading-card dialog-card" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+            <div class="notes-head">
+              <div>
+                <div class="loading-title" id="confirmTitle">ยืนยัน</div>
+                <div class="loading-sub" id="confirmMsg"></div>
+              </div>
+              <button class="btn btn-ghost notes-close" id="confirmClose" aria-label="ปิด">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+              </button>
+            </div>
+            <div class="dialog-actions">
+              <button class="btn btn-danger" id="confirmOk">ยืนยัน</button>
+              <button class="btn btn-ghost" id="confirmCancel">ยกเลิก</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2.6 move keyword dialog (replaces native prompt) -->
+        <div class="loading-overlay" id="moveModal" hidden>
+          <div class="loading-card dialog-card" role="dialog" aria-modal="true" aria-labelledby="moveTitle">
+            <div class="notes-head">
+              <div>
+                <div class="loading-title" id="moveTitle">ย้าย keyword</div>
+                <div class="loading-sub" id="moveSub"></div>
+              </div>
+              <button class="btn btn-ghost notes-close" id="moveClose" aria-label="ปิด">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+              </button>
+            </div>
+            <div class="item-form">
+              <label class="item-field"
+                ><span>ย้ายไป keyword</span>
+                <select id="moveSelect"></select>
+              </label>
+              <label class="item-field" id="moveNewField" hidden><span>ชื่อ keyword ใหม่</span><input type="text" id="moveNew" placeholder="พิมพ์ keyword ใหม่" /></label>
+            </div>
+            <div class="dialog-actions">
+              <button class="btn btn-primary" id="moveOk">ย้าย</button>
+              <button class="btn btn-ghost" id="moveCancel">ยกเลิก</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2.5 toast host (bottom-right, role=status) -->
+        <div class="toast-host" id="toastHost" aria-live="polite" aria-atomic="false"></div>
+
+        <!-- ============ PAGE: ภาพรวม ============ -->
+        <section class="page active" id="page-overview">
+          <h2 class="visually-hidden">Overview</h2>
+          <div class="kpis">
+            <div class="card kpi">
+              <div class="label">
+                <span>Items saved</span
+                ><span class="kpi-ic"
+                  ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+                    <rect x="3" y="5" width="18" height="14" rx="2" />
+                    <path d="M3 9h18" /></svg
+                ></span>
+              </div>
+              <div class="big" id="stTotal">0</div>
+              <div class="delta"><small>Saved to disk · unique URL</small></div>
+            </div>
+            <div class="card kpi">
+              <div class="label">
+                <span>Sources</span
+                ><span class="kpi-ic"
+                  ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+                    <rect x="3" y="3" width="18" height="18" rx="3" />
+                    <path d="M8 12l2.5 2.5L16 9" /></svg
+                ></span>
+              </div>
+              <div class="big" id="stSrc">0</div>
+              <div class="delta"><small id="stSrcNote">—</small></div>
+            </div>
+            <div class="card kpi kpi-donut">
+              <div class="label"><span>Total score</span></div>
+              <div class="donut-wrap">
+                <div class="donut" id="donutUsers" title="score share by source"></div>
+                <div class="kpi-vals">
+                  <div class="big" id="stScore">0</div>
+                  <div class="delta"><small>score share by source</small></div>
+                </div>
+              </div>
+              <div class="donut-legend" id="legendUsers"></div>
+            </div>
+            <div class="card kpi kpi-top">
+              <div class="label">
+                <span>Top item</span
+                ><span class="kpi-ic"
+                  ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M12 3l2.6 5.6 6.4.8-4.7 4.3 1.3 6.3L12 17l-5.6 3 1.3-6.3L3 9.4l6.4-.8z" /></svg
+                ></span>
+              </div>
+              <div class="big" id="stTop">0</div>
+              <div class="top-title" id="stTopTitle">—</div>
+              <div class="delta"><small id="stTopMeta">—</small></div>
+            </div>
+          </div>
+
+          <div class="bottom">
+            <div class="card">
+              <div class="tbl-head">
+                <h3 id="topItemsTitle">Top items</h3>
+                <div class="tbl-tabs" id="topItemsTabs" role="tablist" aria-label="Top items by platform"></div>
+                <button class="btn btn-ghost" data-goto="items" style="padding: 6px 12px; font-size: 12px">View all →</button>
+              </div>
+              <div class="tbl-scroll" id="tableWrap"><div class="empty">No data yet. Choose a keyword and click Fetch now.</div></div>
+            </div>
+            <div class="side-stack">
+              <div class="card">
+                <div class="card-head">
+                  <h3>Top terms (summary)</h3>
+                  <button class="btn btn-ghost" data-goto="terms" style="padding: 6px 12px; font-size: 12px">Details →</button>
+                </div>
+                <div class="terms" id="termsBox"></div>
+              </div>
+              <div class="card">
+                <div class="card-head">
+                  <h3>Content ideas (summary)</h3>
+                  <button class="btn btn-ghost" data-goto="ideas" style="padding: 6px 12px; font-size: 12px">All ideas →</button>
+                </div>
+                <ul class="suggest" id="suggest"></ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="mid">
+            <div class="card chart-card">
+              <div class="card-head">
+                <h3>Score by source</h3>
+                <span class="chart-note">Total score</span>
+              </div>
+              <div class="bars" id="bars"></div>
+            </div>
+            <div class="mid-side">
+              <div class="card inv">
+                <div class="label"><span>Average score</span></div>
+                <div class="amount" id="invScore">0</div>
+                <div class="sub">Per scored item</div>
+              </div>
+              <div class="card inv">
+                <div class="label"><span>Keyword coverage</span></div>
+                <div class="amount" id="invCover">0</div>
+                <div class="sub">Top terms found</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="extra">
+            <div class="card">
+              <div class="card-head">
+                <h3>Score distribution</h3>
+                <span class="chart-note" id="scoreNote">—</span>
+              </div>
+              <div class="line-box"><svg id="line" viewBox="0 0 800 200" preserveAspectRatio="none" role="img" aria-label="Score distribution line chart"></svg></div>
+              <div class="metric-grid" style="margin-top: 12px">
+                <div class="m"><b id="scoreHigh">0</b><span>Highest score</span></div>
+                <div class="m"><b id="scoreLow">0</b><span>Lowest score</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Deep: fanpagekarma + wisesight style -->
+          <div class="deep">
+            <div class="card">
+              <div class="card-head">
+                <h3>Follower growth (30 days)</h3>
+                <span class="chart-note">All channels</span>
+              </div>
+              <div class="empty">No data yet. Fetch data to see this chart.</div>
+            </div>
+            <div class="card">
+              <div class="card-head">
+                <h3>Engagement rate</h3>
+                <span class="chart-note">Per post</span>
+              </div>
+              <div class="empty">No data yet. Fetch data to see this chart.</div>
+            </div>
+            <div class="card">
+              <div class="card-head">
+                <h3>Sentiment</h3>
+                <span class="chart-note">Positive · Neutral · Negative</span>
+              </div>
+              <div class="empty">No data yet. Fetch data to see this chart.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ PAGE: แหล่งข้อมูล ============ -->
+        <section class="page" id="page-sources">
+          <div class="page-head">
+            <h2>Sources</h2>
+            <span class="hint" id="srcHint">ข้อมูลจาก fetch · 5 ช่องทางที่เลือก</span>
+          </div>
+          <div class="src-grid" id="srcCards"></div>
+          <div class="card" style="margin-top: 16px">
+            <div class="card-head">
+              <h3>Per-source detail</h3>
+              <span class="select-like">—</span>
+            </div>
+            <div class="tbl-scroll">
+              <table>
+                <caption class="visually-hidden">Per-source detail</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Source</th>
+                    <th scope="col">Count</th>
+                    <th scope="col">Share</th>
+                    <th scope="col">Total score</th>
+                    <th scope="col">Avg score</th>
+                    <th scope="col">Last fetch</th>
+                    <th scope="col">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="srcRows"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card" style="margin-top: 16px">
+            <div class="card-head">
+              <h3>Channel performance</h3>
+              <span class="select-like">Compare channels</span>
+            </div>
+            <div class="tbl-scroll">
+              <table>
+                <caption class="visually-hidden">Channel performance comparison</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Channel</th>
+                    <th scope="col">Followers</th>
+                    <th scope="col">Posts/wk</th>
+                    <th scope="col">Avg reach</th>
+                    <th scope="col">ER%</th>
+                    <th scope="col">30-day growth</th>
+                    <th scope="col">Benchmark</th>
+                  </tr>
+                </thead>
+                <tbody id="chanRows"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card" style="margin-top: 16px">
+            <div class="card-head">
+              <h3>Top mentioned pages</h3>
+              <span class="select-like">Top voices for this keyword</span>
+            </div>
+            <div class="tbl-scroll">
+              <table>
+                <caption class="visually-hidden">Top mentioned pages</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Page / Influencer</th>
+                    <th scope="col">Platform</th>
+                    <th scope="col">Followers</th>
+                    <th scope="col">Mentions</th>
+                    <th scope="col">Reach</th>
+                    <th scope="col">Sentiment</th>
+                  </tr>
+                </thead>
+                <tbody id="mentionRows"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ PAGE: คำยอดฮิต ============ -->
+        <section class="page" id="page-terms">
+          <div class="page-head">
+            <h2>Top Terms</h2>
+            <span class="hint">Counted from fetched items on every fetch</span>
+          </div>
+          <div class="card">
+            <div class="tbl-head">
+              <h3 id="termsCount">0 terms</h3>
+              <label class="filter-lbl" for="filterTerms">Filter</label><input type="text" class="filter" id="filterTerms" placeholder="Search terms…" aria-label="Search terms">
+            </div>
+            <div class="tbl-scroll">
+              <table>
+                <caption class="visually-hidden">Top terms</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Rank</th>
+                    <th scope="col">Term</th>
+                    <th scope="col">Count</th>
+                    <th scope="col">Share</th>
+                    <th scope="col">7-day trend</th>
+                    <th scope="col">Sentiment</th>
+                    <th scope="col">Top channel</th>
+                    <th scope="col">Use for</th>
+                  </tr>
+                </thead>
+                <tbody id="termRows"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="deep" style="margin-top: 16px">
+            <div class="card">
+              <div class="card-head">
+                <h3>Mention volume (7 days)</h3>
+                <span class="select-like">No data yet</span>
+              </div>
+              <div class="bars" id="volBars" style="height: 120px"></div>
+            </div>
+            <div class="card">
+              <div class="card-head">
+                <h3>Share of voice (SOV)</h3>
+                <span class="select-like">No data yet</span>
+              </div>
+              <div id="sovBox"></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h3>Trending hashtags</h3></div>
+              <div class="terms" id="hashBox"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ PAGE: ไอเดียคอนเทนต์ ============ -->
+        <section class="page" id="page-ideas">
+          <div class="page-head">
+            <h2>Content ideas</h2>
+            <span class="hint">Built from fetched top source + top terms</span>
+          </div>
+          <div class="idea-grid" id="ideaGrid"></div>
+          <div class="deep" style="margin-top: 16px">
+            <div class="card">
+              <div class="card-head">
+                <h3>Best posting time</h3>
+                <span class="select-like">Hourly</span>
+              </div>
+              <div class="tbl-scroll">
+                <table class="heatmap">
+                  <caption class="visually-hidden">Best posting time heatmap</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col"></th>
+                      <th scope="col">6-9am</th>
+                      <th scope="col">9-12pm</th>
+                      <th scope="col">12-3pm</th>
+                      <th scope="col">3-6pm</th>
+                      <th scope="col">6-9pm</th>
+                      <th scope="col">9-12am</th>
+                    </tr>
+                  </thead>
+                  <tbody id="heatRows"></tbody>
+                </table>
+              </div>
+              <div class="heat-scale">
+                <span>Low</span><span style="display: inline-block; width: 60px; height: 8px; border-radius: 999px; background: linear-gradient(90deg, #dcfce7, #22c55e, #15803d)"></span
+                ><span>High = post here</span>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h3>Content performance (30 days)</h3></div>
+              <div class="tbl-scroll">
+                <table>
+                  <caption class="visually-hidden">Content performance (30 days)</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Content</th>
+                      <th scope="col">Type</th>
+                      <th scope="col">Reach</th>
+                      <th scope="col">Engagement</th>
+                      <th scope="col">ER%</th>
+                    </tr>
+                  </thead>
+                  <tbody id="perfRows"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h3>Posting plan (this week)</h3></div>
+              <div id="planBox" style="display: flex; flex-direction: column; gap: 8px"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ PAGE: รายการทั้งหมด ============ -->
+        <section class="page" id="page-items">
+          <div class="page-head">
+            <h2>All items</h2>
+            <span class="hint">Sort by score desc · click opens source link</span>
+          </div>
+          <div class="card">
+            <div class="tbl-head">
+              <h3>All items</h3>
+              <div class="item-tools">
+                <input type="text" class="filter" id="filterFull" placeholder="Filter title/source…" aria-label="Filter all items" />
+                <span class="filter-lbl">วันที่</span>
+                <input type="date" class="filter date-filter" id="filterFrom" aria-label="From date" title="ตั้งแต่วันที่ (ใช้ published หรือวันที่เก็บ)">
+                <span class="date-sep" aria-hidden="true">–</span>
+                <input type="date" class="filter date-filter" id="filterTo" aria-label="To date" title="ถึงวันที่ (รวมวันนั้นทั้งวัน)">
+                <span class="quick-dates" role="group" aria-label="Quick date range">
+                  <button type="button" class="chip qd" data-quick="today">วันนี้</button>
+                  <button type="button" class="chip qd" data-quick="7">7 วัน</button>
+                  <button type="button" class="chip qd" data-quick="30">30 วัน</button>
+                </span>
+                <button class="btn btn-ghost" id="btnClearFilters">ล้าง</button>
+                <button class="btn btn-ghost" id="btnAddItem">Add item</button>
+                <button class="btn btn-ghost" id="btnRefreshViews">Refresh views</button>
+                <button class="btn btn-ghost" id="btnCsv">Export CSV</button>
+              </div>
+            </div>
+            <div class="tbl-tabs items-platform" id="itemsPlatformTabs" role="tablist" aria-label="Filter all items by platform"></div>
+            <div class="bulk-bar" id="bulkBar" hidden>
+              <b id="bulkCount">0 selected</b>
+              <div class="bulk-actions">
+                <button class="btn btn-ghost" id="bulkArchive">Archive</button>
+                <button class="btn btn-ghost" id="bulkMove">Move keyword…</button>
+                <button class="btn btn-danger" id="bulkDelete">Delete</button>
+                <button class="btn btn-ghost" id="bulkClear">Clear</button>
+              </div>
+            </div>
+            <div class="tbl-scroll" id="tableFullWrap"></div>
+            <!-- 2.12 load more / page size -->
+            <div class="pager" id="pager" hidden>
+              <span id="pagerCount"></span>
+              <label class="filter-lbl" for="pageSize">แสดง</label>
+              <select class="filter" id="pageSize" aria-label="Page size" style="min-width: 88px; padding: 6px 8px">
+                <option value="50">50</option>
+                <option value="100" selected>100</option>
+                <option value="250">250</option>
+                <option value="0">All</option>
+              </select>
+              <button class="btn btn-ghost" id="btnLoadMore" style="min-height: 34px; padding: 6px 14px">Load more</button>
+            </div>
+          </div>
+          <div class="card" style="margin-top: 16px">
+            <div class="card-head">
+              <h3>Top 10 content</h3>
+              <span class="select-like">By reach</span>
+            </div>
+            <div class="tbl-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Reach</th>
+                    <th scope="col">Likes</th>
+                    <th scope="col">Comments</th>
+                    <th scope="col">Shares</th>
+                    <th scope="col">ER%</th>
+                  </tr>
+                </thead>
+                <tbody id="topContentRows"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ PAGE: Archive ============ -->
+        <section class="page" id="page-archive">
+          <div class="page-head">
+            <h2>Archive</h2>
+            <span class="hint" id="archiveHint">เก็บไว้ดูภายหลัง · กู้คืนหรือลบถาวรได้</span>
+          </div>
+          <div class="card">
+            <div class="tbl-head">
+              <h3>Archived items</h3>
+              <div class="item-tools">
+                <input type="text" class="filter" id="filterArchive" placeholder="Filter archive…" aria-label="Filter archive" />
+              </div>
+            </div>
+            <div class="tbl-tabs items-platform" id="archivePlatformTabs" role="tablist" aria-label="Filter archive by platform"></div>
+            <div class="bulk-bar" id="archiveBulkBar" hidden>
+              <b id="archiveBulkCount">0 selected</b>
+              <div class="bulk-actions">
+                <button class="btn btn-ghost" id="archiveRestoreAll">Restore all</button>
+                <button class="btn btn-ghost" id="archiveBulkRestore">Restore</button>
+                <button class="btn btn-danger" id="archiveBulkDelete">Delete permanently</button>
+                <button class="btn btn-ghost" id="archiveBulkClear">Clear</button>
+              </div>
+            </div>
+            <div class="tbl-scroll" id="archiveWrap"></div>
+          </div>
+        </section>
+
+        <!-- ============ PAGE: CRM / Leads ============ -->
+        <section class="page" id="page-crm">
+          <div class="page-head">
+            <h2>CRM / Leads</h2>
+            <span class="hint">no data yet · wire real lead store next</span>
+          </div>
+          <div class="kpis">
+            <div class="card kpi">
+              <div class="label">All leads (30 days)</div>
+              <div class="big">0</div>
+              <div class="delta">—</div>
+            </div>
+            <div class="card kpi">
+              <div class="label">Talking</div>
+              <div class="big">0</div>
+              <div class="delta">—</div>
+            </div>
+            <div class="card kpi">
+              <div class="label">Quoted</div>
+              <div class="big">0</div>
+              <div class="delta">—</div>
+            </div>
+            <div class="card kpi">
+              <div class="label">Won</div>
+              <div class="big">0</div>
+              <div class="delta">—</div>
+            </div>
+          </div>
+          <div class="kanban" id="crmBoard" style="margin-top: 16px"></div>
+        </section>
+
+        <!-- ============ PAGE: วิเคราะห์คู่แข่ง ============ -->
+        <section class="page" id="page-competitors">
+          <div class="page-head">
+            <h2>Competitors</h2>
+            <span class="hint">no data yet · wire real competitor store next</span>
+          </div>
+          <div class="kpis">
+            <div class="card kpi">
+              <div class="label">SoV ITOPPLUS</div>
+              <div class="big">0%</div>
+              <div class="delta">—</div>
+            </div>
+            <div class="card kpi">
+              <div class="label">Tracked</div>
+              <div class="big">0</div>
+              <div class="delta">—</div>
+            </div>
+            <div class="card kpi">
+              <div class="label">New alerts</div>
+              <div class="big">0</div>
+              <div class="delta">—</div>
+            </div>
+            <div class="card kpi">
+              <div class="label">Top opportunity</div>
+              <div class="big">—</div>
+              <div class="delta">—</div>
+            </div>
+          </div>
+          <div class="card" style="margin-top: 16px">
+            <div class="card-head">
+              <h3>SoV vs 5 channels (Nov)</h3>
+              <span class="select-like">ITOPPLUS leads</span>
+            </div>
+            <div id="sovBars"></div>
+          </div>
+          <div class="card" style="margin-top: 16px">
+            <div class="card-head">
+              <h3>Per-competitor summary</h3>
+              <span class="select-like">Use tabs for detail</span>
+            </div>
+            <div class="tbl-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Competitor</th>
+                    <th scope="col">Top platform</th>
+                    <th scope="col">Followers</th>
+                    <th scope="col">ER</th>
+                    <th scope="col">Posts/wk</th>
+                    <th scope="col">Reach/post</th>
+                    <th scope="col">Pitch</th>
+                    <th scope="col">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="compRows"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="comp-detail">
+            <div class="card">
+              <div class="comp-tabs" id="compTabs"></div>
+              <div id="compDetail"></div>
+            </div>
+            <div class="card">
+              <div class="card-head">
+                <h3>This week alerts</h3>
+                <span class="select-like">Auto-updated</span>
+              </div>
+              <div id="compAlerts"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ PAGE: Ads Manager ============ -->
+        <section class="page" id="page-ads">
+          <div class="page-head">
+            <h2>Ads library</h2>
+            <span class="hint" id="adsHint">FB Ads + TikTok Ads จาก keyword ปัจจุบัน</span>
+          </div>
+          <div class="kpis">
+            <div class="card kpi">
+              <div class="label">Ads saved</div>
+              <div class="big" id="adsTotal">0</div>
+              <div class="delta">FB + TikTok Ads</div>
+            </div>
+            <div class="card kpi">
+              <div class="label">Facebook Ads</div>
+              <div class="big" id="adsFb">0</div>
+              <div class="delta">Ad Library (TH)</div>
+            </div>
+            <div class="card kpi">
+              <div class="label">TikTok Ads</div>
+              <div class="big" id="adsTt">0</div>
+              <div class="delta">Creative Center (TH)</div>
+            </div>
+            <div class="card kpi">
+              <div class="label">Last fetch</div>
+              <div class="big" id="adsLast">—</div>
+              <div class="delta">local time</div>
+            </div>
+          </div>
+          <div class="card" style="margin-top: 16px">
+            <div class="card-head">
+              <h3>Collected ads</h3>
+              <span class="select-like">Sort by score desc</span>
+            </div>
+            <div class="tbl-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Source</th>
+                    <th scope="col">Advertiser</th>
+                    <th scope="col">Copy</th>
+                    <th scope="col">Started</th>
+                    <th scope="col">Link</th>
+                  </tr>
+                </thead>
+                <tbody id="adsRows"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ PAGE: Content Calendar ============ -->
+        <section class="page" id="page-calendar">
+          <div class="page-head">
+            <h2>Content Calendar</h2>
+            <span class="hint">no data yet · wire real calendar next</span>
+          </div>
+          <div class="kpis">
+            <div class="card kpi">
+              <div class="label">Posts this week</div>
+              <div class="big">0</div>
+              <div class="delta">—</div>
+            </div>
+            <div class="card kpi">
+              <div class="label">Approved</div>
+              <div class="big">0</div>
+              <div class="delta">—</div>
+            </div>
+            <div class="card kpi">
+              <div class="label">Draft</div>
+              <div class="big">0</div>
+              <div class="delta">—</div>
+            </div>
+            <div class="card kpi">
+              <div class="label">Scheduled</div>
+              <div class="big">0</div>
+              <div class="delta">—</div>
+            </div>
+          </div>
+          <div class="cal-week" id="calWeek" style="margin-top: 16px"></div>
+        </section>
+
+        <!-- ============ PAGE: Tasks ============ -->
+        <section class="page" id="page-tasks">
+          <div class="page-head">
+            <h2>Tasks</h2>
+            <span class="hint">no data yet · wire real task store next</span>
+          </div>
+          <div class="kanban" id="taskBoard" style="margin-top: 4px"></div>
+        </section>
+
+        <!-- ============ PAGE: Reports ============ -->
+        <section class="page" id="page-reports">
+          <div class="page-head">
+            <h2>Reports</h2>
+            <span class="hint">no data yet · wire real report next</span>
+          </div>
+          <div class="report-grid">
+            <div class="card">
+              <div class="card-head"><h3>ITOPPLUS overview (30 days)</h3></div>
+              <div class="metric-grid">
+                <div class="m"><b>0</b><span>Total reach, 5 channels</span></div>
+                <div class="m"><b>0%</b><span>Avg engagement</span></div>
+                <div class="m"><b>0</b><span>Real leads</span></div>
+                <div class="m"><b>0</b><span>Total followers</span></div>
+                <div class="m"><b>—</b><span>Avg ROAS, all campaigns</span></div>
+                <div class="m"><b>0%</b><span>Renewed this cycle</span></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-head">
+                <h3>Client progress</h3>
+                <span class="select-like">% of target</span>
+              </div>
+              <div id="goalRowsMini"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ PAGE: Goal Tracker ============ -->
+        <section class="page" id="page-goals">
+          <div class="page-head">
+            <h2>Goal Tracker</h2>
+            <span class="hint">no data yet · wire real goal store next</span>
+          </div>
+          <div class="card">
+            <div id="goalRows"></div>
+          </div>
+        </section>
+
+        <!-- ============ PAGE: ตั้งค่า ============ -->
+        <section class="page" id="page-settings">
+          <div class="page-head">
+            <h2>Settings</h2>
+            <span class="hint">Profiles &amp; data on disk · browser prefs in localStorage</span>
+          </div>
+          <div class="set-grid">
+            <div class="set-col">
+              <div class="card">
+                <div class="card-head"><h3>Keyword profiles</h3></div>
+                <div id="pfList"></div>
+                <div class="set-row wide">
+                  <div class="t"><b>ชื่อโปรไฟล์</b><span>รวมหลาย keyword + sources</span></div>
+                  <input type="text" class="set-input" id="pfName" placeholder="เช่น ITOPPLUS หลัก" aria-label="Profile name" />
+                </div>
+                <div class="set-row wide">
+                  <div class="t"><b>Keywords</b><span>บรรทัดละคำ หรือคั่นจุลภาค</span></div>
+                  <textarea id="pfKws" rows="4" aria-label="Profile keywords"></textarea>
+                </div>
+                <div class="set-row wide">
+                  <div class="t"><b>Sources</b><span>5 ช่องทาง public ไม่ต้อง login · TikTok ใช้ session ได้ถ้าต้องการ (pw_login.py)</span></div>
+                  <div class="src-picker pf-src" style="display: flex; flex-direction: column; gap: 2px; font-size: 13px">
+                    <label class="src-option"
+                      ><input type="checkbox" id="pfSrcYt" checked /><span class="src-main"
+                        ><span class="src-name">YouTube</span><span class="src-detail" title="youtube.com/results — scrape ytInitialData (stdlib)">youtube.com/results · stdlib scrape</span></span
+                      ></label
+                    >
+                    <label class="src-option"
+                      ><input type="checkbox" id="pfSrcGn" /><span class="src-main"
+                        ><span class="src-name">ข่าว (GNews)</span><span class="src-detail" title="news.google.com/rss/search — RSS">news.google.com/rss · RSS</span></span
+                      ></label
+                    >
+                    <label class="src-option"
+                      ><input type="checkbox" id="pfSrcTt" /><span class="src-main"
+                        ><span class="src-name">TikTok</span
+                        ><span class="src-detail" title="tiktok.com/search — Playwright + JSON (public/session)">tiktok.com/search · Playwright (public/session)</span></span
+                      ></label
+                    >
+                    <label class="src-option"
+                      ><input type="checkbox" id="pfSrcFbAds" /><span class="src-main"
+                        ><span class="src-name">FB Ads</span
+                        ><span class="src-detail" title="facebook.com/ads/library — Playwright public (TH, active)">facebook.com/ads/library · Playwright (TH, active)</span></span
+                      ></label
+                    >
+                    <label class="src-option"
+                      ><input type="checkbox" id="pfSrcTtAds" /><span class="src-main"
+                        ><span class="src-name">TikTok Ads</span
+                        ><span class="src-detail" title="ads.tiktok.com/business/creativecenter/inspiration/topads/pc/en — Playwright public (TH)"
+                          >ads.tiktok.com/creativecenter · Playwright (TH)</span
+                        ></span
+                      ></label
+                    >
+                  </div>
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 8px">
+                  <button class="btn btn-primary" id="pfSave">Add profile</button>
+                  <button class="btn btn-ghost" id="pfCancel" style="display: none">Cancel</button>
+                </div>
+              </div>
+            </div>
+            <div class="set-col">
+              <div class="card">
+                <div class="card-head"><h3>Tracked keywords</h3></div>
+                <div id="kwList"></div>
+                <div class="set-row">
+                  <div class="t"><b>Add keyword</b><span>Adds a chip above</span></div>
+                  <div style="display: flex; gap: 8px">
+                    <input type="text" class="set-input" id="kwNew" placeholder="e.g. SEO" aria-label="New keyword" style="width: 130px" /><button class="btn btn-primary" id="kwAdd">Add</button>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-head"><h3>Sources (free)</h3></div>
+                <div id="srcToggles"></div>
+                <!-- 2.9 real session status (sessions/tiktok, sessions/facebook) -->
+                <div id="srcSessions" class="set-row" style="display: none"></div>
+                <p class="hint" style="margin: 10px 2px 0; line-height: 1.5">TikTok public อาจเจอ login wall — เลือก Mode: Login session แล้วรัน <code>python pw_login.py tiktok</code> ครั้งเดียว</p>
+              </div>
+              <div class="card">
+                <div class="card-head"><h3>Data</h3></div>
+                <div class="set-row">
+                  <div class="t"><b>Version 0.1V</b><span>10 พ.ย. 2026 · ดูสิ่งที่ทำได้</span></div>
+                  <button class="btn btn-ghost" id="btnNotes2">Patch notes</button>
+                </div>
+                <div class="set-row">
+                  <div class="t"><b>Shortcuts</b><span>/ หรือ Ctrl+K โฟกัส keyword · Ctrl+Enter ค้นหา · Delete ลบที่เลือก · A เก็บ Archive · Shift+click เลือกช่วง</span></div>
+                </div>
+                <div class="set-row">
+                  <div class="t"><b>Export data</b><span>JSON ทั้งหมด หรือ ZIP พร้อม thumbnail</span></div>
+                  <div class="kw-actions">
+                    <a class="btn btn-ghost" href="/api/export" download id="btnExportJson">JSON</a><a class="btn btn-ghost" href="/api/export.zip" download id="btnExportZip">ZIP</a>
+                  </div>
+                </div>
+                <!-- 2.10 last export + trash (2.5) -->
+                <div class="set-row">
+                  <div class="t"><b>Last export</b><span id="lastExport">—</span></div>
+                </div>
+                <div class="set-row">
+                  <div class="t"><b>Trash</b><span id="trashInfo">0 รายการ · ลบแล้วกู้คืนได้ภายใน 7 วัน</span></div>
+                  <div class="kw-actions">
+                    <button class="btn btn-ghost" id="btnTrashRestore">Restore all</button>
+                    <button class="btn btn-danger" id="btnTrashEmpty">Empty trash</button>
+                  </div>
+                </div>
+                <div class="set-row">
+                  <div class="t"><b>Import data</b><span>ไฟล์ JSON/ZIP ที่ export ไว้ (dedup ให้อัตโนมัติ)</span></div>
+                  <div class="kw-actions">
+                    <input type="file" id="importFile" accept=".json,.zip,application/json,application/zip" hidden /><button class="btn btn-ghost" id="btnImport">Choose file</button>
+                  </div>
+                </div>
+                <div class="set-row">
+                  <div class="t"><b>Disk usage</b><span id="diskInfo">—</span></div>
+                  <button class="btn btn-ghost" id="btnRefreshStatus">Refresh</button>
+                </div>
+                <div class="set-row">
+                  <div class="t"><b>Clear keyword data</b><span id="clearKwNote">ลบ items + analysis ของ keyword ปัจจุบัน</span></div>
+                  <button class="btn btn-ghost" id="btnClearKw">Clear</button>
+                </div>
+                <div class="set-row">
+                  <div class="t"><b>Prune old items</b><span>ลบข่าว/คลิปที่เก่ากว่า ทุก keyword (ads ไม่ลบ)</span></div>
+                  <div class="kw-actions">
+                    <select class="filter" id="pruneDays" aria-label="Prune older than" style="min-width: 96px; padding: 8px 10px">
+                      <option value="90">90 วัน</option>
+                      <option value="180">180 วัน</option>
+                      <option value="365">1 ปี</option>
+                    </select>
+                    <button class="btn btn-ghost" id="btnPrune">Prune</button>
+                  </div>
+                </div>
+                <div class="set-row">
+                  <div class="t"><b>Clear ALL collected data</b><span>ลบ items + analysis + thumbnail ทั้งหมด (profiles ยังอยู่)</span></div>
+                  <button class="btn btn-danger" id="btnClearAll">Clear all</button>
+                </div>
+                <div class="set-row">
+                  <div class="t"><b>Clear browser prefs</b><span>History + keyword + page (disk data stays)</span></div>
+                  <button class="btn btn-ghost" id="btnWipe">Reset</button>
+                </div>
+                <div class="set-row">
+                  <div class="t"><b>Theme</b><span>Light / Dark</span></div>
+                  <div style="display: flex; gap: 8px"><button class="btn btn-ghost" id="btnLight">Light</button><button class="btn btn-ghost" id="btnDark">Dark</button></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+
+      /* date pill */
+      (() => {
+        const d = new Date(),
+          p = (n) => String(n).padStart(2, "0");
+        const e = new Date(d);
+        e.setDate(e.getDate() - 29);
+        $("dateRange").textContent = `${p(e.getDate())}.${p(e.getMonth() + 1)}.${e.getFullYear()} - ${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()}`;
+      })();
+
+      /* theme */
+      const sw = $("themeSwitch");
+      function setTheme(t) {
+        document.documentElement.setAttribute("data-theme", t);
+        sw.setAttribute("aria-checked", String(t === "dark"));
+        try {
+          localStorage.setItem("st_theme", t);
+        } catch {}
+      }
+      try {
+        if (localStorage.getItem("st_theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");
+      } catch {}
+      sw.setAttribute("aria-checked", String(document.documentElement.getAttribute("data-theme") === "dark"));
+      sw.addEventListener("click", () => setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark"));
+      $("btnLight").addEventListener("click", () => setTheme("light"));
+      $("btnDark").addEventListener("click", () => setTheme("dark"));
+
+      /* ============ ROUTER — เปลี่ยนหน้าตามเมนู ============ */
+      const SUBS = {
+        overview: "Overview · live data",
+        sources: "Sources",
+        terms: "Top Terms · counted from fetched items",
+        ideas: "Content ideas · from fetched items",
+        items: "All items",
+        archive: "Archive · saved for later",
+        crm: "CRM / Leads · no data yet",
+        competitors: "Competitors · no data yet",
+        ads: "Ads Manager · no data yet",
+        calendar: "Content Calendar · no data yet",
+        tasks: "Tasks · no data yet",
+        reports: "Reports · no data yet",
+        goals: "Goal Tracker · no data yet",
+        settings: "Settings · keywords / sources / fetch / data"
+      };
+      /* locked feature: เมนูยังแสดงแต่กดเข้าหน้าไม่ได้ (CRM/Competitors/Ads/Calendar/Tasks/Reports/Goals) */
+      const LOCKED_PAGES = ["crm", "competitors", "calendar", "tasks", "reports", "goals"];
+      function goPage(p) {
+        if (LOCKED_PAGES.includes(p)) {
+          $("status").textContent = "เมนูนี้ยังถูกล็อก — ฟีเจอร์ยังไม่เปิดใช้งาน";
+          $("status").className = "status";
+          return;
+        }
+        document.querySelectorAll(".page").forEach((s) => s.classList.toggle("active", s.id === "page-" + p));
+        document.querySelectorAll(".nav a[data-page], .mobile-nav a[data-page]").forEach((a) => a.classList.toggle("active", a.dataset.page === p));
+        $("pageSub").textContent = SUBS[p] || "";
+        if (p === "settings") loadStatus();
+        if (p === "archive") loadArchive();
+        saveUi();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      document.querySelectorAll("[data-page]").forEach((a) =>
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          goPage(a.dataset.page);
+        }),
+      );
+      document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => goPage(b.dataset.goto)));
+
+      /* ===== LIVE DATA — จาก API เท่านั้น (ไม่มี mock) ===== */
+      const SRC_LABELS = { youtube: "YouTube", gnews: "Google News", tiktok: "TikTok", facebook: "Facebook", fbads: "FB Ads", ttads: "TikTok Ads" };
+      const SOURCES = [
+        {name:"youtube", label:"YouTube", api:"youtube.com/results · scrape ytInitialData (stdlib)"},
+        { name: "gnews", label: "ข่าว (GNews)", api: "news.google.com/rss/search · RSS" },
+        {name:"tiktok", label:"TikTok", api:"tiktok.com/search · Playwright + JSON (public/session)"},
+        {name:"fbads", label:"FB Ads", api:"facebook.com/ads/library · Playwright public (TH, active)"},
+        {name:"ttads", label:"TikTok Ads", api:"ads.tiktok.com/business/creativecenter/inspiration/topads/pc/en · Playwright public (TH)"}
+      ];
+
+      /* ===== render overview ===== */
+      let currentItems = [];
+      let currentKeyword = "";
+      let platformFilter = "";
+      let sourceLog = {};
+      let itemsTab = "all";
+      const SRC_CHART = {
+        facebook: "#1877F2",
+        fbads: "#0b4f9e",
+        tiktok: "#64748b",
+        ttads: "#334155",
+        instagram: "#E1306C",
+        line: "#22c55e",
+        youtube: "#ef4444",
+        reddit: "#FF4500",
+        hn: "#FB5414",
+        gnews: "#4285F4",
+        wiki: "#64748b",
+      };
+      const srcLabel = (k) => SRC_LABELS[k] || k;
+      function drawDonut(el, legendEl, bySource) {
+        const entries = Object.entries(bySource || {})
+          .filter(([, v]) => v > 0)
+          .sort((a, b) => b[1] - a[1]);
+        const total = entries.reduce((s, [, v]) => s + v, 0);
+        if (!total) {
+          el.style.background = "conic-gradient(var(--donut-track) 0 100%)";
+          el.setAttribute("role", "img");
+          el.setAttribute("aria-label", "No source data");
+          legendEl.innerHTML = "";
+          return;
+        }
+        let acc = 0,
+          used = 0;
+        const pcts = entries.map(([, v], i) => {
+          const pct = i === entries.length - 1 ? Math.max(0, 100 - used) : Math.round((v / total) * 100);
+          used += pct;
+          return pct;
+        });
+        const stops = entries
+          .map(([k, v], i) => {
+            const color = SRC_CHART[k] || PALETTE[i % PALETTE.length];
+            const a = acc * 360,
+              b = (acc + v / total) * 360;
+            acc += v / total;
+            return `${color} ${a}deg ${b}deg`;
+          })
+          .join(",");
+        el.style.background = `conic-gradient(${stops})`;
+        el.setAttribute("role", "img");
+        el.setAttribute("aria-label", entries.map(([k], i) => `${srcLabel(k)} ${pcts[i]}%`).join(", "));
+        legendEl.innerHTML = entries.map(([k], i) => `<span><i style="background:${SRC_CHART[k] || PALETTE[i % PALETTE.length]}"></i><b>${pcts[i]}%</b> ${esc(srcLabel(k))}</span>`).join("");
+      }
+      function setBadge(page, n) {
+        const b = document.querySelector(`.nav a[data-page="${page}"] .badge-n`);
+        if (b) b.textContent = n;
+      }
+      function renderTopItem() {
+        const top = [...currentItems].sort((a, b) => (+b.score || 0) - (+a.score || 0))[0];
+        $("stTop").textContent = top ? (+top.score || 0).toLocaleString() : "0";
+        if (top) {
+          $("stTopTitle").innerHTML = top.url ? `<a href="${esc(top.url)}" target="_blank" rel="noopener">${esc(top.title)}</a>` : esc(top.title);
+          $("stTopMeta").textContent = `${srcLabel(top.source)} · highest score`;
+        } else {
+          $("stTopTitle").textContent = "No data yet";
+          $("stTopMeta").textContent = "—";
+        }
+      }
+      function renderItemsTabs() {
+        const box = $("topItemsTabs");
+        if (!box) return;
+        const keys = [...new Set(currentItems.map((i) => i.source))].sort();
+        if (!keys.length) {
+          box.style.display = "none";
+          box.innerHTML = "";
+          return;
+        }
+        if (itemsTab !== "all" && !keys.includes(itemsTab)) itemsTab = "all";
+        box.style.display = "flex";
+        box.innerHTML = ["all", ...keys]
+          .map((k) => `<button class="chip" data-items-tab="${esc(k)}" role="tab" aria-selected="${k === itemsTab}">${k === "all" ? "All" : esc(srcLabel(k))}</button>`)
+          .join("");
+        const paint = () =>
+          box.querySelectorAll("[data-items-tab]").forEach((x) => {
+            const on = x.dataset.itemsTab === itemsTab;
+            x.style.borderColor = on ? "var(--link)" : "";
+            x.style.color = on ? "var(--link)" : "";
+            x.setAttribute("aria-selected", on ? "true" : "false");
+          });
+        box.querySelectorAll("[data-items-tab]").forEach((b) =>
+          b.addEventListener("click", () => {
+            itemsTab = b.dataset.itemsTab;
+            paint();
+            renderTable();
+            saveUi();
+          }),
+        );
+        paint();
+      }
+      function render(d, isFetch) {
+        currentItems = d.items || [];
+        currentKeyword = d.keyword || currentKeyword;
+        resetVisible();
+        const by = Object.keys(d.by_source || {}).length
+          ? d.by_source
+          : currentItems.reduce((m, i) => {
+              m[i.source] = (m[i.source] || 0) + 1;
+              return m;
+            }, {});
+        const totalScore = currentItems.reduce((s, i) => s + (+i.score || 0), 0);
+        const scored = currentItems.filter((i) => (+i.score || 0) > 0);
+        const avgScore = scored.length ? Math.round(totalScore / scored.length) : 0;
+        const srcKeys = Object.keys(by).sort((a, b) => (by[b] || 0) - (by[a] || 0));
+        $("stTotal").textContent = (d.total ?? currentItems.length).toLocaleString();
+        $("stSrc").textContent = srcKeys.length;
+        $("stSrcNote").textContent = srcKeys.length ? srcKeys.slice(0, 3).map(srcLabel).join(" · ") + (srcKeys.length > 3 ? ` +${srcKeys.length - 3}` : "") : "No sources";
+        $("stScore").textContent = totalScore.toLocaleString();
+        renderTopItem();
+        renderItemsTabs();
+        const scoreShare = {};
+        currentItems.forEach((i) => {
+          scoreShare[i.source] = (scoreShare[i.source] || 0) + (+i.score || 0);
+        });
+        drawDonut($("donutUsers"), $("legendUsers"), scoreShare);
+        $("invScore").textContent = avgScore.toLocaleString();
+        $("invCover").textContent = (d.top_terms || []).length + " terms";
+        const bars = Object.entries(scoreShare).sort((a, b) => b[1] - a[1]);
+        const maxBar = Math.max(1, ...bars.map(([, v]) => v));
+        $("bars").innerHTML = bars.length
+          ? bars
+              .map(
+                ([k, v]) => `<div class="bar-col"><div class="bar-val">${v.toLocaleString()}</div><div class="bar-track">
+        <div class="bar-fill" style="height:${Math.max(3, Math.round((v / maxBar) * 100))}%;background:${SRC_CHART[k] || PALETTE[0]}" title="${esc(k)}: ${v.toLocaleString()} score"></div>
+      </div><div class="bar-label">${esc(srcLabel(k))}</div></div>`,
+              )
+              .join("")
+          : '<div class="empty">No data yet</div>';
+        const ranked = [...scored].sort((a, b) => (+b.score || 0) - (+a.score || 0));
+        const vals = ranked.map((i) => +i.score || 0);
+        if (vals.length) {
+          const high = Math.max(...vals),
+            low = Math.min(...vals);
+          const span = high - low || 1;
+          const pts = vals.map((v, i) => `${((i * 800) / Math.max(1, vals.length - 1)).toFixed(1)},${(185 - ((v - low) / span) * 155).toFixed(1)}`).join(" ");
+          $("line").innerHTML =
+            `<line x1="0" y1="60" x2="800" y2="60" stroke="var(--line-2)" vector-effect="non-scaling-stroke"/><line x1="0" y1="110" x2="800" y2="110" stroke="var(--line-2)" vector-effect="non-scaling-stroke"/><line x1="0" y1="160" x2="800" y2="160" stroke="var(--line-2)" vector-effect="non-scaling-stroke"/><polygon fill="rgba(34,197,94,.12)" points="0,200 ${pts} 800,200"/><polyline fill="none" stroke="#22c55e" stroke-width="2.5" vector-effect="non-scaling-stroke" points="${pts}"/>`;
+          $("scoreNote").textContent = `${scored.length}/${currentItems.length} scored · ${low.toLocaleString()}–${high.toLocaleString()}`;
+          $("scoreHigh").textContent = high.toLocaleString();
+          $("scoreLow").textContent = low.toLocaleString();
+        } else {
+          $("line").innerHTML = "";
+          $("scoreNote").textContent = "No scored items";
+          $("scoreHigh").textContent = "0";
+          $("scoreLow").textContent = "0";
+        }
+        $("termsBox").innerHTML = (d.top_terms || []).length ? d.top_terms.map(([w, n]) => `<span class="term">${esc(w)}<b>${n}</b></span>`).join("") : '<div class="empty">No data yet</div>';
+        $("suggest").innerHTML = (d.suggestions || []).length ? d.suggestions.map((s) => `<li>${esc(s)}</li>`).join("") : '<li class="empty">No ideas yet — fetch a keyword first</li>';
+        computeBands(currentItems);
+        renderPlatformTabs();
+        renderTable();
+        renderFullTable();
+        renderSources(currentItems);
+        renderAds();
+        const mode = isFetch ? "live fetch" : "disk data";
+        SUBS.overview = `Overview · live data · ${currentItems.length} items`;
+        if ($("page-overview").classList.contains("active")) $("pageSub").textContent = SUBS.overview;
+        setBadge("items", d.total ?? currentItems.length);
+        setBadge("sources", srcKeys.length);
+        /* 2.10 backup reminder: no export >7d OR >1000 items (dismiss per session) */
+        backupReminderCheck(d.total ?? currentItems.length);
+        const errList = d.errors || [];
+        const win = d.max_age_days > 0 ? ` · ${d.max_age_days}d window` : "";
+        const dup = d.duplicates || 0;
+        const head = isFetch ? `Fetched +${d.added ?? 0} items${win}${dup ? ` · ${dup} ซ้ำถูกข้าม` : ""}` : "Showing disk data (offline)";
+        $("status").innerHTML = head + (errList.length ? `<br><span>errors (${errList.length}):</span>` + errList.map((e) => `<span>${esc(e)}</span>`).join("") : "");
+        $("status").className = errList.length ? "status err" : "status";
+      }
+      const PALETTE = ["#2f6bff", "#06b6d4", "#a855f7", "#f59e0b", "#22c55e", "#ec4899", "#64748b", "#14b8a6"];
+      const SRC_COLORS = {
+        facebook: "#1877F2",
+        fbads: "#0b4f9e",
+        tiktok: "#000000",
+        ttads: "#334155",
+        instagram: "#E1306C",
+        line: "#00B900",
+        youtube: "#FF0000",
+        reddit: "#FF4500",
+        hn: "#FB5414",
+        gnews: "#4285F4",
+        wiki: "#64748b",
+      };
+      /* platform icons (local PNGs) */
+      const SRC_ICONS = {
+        youtube: "../assets/icons/youtube.png",
+        gnews: "../assets/icons/gnews.png",
+        tiktok: "../assets/icons/tiktok.png",
+        facebook: "../assets/icons/facebook.png",
+        fbads: "../assets/icons/facebook.png",
+        ttads: "../assets/icons/tiktok.png",
+      };
+      const srcIcon = (key, size = 16, cls = "mini-icon") => SRC_ICONS[key]
+        ? `<img class="src-img ${cls}" src="${SRC_ICONS[key]}" width="${size}" height="${size}" alt="" loading="lazy">`
+        : "";
+      const srcBadge = (key, size = 18) => srcIcon(key, size)
+        || `<span class="mini-avatar" style="background:${SRC_COLORS[key] || "#64748b"}">${esc(srcLabel(key).slice(0, 2).toUpperCase())}</span>`;
+      document.querySelectorAll("#srcPicker .src-option").forEach((l) => {
+        const cb = l.querySelector("input[type=checkbox]");
+        const key = cb && cb.value;
+        if (!key || !SRC_ICONS[key]) return;
+        cb.insertAdjacentHTML("afterend", `<img class="src-ic" src="${SRC_ICONS[key]}" width="18" height="18" alt="" loading="lazy">`);
+      });
+      /* relative bands: score scales differ per source (views vs likes), so rank within the current list */
+      let scoreCut = { hot: Infinity, rising: Infinity };
+      function computeBands(items) {
+        const vals = items
+          .map((i) => +i.score || 0)
+          .filter((v) => v > 0)
+          .sort((a, b) => b - a);
+        const at = (p) => (vals.length ? vals[Math.min(vals.length - 1, Math.floor(vals.length * p))] : Infinity);
+        scoreCut = { hot: at(0.2), rising: at(0.5) };
+      }
+      function band(score) {
+        score = +score || 0;
+        if (!score) return ["Unscored", "pill-gray", ""];
+        if (score >= scoreCut.hot) return ["Hot", "pill-green", "row-green"];
+        if (score >= scoreCut.rising) return ["Rising", "pill-yellow", "row-yellow"];
+        return ["Steady", "pill-gray", ""];
+      }
+      const METRIC_LABELS = { views: "views", plays: "plays", likes: "likes" };
+      const itemKey = (i) => `${i.keyword || ""}::${i.url || ""}`;
+      let selectedItems = new Map();
+      function rowHtml(i, withSignal = true, plainTint = false, withActions = false, withSelect = false) {
+        const b = plainTint ? ["", "", ""] : band(+i.score || 0);
+        const c = SRC_COLORS[i.source] || PALETTE[0];
+        const metric = METRIC_LABELS[i.metric] || "";
+        const scoreValue = +i.score || 0;
+        const score = scoreValue ? `${scoreValue.toLocaleString()}${metric ? ` <span class="metric-unit">${metric}</span>` : ""}` : "—";
+        const channel = i.channel_url
+          ? `<a class="row-channel" href="${esc(i.channel_url)}" target="_blank" rel="noopener">${esc(i.author || "channel")}</a>`
+          : i.author
+            ? `<span class="row-channel">${esc(i.author)}</span>`
+            : "";
+        /* 2.2 date under channel: published → created_at fallback, DD MMM YYYY (th-TH), — when none */
+        const dateLine = `<div class="row-date">${fmtDateShort(i.published || i.created_at || "")}</div>`;
+        const actions = withActions
+          ? `<td><div class="row-actions">
+        <button class="mini-btn" data-item-edit data-url="${esc(i.url)}" data-keyword="${esc(i.keyword || "")}">Edit</button>
+        <button class="mini-btn danger" data-item-del data-url="${esc(i.url)}" data-keyword="${esc(i.keyword || "")}">Delete</button>
+      </div></td>`
+          : "";
+        const selectCell = withSelect
+          ? `<td class="sel-cell"><input type="checkbox" class="row-select" data-url="${esc(i.url)}" data-keyword="${esc(i.keyword || "")}"${selectedItems.has(itemKey(i)) ? " checked" : ""}></td>`
+          : "";
+        return `<tr class="${b[2]}"${withSelect ? ' tabindex="0"' : ""}>${selectCell}
+    <td>${srcBadge(i.source, 18)}<span class="src-name">${esc(srcLabel(i.source))}</span></td>
+    <td title="${esc(i.title)}"><a class="row-title" href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a>${channel ? `<div class="row-channel-wrap">${channel}</div>` : ""}${withSelect ? dateLine : ""}</td>
+    <td><b>${score}</b></td>
+    ${withSignal ? `<td><span class="pill ${b[1]}">${b[0]}</span></td>` : ""}
+    <td><a href="${esc(i.url)}" target="_blank" rel="noopener">Open →</a></td>${actions}</tr>`;
+      }
+
+      function renderTable() {
+        const base = itemsTab === "all" ? currentItems : currentItems.filter((i) => i.source === itemsTab);
+        const rows = [...base].sort((a, b) => (+b.score || 0) - (+a.score || 0)).slice(0, 8);
+        $("topItemsTitle").textContent = `Top items (${rows.length})`;
+        $("tableWrap").innerHTML = rows.length
+          ? `<table><caption class="visually-hidden">Top items by score</caption><thead><tr><th scope="col">Source</th><th scope="col">Title</th><th scope="col">Metric</th><th scope="col">Link</th></tr></thead><tbody>${rows.map((i) => rowHtml(i, false, true)).join("")}</tbody></table>`
+          : `<div class="empty">${currentItems.length ? "No items in this view." : "No data yet. Choose a keyword and click Fetch now."}</div>`;
+      }
+      function itemDateOk(i, from, to) {
+        if (!from && !to) return true;
+        const t = Date.parse(i.published || i.created_at || "");
+        if (isNaN(t)) return false;
+        if (from && t < Date.parse(from + "T00:00:00")) return false;
+        if (to && t > Date.parse(to + "T23:59:59.999")) return false;
+        return true;
+      }
+      /* 2.2 sortable columns: whitelist + state, used by table/CSV/select-all */
+      const SORT_KEYS = ["score", "published", "created_at", "source", "title"];
+      const SORT_LABELS = { score: "Metric", published: "Date", created_at: "Saved", source: "Source", title: "Title" };
+      let itemsSort = { key: "score", dir: "desc" };
+      function itemSortDate(i) {
+        const t = Date.parse(i.published || i.created_at || "");
+        return isNaN(t) ? -1 : t;
+      }
+      function sortRows(rows) {
+        const { key, dir } = itemsSort;
+        const mul = dir === "asc" ? 1 : -1;
+        const isDate = key === "published" || key === "created_at";
+        const isNum = key === "score";
+        return [...rows].sort((a, b) => {
+          if (isDate) {
+            /* NULL (-1) goes last both directions */
+            const na = itemSortDate(a),
+              nb = itemSortDate(b);
+            if (na === -1 && nb === -1) return 0;
+            if (na === -1) return 1;
+            if (nb === -1) return -1;
+            return (na - nb) * mul;
+          }
+          if (isNum) {
+            const va = +a.score || 0,
+              vb = +b.score || 0;
+            return (va - vb) * mul;
+          }
+          return (
+            String(a[key] || "")
+              .toLowerCase()
+              .localeCompare(String(b[key] || "").toLowerCase()) * mul
+          );
+        });
+      }
+      function filteredItems() {
+        const f = ($("filterFull")?.value || "").toLowerCase();
+        const src = platformFilter;
+        const from = $("filterFrom")?.value || "";
+        const to = $("filterTo")?.value || "";
+        const rows = currentItems.filter((i) => (!src || i.source === src) && itemDateOk(i, from, to) && (!f || (i.title + " " + i.body + " " + i.source).toLowerCase().includes(f)));
+        return sortRows(rows);
+      }
+      /* 2.12 load more / page size */
+      let itemsPageSize = 100;
+      let visibleCount = 100;
+      function resetVisible() {
+        visibleCount = itemsPageSize || filteredItems().length;
+      }
+      function renderPager(total) {
+        const pager = $("pager");
+        if (!pager) return;
+        const show = itemsPageSize > 0 && total > itemsPageSize;
+        pager.hidden = !show;
+        if (show && $("pagerCount")) $("pagerCount").textContent = `แสดง ${Math.min(visibleCount, total)} จาก ${total} รายการ`;
+        const lm = $("btnLoadMore");
+        if (lm) lm.hidden = visibleCount >= total;
+      }
+      function renderPlatformTabs() {
+        const box = $("itemsPlatformTabs");
+        if (!box) return;
+        const counts = {};
+        currentItems.forEach((i) => {
+          counts[i.source] = (counts[i.source] || 0) + 1;
+        });
+        if (platformFilter && !counts[platformFilter]) platformFilter = "";
+        const tabs = [{ key: "", label: "All", n: currentItems.length }].concat(
+          Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .map(([key, n]) => ({ key, label: srcLabel(key), n })),
+        );
+        box.innerHTML = tabs
+          .map(
+            (t) =>
+              `<button class="chip${t.key === platformFilter ? " active" : ""}" data-platform="${esc(t.key)}" role="tab" aria-selected="${t.key === platformFilter}">${esc(t.label)} <b>${t.n}</b></button>`,
+          )
+          .join("");
+        box.querySelectorAll("[data-platform]").forEach((b) =>
+          b.addEventListener("click", () => {
+            platformFilter = b.dataset.platform;
+            renderPlatformTabs();
+            resetVisible();
+            renderFullTable();
+            saveUi();
+          }),
+        );
+      }
+      function renderFullTable() {
+        const rows = filteredItems();
+        /* 2.12 slice to visibleCount; CSV/select-all still use full filtered list */
+        const visible = itemsPageSize > 0 ? rows.slice(0, visibleCount) : rows;
+        const checkedCount = rows.filter((i) => selectedItems.has(itemKey(i))).length;
+        const allChecked = rows.length > 0 && checkedCount === rows.length;
+        /* 2.2 sortable header buttons + aria-sort */
+        const th = (key, label, aria) => {
+          const active = itemsSort.key === key;
+          const arrow = active ? (itemsSort.dir === "asc" ? "↑" : "↓") : "";
+          const sort = active ? (itemsSort.dir === "asc" ? "ascending" : "descending") : "none";
+          return `<th scope="col" aria-sort="${sort}" data-sort-key="${key}"><button class="sort-btn" data-sort="${key}">${label}<span class="sort-arrow">${arrow}</span></button>${aria || ""}</th>`;
+        };
+        $("tableFullWrap").innerHTML = rows.length
+          ? `<table><caption class="visually-hidden">All items by score</caption><thead><tr><th scope="col" class="sel-cell"><input type="checkbox" id="selectAll" aria-label="Select all visible"${allChecked ? " checked" : ""}></th>${th("source", "Source")}${th("title", "Title")}${th("score", "Metric")}<th scope="col">Signal</th><th scope="col">Link</th><th scope="col">Actions</th></tr></thead><tbody>${visible.map((i) => rowHtml(i, true, true, true, true)).join("")}</tbody></table>`
+          : currentItems.length
+            ? `<div class="empty">ไม่มีผลตาม filter — <button class="btn btn-ghost" data-clear-filters style="padding:5px 10px;font-size:12px">ล้างตัวกรอง</button></div>`
+            : '<div class="empty">ไม่มีข้อมูล — กด Search Now เพื่อดึงจากช่องทางที่เลือก</div>';
+        const all = $("selectAll");
+        if (all && checkedCount > 0 && !allChecked) all.indeterminate = true;
+        renderPager(rows.length);
+        updateBulkBar();
+      }
+      function updateBulkBar() {
+        const bar = $("bulkBar");
+        if (!bar) return;
+        bar.hidden = selectedItems.size === 0;
+        if ($("bulkCount")) $("bulkCount").textContent = `${selectedItems.size} selected`;
+      }
+      function clearSelection() {
+        selectedItems.clear();
+        renderFullTable();
+      }
+      function selectedPayload() {
+        return [...selectedItems.values()].map(({ keyword, url }) => ({ keyword, url }));
+      }
+
+      /* ===== 2.5 toast (bottom-right, role=status, 6s, stack ≤3) ===== */
+      const TOAST_MS = 6000;
+      function toast(msg, opts = {}) {
+        const host = $("toastHost");
+        if (!host) return;
+        while (host.children.length >= 3) host.firstChild.remove();
+        const el = document.createElement("div");
+        el.className = "toast" + (opts.error ? " toast-err" : "");
+        el.setAttribute("role", opts.error ? "alert" : "status");
+        const msgEl = document.createElement("div");
+        msgEl.className = "toast-msg";
+        msgEl.textContent = msg;
+        el.appendChild(msgEl);
+        if (opts.action && typeof opts.onAction === "function") {
+          const b = document.createElement("button");
+          b.className = "toast-action";
+          b.textContent = opts.action;
+          b.addEventListener("click", () => {
+            opts.onAction();
+            el.remove();
+          });
+          el.appendChild(b);
+        }
+        const x = document.createElement("button");
+        x.className = "toast-x";
+        x.setAttribute("aria-label", "ปิด");
+        x.textContent = "×";
+        x.addEventListener("click", () => el.remove());
+        el.appendChild(x);
+        host.appendChild(el);
+        if (!opts.error) setTimeout(() => el.remove(), TOAST_MS);
+      }
+
+      /* ===== 2.6 confirm dialog (replaces native confirm) ===== */
+      let confirmResolve = null;
+      function askConfirm({ title = "ยืนยัน", msg = "", okText = "ยืนยัน", danger = false } = {}) {
+        $("confirmTitle").textContent = title;
+        $("confirmMsg").textContent = msg;
+        const ok = $("confirmOk");
+        ok.textContent = okText;
+        ok.classList.toggle("btn-danger", danger);
+        ok.classList.toggle("btn-primary", !danger);
+        $("confirmModal").hidden = false;
+        document.body.style.overflow = "hidden";
+        $("confirmCancel").focus();
+        return new Promise((resolve) => {
+          confirmResolve = resolve;
+        });
+      }
+      function closeConfirm(val) {
+        $("confirmModal").hidden = true;
+        if ($("loadModal").hidden && $("notesModal").hidden && $("itemModal").hidden && $("moveModal").hidden) document.body.style.overflow = "";
+        if (confirmResolve) {
+          const r = confirmResolve;
+          confirmResolve = null;
+          r(val);
+        }
+      }
+      $("confirmOk").addEventListener("click", () => closeConfirm(true));
+      $("confirmCancel").addEventListener("click", () => closeConfirm(false));
+      $("confirmClose").addEventListener("click", () => closeConfirm(false));
+      $("confirmModal").addEventListener("click", (e) => {
+        if (e.target === $("confirmModal")) closeConfirm(false);
+      });
+
+      /* ===== 2.6 move keyword dialog (replaces native prompt) ===== */
+      let moveResolve = null;
+      let moveCount = 0;
+      async function askMove(items) {
+        moveCount = items.length;
+        $("moveSub").textContent = `${items.length} รายการที่เลือก`;
+        $("moveNewField").hidden = true;
+        $("moveNew").value = "";
+        await loadKeywords();
+        const sel = $("moveSelect");
+        sel.innerHTML =
+          '<option value="">เลือก keyword เดิม…</option>' +
+          (kwCache.length ? kwCache.map((k) => `<option value="${esc(k.keyword)}">${esc(k.keyword)} (${k.count})</option>`).join("") : "") +
+          '<option value="__new">+ สร้าง keyword ใหม่…</option>';
+        $("moveModal").hidden = false;
+        document.body.style.overflow = "hidden";
+        sel.focus();
+        return new Promise((resolve) => {
+          moveResolve = resolve;
+        });
+      }
+      function closeMove(val) {
+        $("moveModal").hidden = true;
+        if ($("loadModal").hidden && $("notesModal").hidden && $("itemModal").hidden && $("confirmModal").hidden) document.body.style.overflow = "";
+        if (moveResolve) {
+          const r = moveResolve;
+          moveResolve = null;
+          r(val);
+        }
+      }
+      function moveResolveOk() {
+        const sel = $("moveSelect").value;
+        if (sel === "__new") {
+          const v = $("moveNew").value.trim();
+          if (!v) {
+            toast("พิมพ์ชื่อ keyword ใหม่ก่อน", { error: true });
+            return;
+          }
+          if (kwCache.some((k) => k.keyword === v)) {
+            toast(`"${v}" มีอยู่แล้ว — เลือกจากรายการ`, { error: true });
+            return;
+          }
+          closeMove(v);
+          return;
+        }
+        if (!sel) {
+          toast("เลือก keyword หรือสร้างใหม่", { error: true });
+          return;
+        }
+        closeMove(sel);
+      }
+      $("moveSelect").addEventListener("change", () => {
+        $("moveNewField").hidden = $("moveSelect").value !== "__new";
+        if (!$("moveNewField").hidden) $("moveNew").focus();
+      });
+      $("moveOk").addEventListener("click", moveResolveOk);
+      $("moveCancel").addEventListener("click", () => closeMove(null));
+      $("moveClose").addEventListener("click", () => closeMove(null));
+      $("moveModal").addEventListener("click", (e) => {
+        if (e.target === $("moveModal")) closeMove(null);
+      });
+
+      /* ===== 2.6/2.8 keyword list cache + autocomplete ===== */
+      let kwCache = [];
+      async function loadKeywords() {
+        try {
+          const d = await (await fetch("/api/keywords", { cache: "no-store" })).json();
+          kwCache = Array.isArray(d) ? d : Array.isArray(d.keywords) ? d.keywords : [];
+          updateKwSuggest();
+          return kwCache;
+        } catch {
+          kwCache = [];
+          return [];
+        }
+      }
+      function updateKwSuggest() {
+        const list = $("kwSuggest");
+        if (!list) return;
+        const seen = new Set();
+        const opts = [];
+        [...getHistory(), ...kwCache.map((k) => k.keyword), ...(profileCache || []).flatMap((p) => p.keywords)].forEach((k) => {
+          const v = String(k || "").trim();
+          if (v && !seen.has(v)) {
+            seen.add(v);
+            opts.push(v);
+          }
+        });
+        list.innerHTML = opts.map((k) => `<option value="${esc(k)}"></option>`).join("");
+      }
+
+      /* ===== 2.8 profile last run (browser state only) ===== */
+      function recordLastRun(profileId, stats) {
+        if (!profileId) return;
+        const s = readUi();
+        s.lastRuns = s.lastRuns || {};
+        s.lastRuns[profileId] = { at: new Date().toISOString(), ...stats };
+        try {
+          localStorage.setItem(UI_KEY, JSON.stringify(s));
+        } catch {}
+        renderLastRun(profileId);
+      }
+      function lastRunText(run) {
+        if (!run) return "ยังไม่เคยรัน";
+        const d = new Date(run.at);
+        const at = isNaN(d.getTime()) ? "" : d.toLocaleString("th-TH", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+        return `${at} · +${run.added || 0} · ${run.duplicates || 0} dup` + (run.errors ? ` · ${run.errors} err` : "");
+      }
+      function renderLastRun(profileId) {
+        const el = $(`lastRun-${profileId}`);
+        if (!el) return;
+        el.textContent = lastRunText((readUi().lastRuns || {})[profileId]);
+      }
+
+      /* ===== 2.9 real session status + warning ===== */
+      let sessionStatus = {};
+      function renderSessions() {
+        const box = $("srcSessions");
+        if (!box) return;
+        box.style.display = "flex";
+        const row = (label, key) => {
+          const on = !!sessionStatus[key];
+          return `<div class="t"><b>${label}</b><span class="pill ${on ? "pill-green" : "pill-red"}">${on ? "login ready" : "not logged in"}</span></div>`;
+        };
+        box.innerHTML = `<div class="t" style="flex:1"><b>Login session</b><span>ตรวจสอบสถานะจาก disk (sessions/)</span></div>${row("TikTok", "tiktok")}${row("Facebook", "facebook")}`;
+      }
+      function sessionNotReady(mode, sources) {
+        if (mode !== "session") return null;
+        const need = (sources || [])
+          .map((s) => (s === "tiktok" ? "tiktok" : s === "fbads" || s === "facebook" ? "facebook" : null))
+          .filter(Boolean);
+        const missing = [...new Set(need)].filter((s) => !sessionStatus[s]);
+        return missing.length ? missing : null;
+      }
+
+      /* ===== 2.10 backup reminder ===== */
+      const EXPORT_KEY = "st_last_export";
+      function markExported() {
+        try {
+          localStorage.setItem(EXPORT_KEY, new Date().toISOString());
+        } catch {}
+        renderLastExport();
+        toast("บันทึกเวลาส่งออกล่าสุดแล้ว");
+      }
+      function renderLastExport() {
+        const el = $("lastExport");
+        if (!el) return;
+        let last = null;
+        try {
+          last = localStorage.getItem(EXPORT_KEY);
+        } catch {}
+        if (!last) {
+          el.textContent = "ยังไม่เคยส่งออก";
+          return;
+        }
+        const d = new Date(last);
+        const days = Math.floor((Date.now() - d.getTime()) / 86400000);
+        el.textContent = `${d.toLocaleDateString("th-TH")} · ${days === 0 ? "วันนี้" : `${days} วันที่แล้ว`}`;
+      }
+      let backupDismissed = false;
+      function backupReminderCheck(itemsCount) {
+        if (backupDismissed) return;
+        let last = null;
+        try {
+          last = localStorage.getItem(EXPORT_KEY);
+        } catch {}
+        const noExport = !last || Date.now() - new Date(last).getTime() > 7 * 86400000;
+        if (itemsCount > 0 && (noExport || itemsCount > 1000)) {
+          toast("ยังไม่ได้ส่งออกข้อมูลนาน — กด Export ที่ Settings เพื่อสำรอง", {
+            action: "ไปที่ Settings",
+            onAction: () => goPage("settings"),
+          });
+          backupDismissed = true;
+        }
+      }
+
+      /* ===== 2.5 delete → toast Undo (trash restore) ===== */
+      async function deleteToUndo(items, doneMsg = "ลบ") {
+        const r = await fetch("/api/items/bulk", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "delete", items }) });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || "HTTP " + r.status);
+        const n = d.trashed || d.changed || 0;
+        toast(`${doneMsg} ${n} รายการแล้ว`, {
+          action: "Undo",
+          onAction: async () => {
+            try {
+              const rr = await fetch("/api/trash/restore", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items }) });
+              const dd = await rr.json();
+              if (!rr.ok) throw new Error(dd.error || "HTTP " + rr.status);
+              toast(`กู้คืน ${dd.restored || 0} รายการแล้ว`);
+              await loadDb();
+              await loadArchive();
+            } catch (e) {
+              toast("กู้คืนไม่สำเร็จ: " + e.message, { error: true });
+            }
+          },
+        });
+        return n;
+      }
+
+      async function runBulk(action, extra = {}) {
+        const items = selectedPayload();
+        if (!items.length) return;
+        /* 2.6 dialogs replace native confirm/prompt */
+        if (action === "move") {
+          const target = await askMove(items);
+          if (!target) return;
+          extra = { ...extra, to_keyword: target };
+        } else {
+          const ok = await askConfirm({
+            title: action === "archive" ? "เก็บใน Archive" : "ลบรายการ",
+            msg: action === "archive" ? `เก็บ ${items.length} รายการใน Archive?` : `ลบ ${items.length} รายการ? (ย้ายไป Trash — กู้คืนได้ 7 วัน)`,
+            okText: action === "archive" ? "เก็บ" : "ลบ",
+            danger: action !== "archive",
+          });
+          if (!ok) return;
+        }
+        const path = action === "archive" ? "/api/archive" : action === "restore" ? "/api/archive/restore" : "/api/items/bulk";
+        const body = action === "archive" || action === "restore" ? { items } : { action, items, ...extra };
+        try {
+          const r = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error || "HTTP " + r.status);
+          selectedItems.clear();
+          $("bulkBar").hidden = true;
+          await loadDb();
+          await loadArchive();
+          /* 2.5 delete → toast Undo (trash restore) */
+          if (action === "delete") {
+            toast(`ลบ ${d.trashed || d.changed || 0} รายการแล้ว`, {
+              action: "Undo",
+              onAction: async () => {
+                try {
+                  const rr = await fetch("/api/trash/restore", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items }) });
+                  const dd = await rr.json();
+                  if (!rr.ok) throw new Error(dd.error || "HTTP " + rr.status);
+                  toast(`กู้คืน ${dd.restored || 0} รายการแล้ว`);
+                  await loadDb();
+                  await loadArchive();
+                } catch (e) {
+                  toast("กู้คืนไม่สำเร็จ: " + e.message, { error: true });
+                }
+              },
+            });
+          } else {
+            $("status").textContent =
+              action === "archive"
+                ? `เก็บ ${d.archived || 0} รายการใน Archive แล้ว`
+                : action === "restore"
+                  ? `กู้คืน ${d.restored || 0} รายการแล้ว`
+                  : `ย้าย ${d.changed || 0} รายการไป "${extra.to_keyword}"`;
+            $("status").className = "status";
+          }
+        } catch (e) {
+          $("status").textContent = "Bulk action failed: " + e.message;
+          $("status").className = "status err";
+        }
+      }
+      $("bulkArchive").addEventListener("click", () => runBulk("archive"));
+      $("bulkDelete").addEventListener("click", () => runBulk("delete"));
+      $("bulkMove").addEventListener("click", () => runBulk("move"));
+      $("bulkClear").addEventListener("click", clearSelection);
+      /* 2.14 shift-click range select (index in filtered rows); shift tracked on click (change has no shiftKey) */
+      let lastSelectedIndex = -1;
+      let lastClickShift = false;
+      function toggleSelect(i, on) {
+        const key = itemKey(i);
+        if (on) selectedItems.set(key, { keyword: i.keyword || "", url: i.url || "" });
+        else selectedItems.delete(key);
+      }
+      $("tableFullWrap").addEventListener("click", (e) => {
+        if (e.target.closest(".row-select")) lastClickShift = e.shiftKey;
+      });
+      $("tableFullWrap").addEventListener("change", (e) => {
+        const cb = e.target.closest(".row-select");
+        if (!cb) return;
+        const rows = filteredItems();
+        const idx = rows.findIndex((i) => i.url === cb.dataset.url && (i.keyword || "") === cb.dataset.keyword);
+        if (lastClickShift && lastSelectedIndex >= 0 && idx >= 0 && lastSelectedIndex !== idx) {
+          const [a, b] = [lastSelectedIndex, idx].sort((x, y) => x - y);
+          const on = cb.checked;
+          for (let j = a; j <= b; j++) toggleSelect(rows[j], on);
+        } else {
+          toggleSelect(rows[idx] || { keyword: cb.dataset.keyword || "", url: cb.dataset.url || "" }, cb.checked);
+          lastSelectedIndex = idx;
+        }
+        lastClickShift = false;
+        updateBulkBar();
+        const all = $("selectAll");
+        if (all) {
+          const count = rows.filter((i) => selectedItems.has(itemKey(i))).length;
+          all.checked = rows.length > 0 && count === rows.length;
+          all.indeterminate = count > 0 && count < rows.length;
+        }
+      });
+      $("tableFullWrap").addEventListener("change", (e) => {
+        if (e.target.id !== "selectAll") return;
+        const on = e.target.checked;
+        filteredItems().forEach((i) => {
+          const key = itemKey(i);
+          if (on) selectedItems.set(key, { keyword: i.keyword || "", url: i.url || "" });
+          else selectedItems.delete(key);
+        });
+        renderFullTable();
+      });
+      /* 2.13 Space/Enter on focused row toggles its checkbox */
+      $("tableFullWrap").addEventListener("keydown", (e) => {
+        const tr = e.target.closest("tr[tabindex]");
+        if (!tr) return;
+        if (e.key !== " " && e.key !== "Enter") return;
+        e.preventDefault();
+        const cb = tr.querySelector(".row-select");
+        if (cb) {
+          cb.checked = !cb.checked;
+          cb.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      });
+      /* archive */
+      let archiveCache = [];
+      /* 2.2 short date: DD MMM YYYY (th-TH), — when none */
+      function fmtDateShort(iso) {
+        const d = new Date(iso || "");
+        return isNaN(d.getTime()) ? "—" : d.toLocaleDateString("th-TH", { day: "2-digit", month: "short", year: "numeric" });
+      }
+      function fmtArchiveDate(iso) {
+        const d = new Date(iso || "");
+        return isNaN(d.getTime()) ? "—" : d.toLocaleString("th-TH", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+      }
+      /* 2.11 archive: multi-select keyed by keyword::url, platform tabs, restore all */
+      let archiveSelected = new Map();
+      const archiveKey = (i) => `${i.keyword || ""}::${i.url || ""}`;
+      function archiveFiltered() {
+        const f = ($("filterArchive")?.value || "").toLowerCase();
+        return archiveCache.filter((i) => {
+          if (archivePlatformFilter && i.source !== archivePlatformFilter) return false;
+          return !f || `${i.title || ""} ${i.keyword || ""} ${i.source || ""} ${i.author || ""}`.toLowerCase().includes(f);
+        });
+      }
+      function renderArchiveTabs() {
+        const box = $("archivePlatformTabs");
+        if (!box) return;
+        const counts = {};
+        archiveCache.forEach((i) => {
+          counts[i.source] = (counts[i.source] || 0) + 1;
+        });
+        if (archivePlatformFilter && !counts[archivePlatformFilter]) archivePlatformFilter = "";
+        const tabs = [{ key: "", label: "All", n: archiveCache.length }].concat(
+          Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .map(([key, n]) => ({ key, label: srcLabel(key), n })),
+        );
+        box.innerHTML = tabs
+          .map(
+            (t) =>
+              `<button class="chip${t.key === archivePlatformFilter ? " active" : ""}" data-archive-platform="${esc(t.key)}" role="tab" aria-selected="${t.key === archivePlatformFilter}">${esc(t.label)} <b>${t.n}</b></button>`,
+          )
+          .join("");
+        box.querySelectorAll("[data-archive-platform]").forEach((b) =>
+          b.addEventListener("click", () => {
+            archivePlatformFilter = b.dataset.archivePlatform;
+            renderArchiveTabs();
+            renderArchive();
+            saveUi();
+          }),
+        );
+      }
+      function renderArchive() {
+        const rows = archiveFiltered();
+        if ($("archiveHint")) $("archiveHint").textContent = `${archiveCache.length} archived items · กู้คืนหรือลบถาวรได้`;
+        if (!$("archiveWrap")) return;
+        const allChecked = rows.length > 0 && rows.every((i) => archiveSelected.has(archiveKey(i)));
+        const someChecked = rows.some((i) => archiveSelected.has(archiveKey(i)));
+        $("archiveWrap").innerHTML = rows.length
+          ? `<table><caption class="visually-hidden">Archived items</caption>
+    <thead><tr><th scope="col" class="sel-cell"><input type="checkbox" id="archiveSelectAll" aria-label="Select all archived"${allChecked ? " checked" : ""}></th><th scope="col">Source</th><th scope="col">Title</th><th scope="col">Metric</th><th scope="col">Keyword</th><th scope="col">Archived</th><th scope="col">Actions</th></tr></thead>
+    <tbody>${rows
+      .map((i) => {
+        const metric = METRIC_LABELS[i.metric] || "";
+        const score = +i.score || 0 ? `${(+i.score || 0).toLocaleString()}${metric ? ` <span class="metric-unit">${metric}</span>` : ""}` : "—";
+        const sel = archiveSelected.has(archiveKey(i));
+        return `<tr class="${sel ? "selected" : ""}">
+        <td class="sel-cell"><input type="checkbox" class="archive-select" data-url="${esc(i.url)}" data-keyword="${esc(i.keyword || "")}"${sel ? " checked" : ""}></td>
+        <td>${srcBadge(i.source, 18)}<span class="src-name">${esc(srcLabel(i.source))}</span></td>
+        <td><a class="row-title" href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title || i.url)}</a>
+          ${i.channel_url ? `<div class="row-channel-wrap"><a class="row-channel" href="${esc(i.channel_url)}" target="_blank" rel="noopener">${esc(i.author || "channel")}</a></div>` : ""}</td>
+        <td><b>${score}</b></td>
+        <td>${esc(i.keyword || "—")}</td>
+        <td>${esc(fmtArchiveDate(i.archived_at))}</td>
+        <td><div class="row-actions">
+          <button class="mini-btn" data-archive-restore data-url="${esc(i.url)}" data-keyword="${esc(i.keyword || "")}">Restore</button>
+          <button class="mini-btn danger" data-archive-del data-url="${esc(i.url)}" data-keyword="${esc(i.keyword || "")}">Delete</button>
+        </div></td></tr>`;
+      })
+      .join("")}</tbody></table>`
+          : '<div class="empty">Archive ว่าง — เลือกรายการใน All items แล้วกด Archive</div>';
+        const selAll = $("archiveSelectAll");
+        if (selAll && someChecked && !allChecked) selAll.indeterminate = true;
+        updateArchiveBulkBar();
+      }
+      function updateArchiveBulkBar() {
+        const bar = $("archiveBulkBar");
+        if (!bar) return;
+        bar.hidden = archiveSelected.size === 0;
+        if ($("archiveBulkCount")) $("archiveBulkCount").textContent = `${archiveSelected.size} selected`;
+      }
+      async function loadArchive() {
+        try {
+          const r = await fetch("/api/archive", { cache: "no-store" });
+          archiveCache = await r.json();
+          if (!Array.isArray(archiveCache)) archiveCache = [];
+          setBadge("archive", archiveCache.length);
+          SUBS.archive = `Archive · ${archiveCache.length} items`;
+          if ($("page-archive")?.classList.contains("active")) $("pageSub").textContent = SUBS.archive;
+          renderArchiveTabs();
+          renderArchive();
+        } catch (e) {
+          if ($("archiveWrap")) $("archiveWrap").innerHTML = `<div class="empty">Archive load failed: ${esc(e.message)}</div>`;
+        }
+      }
+      $("filterArchive")?.addEventListener("input", () => {
+        renderArchive();
+        saveUi();
+      });
+      async function archiveBulk(route, items, method = "POST", confirmMsg = "") {
+        if (confirmMsg) {
+          const ok = await askConfirm({ title: "ยืนยัน", msg: confirmMsg, okText: "ยืนยัน", danger: true });
+          if (!ok) return;
+        }
+        try {
+          const r = await fetch(route, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items }) });
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error || "HTTP " + r.status);
+          $("status").textContent = `Archive: ${d.restored || d.removed || 0} รายการ` + (d.skipped ? ` · ข้าม ${d.skipped}` : "");
+          $("status").className = "status";
+          archiveSelected.clear();
+          await loadArchive();
+          await loadDb();
+        } catch (err) {
+          $("status").textContent = "Archive action failed: " + err.message;
+          $("status").className = "status err";
+        }
+      }
+      $("archiveWrap")?.addEventListener("click", async (e) => {
+        const restore = e.target.closest("[data-archive-restore]");
+        const del = e.target.closest("[data-archive-del]");
+        if (!restore && !del) return;
+        const btn = restore || del;
+        const items = [{ keyword: btn.dataset.keyword, url: btn.dataset.url }];
+        if (del) {
+          const ok = await askConfirm({ title: "ลบถาวร", msg: "ลบรายการนี้ออกจาก Archive ถาวร? (ไม่เข้า Trash)", okText: "ลบ", danger: true });
+          if (!ok) return;
+          await archiveBulk("/api/archive", items, "DELETE");
+          return;
+        }
+        await archiveBulk("/api/archive/restore", items, "POST");
+      });
+      $("archiveWrap")?.addEventListener("change", (e) => {
+        const cb = e.target.closest(".archive-select");
+        if (cb) {
+          const key = `${cb.dataset.keyword || ""}::${cb.dataset.url || ""}`;
+          if (cb.checked) archiveSelected.set(key, { keyword: cb.dataset.keyword || "", url: cb.dataset.url || "" });
+          else archiveSelected.delete(key);
+          renderArchive();
+          return;
+        }
+        if (e.target.id === "archiveSelectAll") {
+          const on = e.target.checked;
+          archiveFiltered().forEach((i) => {
+            const key = archiveKey(i);
+            if (on) archiveSelected.set(key, { keyword: i.keyword || "", url: i.url || "" });
+            else archiveSelected.delete(key);
+          });
+          renderArchive();
+        }
+      });
+      $("archiveBulkRestore")?.addEventListener("click", () => {
+        const items = [...archiveSelected.values()];
+        if (!items.length) return;
+        archiveBulk("/api/archive/restore", items, "POST", `กู้คืน ${items.length} รายการกลับสู่ All items?`);
+      });
+      $("archiveBulkDelete")?.addEventListener("click", () => {
+        const items = [...archiveSelected.values()];
+        if (!items.length) return;
+        archiveBulk("/api/archive", items, "DELETE", `ลบ ${items.length} รายการออกจาก Archive ถาวร?`);
+      });
+      $("archiveBulkClear")?.addEventListener("click", () => {
+        archiveSelected.clear();
+        renderArchive();
+      });
+      $("archiveRestoreAll")?.addEventListener("click", async () => {
+        const items = archiveFiltered().map((i) => ({ keyword: i.keyword || "", url: i.url || "" }));
+        if (!items.length) return;
+        await archiveBulk("/api/archive/restore", items, "POST", `กู้คืน ${items.length} รายการที่กรองอยู่ทั้งหมด?`);
+      });
+      /* 2.1/2.3 filter text: debounce 250 ms then re-render + save */
+      let filterTimer = null;
+      $("filterFull").addEventListener("input", () => {
+        clearTimeout(filterTimer);
+        filterTimer = setTimeout(() => {
+          resetVisible();
+          renderFullTable();
+          saveUi();
+        }, 250);
+      });
+      ["filterFrom", "filterTo"].forEach((id) => {
+        $(id).addEventListener("change", () => {
+          resetVisible();
+          renderFullTable();
+          saveUi();
+        });
+        $(id).addEventListener("input", () => {
+          resetVisible();
+          renderFullTable();
+          saveUi();
+        });
+      });
+      /* 2.3 quick date filters + clear filters (resets only itemsUi, keeps keyword/history) */
+      function isoDate(d) {
+        const p = (n) => String(n).padStart(2, "0");
+        return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+      }
+      document.querySelectorAll("[data-quick]").forEach((b) =>
+        b.addEventListener("click", () => {
+          const days = b.dataset.quick;
+          const to = new Date();
+          let from = new Date();
+          if (days === "today") {
+            from = to;
+          } else {
+            from.setDate(from.getDate() - (+days - 1));
+          }
+          $("filterFrom").value = isoDate(from);
+          $("filterTo").value = isoDate(to);
+          resetVisible();
+          renderFullTable();
+          saveUi();
+        }),
+      );
+      $("btnClearFilters").addEventListener("click", () => {
+        $("filterFull").value = "";
+        $("filterFrom").value = "";
+        $("filterTo").value = "";
+        platformFilter = "";
+        itemsSort = { key: "score", dir: "desc" };
+        renderPlatformTabs();
+        resetVisible();
+        renderFullTable();
+        saveUi();
+      });
+      /* 2.2 sort click: toggle asc/desc on same key, else set key desc */
+      $("tableFullWrap").addEventListener("click", (e) => {
+        const clear = e.target.closest("[data-clear-filters]");
+        if (clear) {
+          $("btnClearFilters").click();
+          return;
+        }
+        const btn = e.target.closest("[data-sort]");
+        if (!btn) return;
+        const key = btn.dataset.sort;
+        if (itemsSort.key === key) itemsSort.dir = itemsSort.dir === "asc" ? "desc" : "asc";
+        else itemsSort = { key, dir: "desc" };
+        resetVisible();
+        renderFullTable();
+        saveUi();
+      });
+      /* 2.12 pager: page size select + load more */
+      $("pageSize")?.addEventListener("change", (e) => {
+        itemsPageSize = +e.target.value || 0;
+        resetVisible();
+        renderFullTable();
+      });
+      $("btnLoadMore")?.addEventListener("click", () => {
+        visibleCount += 100;
+        renderFullTable();
+      });
+      $("btnCsv").addEventListener("click", () => {
+        const rows = filteredItems();
+        if (!rows.length) {
+          $("status").textContent = "ไม่มีรายการให้ export";
+          $("status").className = "status";
+          return;
+        }
+        const cols = ["url", "title", "body", "source", "keyword", "author", "channel_url", "score", "views", "metric", "created", "published", "created_at", "asset"];
+        const cell = (v) => {
+          const s = String(v ?? "");
+          return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+        };
+        const csv = "\uFEFF" + [cols.join(",")].concat(rows.map((r) => cols.map((k) => cell(r[k])).join(","))).join("\r\n");
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+        a.download = `social-tracker-${currentKeyword || "items"}-${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        $("status").textContent = `Export CSV: ${rows.length} items`;
+        $("status").className = "status";
+      });
+      /* item CRUD */
+      let itemEditing = null;
+      function openItemModal(item) {
+        itemEditing = item ? { keyword: item.keyword, url: item.url } : null;
+        $("itemTitle").textContent = item ? "Edit item" : "Add item";
+        $("itemSub").textContent = item ? `${srcLabel(item.source)} · ${item.metric || "none"}` : "manual item (เก็บในเครื่องเท่านั้น)";
+        $("itemUrl").value = item?.url || "";
+        $("itemUrl").readOnly = !!item;
+        $("itemTitleInput").value = item?.title || "";
+        $("itemAuthor").value = item?.author || "";
+        $("itemChannel").value = item?.channel_url || "";
+        $("itemKeyword").value = item?.keyword || $("q").value.trim() || currentKeyword || "";
+        $("itemSource").value = item?.source || "manual";
+        $("itemSource").disabled = !!item;
+        $("itemScore").value = item ? +item.score || 0 : 0;
+        $("itemModal").hidden = false;
+        document.body.style.overflow = "hidden";
+        (item ? $("itemTitleInput") : $("itemUrl")).focus();
+      }
+      function closeItemModal() {
+        $("itemModal").hidden = true;
+        if ($("loadModal").hidden && $("notesModal").hidden) document.body.style.overflow = "";
+      }
+      $("btnAddItem").addEventListener("click", () => openItemModal(null));
+      $("itemClose").addEventListener("click", closeItemModal);
+      $("itemCancel").addEventListener("click", closeItemModal);
+      $("itemModal").addEventListener("click", (e) => {
+        if (e.target === $("itemModal")) closeItemModal();
+      });
+      $("itemSave").addEventListener("click", async () => {
+        const url = $("itemUrl").value.trim();
+        const keyword = $("itemKeyword").value.trim();
+        if (!url || !keyword) {
+          $("status").textContent = "ต้องมี URL และ Keyword";
+          $("status").className = "status err";
+          return;
+        }
+        const patch = {
+          title: $("itemTitleInput").value.trim(),
+          author: $("itemAuthor").value.trim(),
+          channel_url: $("itemChannel").value.trim(),
+          keyword,
+          score: +($("itemScore").value || 0),
+        };
+        const editing = itemEditing;
+        $("itemSave").disabled = true;
+        try {
+          const r = editing
+            ? await fetch("/api/items", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: editing.keyword, url: editing.url, patch }) })
+            : await fetch("/api/items", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...patch, url, source: $("itemSource").value }) });
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error || "HTTP " + r.status);
+          closeItemModal();
+          $("q").value = keyword;
+          await loadDb();
+          $("status").textContent = editing ? "อัปเดต item แล้ว" : "เพิ่ม item แล้ว";
+          $("status").className = "status";
+        } catch (e) {
+          $("status").textContent = "Save failed: " + e.message;
+          $("status").className = "status err";
+        } finally {
+          $("itemSave").disabled = false;
+        }
+      });
+      $("tableFullWrap").addEventListener("click", async (e) => {
+        const ed = e.target.closest("[data-item-edit]");
+        if (ed) {
+          const item = currentItems.find((i) => i.url === ed.dataset.url && (i.keyword || "") === ed.dataset.keyword);
+          if (item) openItemModal(item);
+          return;
+        }
+        const del = e.target.closest("[data-item-del]");
+        if (!del) return;
+        const item = { keyword: del.dataset.keyword, url: del.dataset.url };
+        const ok = await askConfirm({ title: "ลบ item", msg: "ลบรายการนี้? (ย้ายไป Trash — กู้คืนได้ 7 วัน)", okText: "ลบ", danger: true });
+        if (!ok) return;
+        try {
+          const n = await deleteToUndo([item], "ลบ");
+          await loadDb();
+          if (!n) {
+            $("status").textContent = "ไม่พบ item ที่จะลบ";
+            $("status").className = "status err";
+          }
+        } catch (err) {
+          $("status").textContent = "Delete failed: " + err.message;
+          $("status").className = "status err";
+        }
+      });
+      $("btnRefreshViews").addEventListener("click", async () => {
+        const q = $("q").value.trim() || currentKeyword;
+        if (!q) {
+          $("status").textContent = "พิมพ์ Keyword หรือเลือกข้อมูลก่อน";
+          $("status").className = "status";
+          return;
+        }
+        /* 2.7 refresh-selected: ถ้ามี selection > 0 อัปเดตเฉพาะที่เลือก */
+        const sel = selectedPayload();
+        const selCount = sel.length;
+        const srcs = selCount
+          ? [...new Set(currentItems.filter((i) => selectedItems.has(itemKey(i)) && ["youtube", "tiktok", "ttads"].includes(i.source)).map((i) => i.source))]
+          : [...new Set(currentItems.filter((i) => ["youtube", "tiktok", "ttads"].includes(i.source)).map((i) => i.source))];
+        if (!srcs.length) {
+          $("status").textContent = "ไม่มีรายการที่มียอดวิวให้อัปเดต (YouTube/TikTok/TikTok Ads)";
+          $("status").className = "status";
+          return;
+        }
+        saveUi();
+        showLoading(selCount ? `กำลังอัปเดต ${selCount} รายการที่เลือก…` : "กำลังอัปเดตยอดวิว…", `${q} · ${srcs.map((s) => SRC_LABELS[s] || s).join(", ")}`);
+        activeAbort = new AbortController();
+        const signal = activeAbort.signal;
+        $("loadCancel").disabled = false;
+        setLoadingProgress(0, 1, "refresh stats");
+        setBusy(true);
+        try {
+          const body = { q, sources: srcs };
+          if (selCount) body.items = sel;
+          const r = await fetch("/api/refresh-stats", { method: "POST", signal, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error || "HTTP " + r.status);
+          setLoadingProgress(1, 1, "เสร็จ");
+          await loadDb();
+          $("status").textContent = `อัปเดต ${d.updated || 0}/${d.total || 0} items` + ((d.errors || []).length ? ` · ${d.errors.length} errors` : "");
+          $("status").className = (d.errors || []).length ? "status err" : "status";
+          if (selCount) toast(`อัปเดต ${d.updated || 0}/${d.total || 0} รายการที่เลือกแล้ว`);
+        } catch (e) {
+          if (e.name === "AbortError") {
+            $("status").textContent = "ยกเลิกการอัปเดตแล้ว";
+            $("status").className = "status";
+          } else {
+            $("status").textContent = "Refresh failed: " + e.message;
+            $("status").className = "status err";
+          }
+        } finally {
+          setBusy(false);
+          hideLoading();
+          activeAbort = null;
+          $("loadCancel").disabled = false;
+        }
+      });
+
+      /* ===== detail pages: no data yet (wire real features later) ===== */
+      function renderSources(items) {
+        const box = $("srcCards");
+        if (!box) return;
+        const tbody = $("srcRows");
+        const list = Array.isArray(items) ? items : currentItems;
+        const picked = selectedSources();
+        if (!list.length) {
+          box.innerHTML = `<div class="empty">${
+            picked.length ? `ยังไม่มีข้อมูลสำหรับ keyword นี้ — กด Search Now เพื่อดึงจาก ${picked.length} ช่องทางที่เลือก` : "ยังไม่ได้เลือกช่องทาง — เลือก Sources ก่อน"
+          }</div>`;
+          if (tbody) tbody.innerHTML = "";
+          return;
+        }
+        const groups = {};
+        list.forEach((i) => {
+          const s = i.source || "?";
+          (groups[s] = groups[s] || []).push(i);
+        });
+        const rows = Object.entries(groups).sort((a, b) => b[1].length - a[1].length);
+        const total = list.length;
+        const fmtDate = (iso) => {
+          const d = new Date(iso || "");
+          return isNaN(d.getTime()) ? "—" : d.toLocaleDateString("th-TH", { day: "2-digit", month: "short" });
+        };
+        const stats = ([src, arr]) => {
+          const totalScore = arr.reduce((a, i) => a + (+i.score || 0), 0);
+          return {
+            src,
+            count: arr.length,
+            share: Math.round((arr.length / total) * 100),
+            totalScore,
+            avg: Math.round(totalScore / arr.length),
+            last: fmtDate(
+              arr
+                .map((i) => i.created_at)
+                .filter(Boolean)
+                .sort()
+                .pop(),
+            ),
+            color: SRC_CHART[src] || "#64748b",
+          };
+        };
+        box.innerHTML = rows
+          .map((r) => {
+            const s = stats(r);
+            const log = sourceLog[s.src];
+            const api = (SOURCES.find((x) => x.name === s.src) || {}).api || "";
+            const last = log && log.at ? fmtDate(log.at) : s.last;
+            const ok = !log || log.ok;
+            return `<div class="card src-card" style="--src:${s.color}">
+      <div class="src-top">${srcIcon(s.src, 38, "src-logo-img") || `<div class="src-logo" style="background:${s.color}">${esc(srcLabel(s.src).slice(0, 2))}</div>`}
+        <div><h4>${esc(srcLabel(s.src))}</h4><div class="api-note">${esc(api)}</div></div>
+        <span class="pill ${ok ? "pill-green" : "pill-red"}" style="margin-left:auto">${ok ? "active" : "error"}</span></div>
+      <div class="src-metrics">
+        <div class="m"><b>${s.count}</b><span>items</span></div>
+        <div class="m"><b>${s.totalScore.toLocaleString()}</b><span>total score</span></div>
+        <div class="m"><b>${s.avg.toLocaleString()}</b><span>avg score</span></div>
+        <div class="m"><b>${esc(last)}</b><span>last fetch</span></div>
+      </div>
+      ${!ok && log.error ? `<div class="src-error">${esc(log.error)}</div>` : ""}</div>`;
+          })
+          .join("");
+        if (tbody)
+          tbody.innerHTML = rows
+            .map((r) => {
+              const s = stats(r);
+              const log = sourceLog[s.src];
+              const ok = !log || log.ok;
+              const last = log && log.at ? fmtDate(log.at) : s.last;
+              return `<tr><td>${srcBadge(s.src, 18)}<b>${esc(srcLabel(s.src))}</b></td>
+      <td>${s.count}</td><td>${s.share}%</td>
+      <td>${s.totalScore.toLocaleString()}</td><td>${s.avg.toLocaleString()}</td>
+      <td>${esc(last)}</td><td><span class="pill ${ok ? "pill-green" : "pill-red"}">${ok ? "active" : "error"}</span></td></tr>`;
+            })
+            .join("");
+      }
+      function renderTermsPage() {
+        $("termsCount").textContent = "0 terms";
+        if ($("termRows")) $("termRows").innerHTML = "";
+      }
+      $("filterTerms").addEventListener("input", () => {
+        const f = $("filterTerms").value.toLowerCase();
+        document.querySelectorAll("#termRows tr").forEach((r) => {
+          r.style.display = r.textContent.toLowerCase().includes(f) ? "" : "none";
+        });
+      });
+      function renderIdeas() {
+        $("ideaGrid").innerHTML = '<div class="empty">No ideas yet.</div>';
+        ["heatRows", "perfRows", "planBox"].forEach((id) => {
+          if ($(id)) $(id).innerHTML = "";
+        });
+      }
+
+      function renderDeep() {
+        /* placeholder: deep widgets wired later */
+        ["growthLine", "chanER", "sentiBox", "chanRows", "mentionRows", "volBars", "sovBox", "hashBox", "heatRows", "perfRows", "planBox", "topContentRows"].forEach((id) => {
+          const e = $(id);
+          if (e) e.innerHTML = "";
+        });
+      }
+
+      /* ===== other pages: no data yet ===== */
+      function renderCrm() {
+        if ($("crmBoard")) $("crmBoard").innerHTML = '<div class="empty">No leads yet.</div>';
+      }
+      function renderAds() {
+        const rows = currentItems.filter((i) => i.source === "fbads" || i.source === "ttads").sort((a, b) => (+b.score || 0) - (+a.score || 0));
+        const fb = rows.filter((i) => i.source === "fbads").length;
+        const tt = rows.length - fb;
+        if ($("adsTotal")) $("adsTotal").textContent = rows.length;
+        if ($("adsFb")) $("adsFb").textContent = fb;
+        if ($("adsTt")) $("adsTt").textContent = tt;
+        const last = rows
+          .map((i) => i.created_at)
+          .filter(Boolean)
+          .sort()
+          .pop();
+        const lastDate = last ? new Date(last) : null;
+        if ($("adsLast")) $("adsLast").textContent = lastDate && !isNaN(lastDate.getTime()) ? lastDate.toLocaleDateString("th-TH", { day: "2-digit", month: "short" }) : "—";
+        if ($("adsRows")) {
+          $("adsRows").innerHTML = rows.length
+            ? rows
+                .map(
+                  (i) => `
+      <tr><td>${srcBadge(i.source, 18)}${esc(srcLabel(i.source))}</td>
+        <td>${i.channel_url ? `<a class="row-channel" href="${esc(i.channel_url)}" target="_blank" rel="noopener">${esc(i.author || "channel")}</a>` : esc(i.author || "—")}</td>
+        <td>${esc(i.title || i.body || "—")}</td>
+        <td>${esc(i.created || i.published || "—")}</td>
+        <td><a href="${esc(i.url)}" target="_blank" rel="noopener">Open →</a></td></tr>`,
+                )
+                .join("")
+            : '<tr><td colspan="5"><div class="empty">ยังไม่มี ads สำหรับ keyword นี้ — เลือก FB Ads / TikTok Ads แล้วกด Search Now</div></td></tr>';
+        }
+        SUBS.ads = `Ads library · ${rows.length} ads`;
+        setBadge("ads", rows.length);
+        if ($("page-ads")?.classList.contains("active")) $("pageSub").textContent = SUBS.ads;
+      }
+      function renderCalendar() {
+        if ($("calWeek")) $("calWeek").innerHTML = '<div class="empty">No calendar entries yet.</div>';
+      }
+      function renderTasks() {
+        if ($("taskBoard")) $("taskBoard").innerHTML = '<div class="empty">No tasks yet.</div>';
+      }
+      function renderGoals() {
+        if ($("goalRows")) $("goalRows").innerHTML = "";
+        if ($("goalRowsMini")) $("goalRowsMini").innerHTML = "";
+      }
+      function renderReports() {}
+
+      function renderCompetitors() {
+        ["sovBars", "compRows", "compTabs", "compDetail", "compAlerts"].forEach((id) => {
+          const e = $(id);
+          if (e) e.innerHTML = "";
+        });
+      }
+
+      /* ===== fetch / db (ของเดิม, อัปเดตแค่หน้า overview) ===== */
+      const HIST_KEY = "st_history";
+      function getHistory() {
+        try {
+          return JSON.parse(localStorage.getItem(HIST_KEY) || "[]");
+        } catch {
+          return [];
+        }
+      }
+      function renderChips() {
+        $("chips").innerHTML = getHistory()
+          .map(
+            (k) =>
+              `<span class="chip"><button class="chip-label" data-q="${esc(k)}">${esc(k)}</button><button class="chip-x" data-del="${esc(k)}" aria-label="ลบ keyword ${esc(k)}" title="ลบ">×</button></span>`,
+          )
+          .join("");
+      }
+      function pushHistory(q) {
+        const h = [q, ...getHistory().filter((x) => x !== q)].slice(0, 8);
+        try {
+          localStorage.setItem(HIST_KEY, JSON.stringify(h));
+        } catch {}
+        renderChips();
+        updateKwSuggest();
+      }
+      function removeHistory(k) {
+        const h = getHistory().filter((x) => x !== k);
+        try {
+          localStorage.setItem(HIST_KEY, JSON.stringify(h));
+        } catch {}
+        renderChips();
+        renderSettings();
+        updateKwSuggest();
+        $("status").textContent = `ลบ recent keyword "${k}" แล้ว`;
+        $("status").className = "status";
+      }
+      $("chips").addEventListener("click", (e) => {
+        const del = e.target.closest("[data-del]");
+        if (del) {
+          removeHistory(del.dataset.del);
+          return;
+        }
+        const b = e.target.closest("[data-q]");
+        if (!b) return;
+        $("q").value = b.dataset.q;
+        loadDb();
+      });
+      function setBusy(b) {
+        const btn = $("btnFetch");
+        btn.disabled = b;
+        btn.setAttribute("aria-busy", b ? "true" : "false");
+      }
+      /* loading modal: pop up ระหว่าง fetch, ซ่อนเมื่อจบ — มีนาฬิกา + stage จากเซิร์ฟเวอร์ */
+      let loadStartedAt = 0,
+        loadClockTimer = null,
+        loadPollTimer = null,
+        loadPollFails = 0;
+      function fmtClock(sec) {
+        const m = Math.floor(sec / 60),
+          s = Math.floor(sec % 60);
+        return `${m}:${String(s).padStart(2, "0")}`;
+      }
+      function updateClock() {
+        const el = $("loadClock");
+        if (el) el.textContent = fmtClock((Date.now() - loadStartedAt) / 1000);
+      }
+      async function pollLoadProgress() {
+        try {
+          const p = await (await fetch("/api/progress", { cache: "no-store" })).json();
+          loadPollFails = 0;
+          if (!p.active) return;
+          const stage = $("loadStage");
+          if (!stage) return;
+          const src = p.source ? p.source + ": " : "";
+          stage.textContent = src + (p.stage || "…");
+          const stale = (p.since_update || 0) > 60;
+          stage.classList.toggle("stale", stale);
+          if (stale) stage.textContent += ` · ไม่มีอัปเดต ${Math.round(p.since_update)}s`;
+        } catch {
+          loadPollFails++;
+          const stage = $("loadStage");
+          if (loadPollFails >= 4 && stage) {
+            stage.textContent = "เซิร์ฟเวอร์ไม่ตอบ — กำลังรออยู่";
+            stage.classList.add("stale");
+          }
+        }
+      }
+      function showLoading(text, sub) {
+        const m = $("loadModal");
+        if (!m) return;
+        $("loadTitle").textContent = text || "กำลังดึงข้อมูล…";
+        if (sub) $("loadSub").textContent = sub;
+        const stage = $("loadStage");
+        if (stage) {
+          stage.textContent = "กำลังเริ่ม…";
+          stage.classList.remove("stale");
+        }
+        loadStartedAt = Date.now();
+        loadPollFails = 0;
+        updateClock();
+        clearInterval(loadClockTimer);
+        clearInterval(loadPollTimer);
+        loadClockTimer = setInterval(updateClock, 1000);
+        loadPollTimer = setInterval(pollLoadProgress, 1500);
+        m.hidden = false;
+        document.body.style.overflow = "hidden";
+        $("loadCancel")?.focus();
+      }
+      function setLoadingProgress(done, total, label) {
+        const fill = $("loadFill"),
+          name = $("loadName"),
+          count = $("loadCount");
+        if (!fill) return;
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+        fill.style.width = pct + "%";
+        if(name) name.textContent = label || "—";
+        if(count) count.textContent = `${done}/${total} · ${pct}%`;
+      }
+      function hideLoading() {
+        const m = $("loadModal");
+        if (m) m.hidden = true;
+        clearInterval(loadClockTimer);
+        clearInterval(loadPollTimer);
+        loadClockTimer = loadPollTimer = null;
+        document.body.style.overflow = "";
+      }
+      /* cancel: บอกเซิร์ฟเวอร์ให้หยุดก่อน source ถัดไป + abort request ที่ค้าง */
+      let activeAbort = null;
+      async function cancelFetch() {
+        const btn = $("loadCancel");
+        if (btn) btn.disabled = true;
+        $("loadStage").textContent = "กำลังยกเลิก…";
+        try {
+          await fetch("/api/cancel", { method: "POST" });
+        } catch {}
+        if (activeAbort) activeAbort.abort();
+        hideLoading();
+        $("status").textContent =
+        $("status").className = "status";
+      }
+      $("loadCancel").addEventListener("click", cancelFetch);
+      /* patch notes modal */
+      let notesOpener = null;
+      function openNotes(e) {
+        const m = $("notesModal");
+        if (!m || !$("loadModal").hidden) return;
+        notesOpener = e?.currentTarget || $("btnNotes");
+        m.hidden = false;
+        document.body.style.overflow = "hidden";
+        $("notesClose").focus();
+      }
+      function closeNotes() {
+        const m = $("notesModal");
+        if (!m) return;
+        m.hidden = true;
+        if ($("loadModal").hidden) document.body.style.overflow = "";
+        (notesOpener || $("btnNotes")).focus();
+      }
+      $("btnNotes").addEventListener("click", openNotes);
+      $("btnNotes2")?.addEventListener("click", openNotes);
+      $("notesClose").addEventListener("click", closeNotes);
+      $("notesModal").addEventListener("click", (e) => {
+        if (e.target === $("notesModal")) closeNotes();
+      });
+      function trapFocus(box, e) {
+        if (e.key !== "Tab") return;
+        const items = [...box.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(
+          (el) => el.offsetParent !== null,
+        );
+        if (!items.length) return;
+        const first = items[0],
+          last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+      document.addEventListener("keydown", (e) => {
+        if (!$("notesModal").hidden) trapFocus($("notesModal"), e);
+        else if (!$("loadModal").hidden) trapFocus($("loadModal"), e);
+        else if (!$("itemModal").hidden) trapFocus($("itemModal"), e);
+        else if (!$("moveModal").hidden) trapFocus($("moveModal"), e);
+        else if (!$("confirmModal").hidden) trapFocus($("confirmModal"), e);
+        if (e.key === "Escape") {
+          if (!$("confirmModal").hidden) closeConfirm(false);
+          else if (!$("moveModal").hidden) closeMove(null);
+          else if (!$("itemModal").hidden) closeItemModal();
+          else if (!$("notesModal").hidden) closeNotes();
+        }
+        /* 2.13 keyboard shortcuts — skip when typing */
+        const t = e.target;
+        const typing = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable);
+        if (e.key === "/" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k")) {
+          e.preventDefault();
+          $("q").focus();
+          return;
+        }
+        if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+          e.preventDefault();
+          fetchNow();
+          return;
+        }
+        if (typing) return;
+        if (e.key === "Delete" && selectedItems.size > 0) {
+          e.preventDefault();
+          runBulk("delete");
+          return;
+        }
+        if (e.key.toLowerCase() === "a" && selectedItems.size > 0) {
+          e.preventDefault();
+          runBulk("archive");
+        }
+      });
+      function selectedSources() {
+        return [...document.querySelectorAll("#srcPicker input:checked")].map((el) => el.value);
+      }
+      /* summary ของ popover: บอกจำนวน + ชื่อที่เลือก (สูงสุด 2) */
+      function renderSrcSummary() {
+        const el = $("srcSummary");
+        if (!el) return;
+        const list = [...document.querySelectorAll("#srcPicker input")];
+        const on = list.filter((cb) => cb.checked);
+        const names = on.map((cb) => SRC_LABELS[cb.value] || cb.value);
+        const total = list.length,
+          picked = on.length;
+        el.textContent = picked === total ? `ทั้งหมด (${picked})` : !picked ? "ยังไม่เลือก" : names.length <= 2 ? names.join(", ") : `${names.slice(0, 2).join(", ")} +${names.length - 2}`;
+        SUBS.sources = picked === total ? `Sources · ทั้งหมด ${total} ช่องทาง` : picked ? `Sources · ${el.textContent} (${picked}/${total})` : "Sources · ยังไม่เลือกช่องทาง";
+        const hint = $("srcHint");
+        if (hint) hint.textContent = picked ? `ข้อมูลจาก fetch · ${picked}/${total} ช่องทางที่เลือก` : "ยังไม่ได้เลือกช่องทาง";
+        if ($("page-sources")?.classList.contains("active")) $("pageSub").textContent = SUBS.sources;
+        if (!currentItems.length) renderSources();
+      }
+      /* refresh-safe: เก็บ keyword / sources ไว้คืนค่าตอนโหลด (ไฟล์พังทลาย) */
+      const UI_KEY = "st_ui";
+      function readUi() {
+        try {
+          return JSON.parse(localStorage.getItem(UI_KEY) || "{}") || {};
+        } catch {
+          return {};
+        }
+      }
+      function saveUi() {
+        try {
+          const s = readUi();
+          s.q = $("q").value;
+          s.sources = selectedSources();
+          s.profileId = $("profileSel") ? $("profileSel").value : "";
+          s.mode = $("fetchMode") ? $("fetchMode").value : "public";
+          s.itemsTab = itemsTab;
+          s.freshDays = $("freshDays") ? $("freshDays").value : "30";
+          s.page = (document.querySelector(".page.active") || {}).id?.replace("page-", "") || "overview";
+          /* 2.1 persist itemsUi / archiveUi (filter, platform, date, sort) */
+          s.itemsUi = {
+            platform: platformFilter,
+            from: $("filterFrom") ? $("filterFrom").value : "",
+            to: $("filterTo") ? $("filterTo").value : "",
+            text: $("filterFull") ? $("filterFull").value : "",
+            sort: { ...itemsSort },
+          };
+          s.archiveUi = {
+            text: $("filterArchive") ? $("filterArchive").value : "",
+            platform: archivePlatformFilter,
+          };
+          localStorage.setItem(UI_KEY, JSON.stringify(s));
+        } catch {}
+      }
+      /* 2.1 validate + apply saved itemsUi (reset invalid fields) */
+      function applyItemsUi(ui) {
+        if (!ui || typeof ui !== "object") return;
+        if (typeof ui.text === "string") $("filterFull").value = ui.text;
+        if (typeof ui.from === "string" && /^\d{4}-\d{2}-\d{2}$/.test(ui.from)) $("filterFrom").value = ui.from;
+        if (typeof ui.to === "string" && /^\d{4}-\d{2}-\d{2}$/.test(ui.to)) $("filterTo").value = ui.to;
+        const sort = ui.sort || {};
+        if (SORT_KEYS.includes(sort.key) && (sort.dir === "asc" || sort.dir === "desc")) itemsSort = { key: sort.key, dir: sort.dir };
+        else itemsSort = { key: "score", dir: "desc" };
+        /* platform validated after currentItems loads (renderPlatformTabs resets when absent) */
+        if (typeof ui.platform === "string") platformFilter = ui.platform;
+      }
+      /* 2.1 archive filter state */
+      let archivePlatformFilter = "";
+      function applyArchiveUi(ui) {
+        if (!ui || typeof ui !== "object") return;
+        if (typeof ui.text === "string") $("filterArchive").value = ui.text;
+        if (typeof ui.platform === "string") archivePlatformFilter = ui.platform;
+      }
+      function showKwTabs(kws) {
+        const box = $("kwTabs");
+        if (!box || !kws.length) {
+          if (box) {
+            box.style.display = "none";
+            box.innerHTML = "";
+          }
+          return;
+        }
+        box.style.display = "flex";
+        box.innerHTML = kws.map((k) => `<button class="chip" data-kw="${esc(k)}">${esc(k)}</button>`).join("");
+        const paint = (b) => {
+          box.querySelectorAll("[data-kw]").forEach((x) => {
+            const on = x === b;
+            x.style.borderColor = on ? "var(--link)" : "";
+            x.style.color = on ? "var(--link)" : "";
+          });
+        };
+        box.querySelectorAll("[data-kw]").forEach((b) =>
+          b.addEventListener("click", () => {
+            paint(b);
+            $("q").value = b.dataset.kw;
+            loadDb();
+          }),
+        );
+        paint(box.querySelector("[data-kw]"));
+      }
+      async function fetchNow() {
+        const pid = $("profileSel") ? $("profileSel").value : "";
+        const q = $("q").value.trim();
+        const sources = selectedSources();
+        const mode = $("fetchMode") ? $("fetchMode").value : "public";
+        const fresh = $("freshDays") ? +$("freshDays").value : 30;
+        saveUi();
+        if (!pid && !q) {
+          $("status").textContent = "ใส่ keyword ก่อน fetch";
+          $("status").className = "status err";
+          return;
+        }
+        /* 2.9 session status warning — ไม่บล็อก fetch (ผู้ใช้อาจเพิ่ง login) */
+        const missingSess = sessionNotReady(mode, pid ? (profileCache.find((p) => p.id === pid) || {}).sources : sources);
+        if (missingSess) {
+          toast(`ยังไม่ได้ login session: ${missingSess.map((s) => SRC_LABELS[s] || s).join(", ")} — รัน python pw_login.py`, { error: true });
+        }
+        setBusy(true);
+        showLoading("กำลังดึงข้อมูล…", `${sources.length ? sources.map((s) => SRC_LABELS[s] || s).join(", ") : "profile"} · ${fresh > 0 ? fresh + " วัน" : "ทั้งหมด"}`);
+        activeAbort = new AbortController();
+        const signal = activeAbort.signal;
+        $("loadCancel").disabled = false;
+        try {
+          /* Profile: ทีละ keyword (sequential, manual — accuracy ก่อน) + progress รายคำบน status */
+          if (pid) {
+            const prof = profileCache.find((p) => p.id === pid);
+            if (!prof) throw new Error("profile not found");
+            const per = [];
+            let totalAdded = 0,
+              totalSkipped = 0,
+              allErrors = [];
+            setLoadingProgress(0, prof.keywords.length, prof.keywords[0]);
+            for (let i = 0; i < prof.keywords.length; i++) {
+              const kw = prof.keywords[i];
+              setLoadingProgress(i, prof.keywords.length, kw);
+              $("status").textContent = `กำลัง fetch keyword ${i + 1}/${prof.keywords.length}: ${kw} (${mode === "session" ? "login session" : "public"} · ${fresh > 0 ? fresh + "d" : "all time"})`;
+              const r = await fetch("/api/fetch", {
+                method: "POST",
+                signal,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ q: kw, sources: prof.sources, mode, max_age_days: fresh }),
+              });
+              const d = await r.json();
+              if (!r.ok) throw new Error(d.error || "HTTP " + r.status);
+              totalAdded += d.added || 0;
+              totalSkipped += d.duplicates || 0;
+              allErrors = allErrors.concat((d.errors || []).map((e) => `[${kw}] ${e}`));
+              per.push({ keyword: kw, added: d.added || 0, duplicates: d.duplicates || 0, errors: d.errors || [], total: d.total, by_source: d.by_source });
+              if (i === 0) {
+                $("q").value = kw;
+                render(d, true);
+              }
+            }
+            setLoadingProgress(prof.keywords.length, prof.keywords.length, "เสร็จครบแล้ว");
+            showKwTabs(per.map((x) => x.keyword));
+            pushHistory(prof.keywords[0]);
+            render(prof && (await (await fetch("/api/summary?q=" + encodeURIComponent(prof.keywords[0]), { signal })).json()), true);
+            const seenErr = new Set();
+            const uniqueErr = allErrors.filter((e) => {
+              const key = e.replace(/^\[(.*?)\]\s*/, "");
+              return !seenErr.has(key) && seenErr.add(key);
+            });
+            $("status").innerHTML =
+              `เสร็จ ${per.length} keyword · +${totalAdded} items` +
+              (totalSkipped ? ` · ${totalSkipped} ซ้ำถูกข้าม` : "") +
+              (uniqueErr.length ? `<br><span>errors (${allErrors.length} ครั้ง · ${uniqueErr.length} ช่องทาง):</span>` + uniqueErr.map((e) => `<span>${esc(e)}</span>`).join("") : "");
+            $("status").className = allErrors.length ? "status err" : "status";
+            recordLastRun(pid, { added: totalAdded, duplicates: totalSkipped, errors: allErrors.length });
+            goPage("overview");
+            return;
+          }
+          /* keyword เดี่ยว */
+          if (!q) throw new Error("missing q");
+          if (!sources.length) throw new Error("no source selected");
+          setLoadingProgress(0, 1, q);
+          $("status").textContent = `Fetching… (${mode === "session" ? "login session" : "public"} · ${fresh > 0 ? fresh + "d" : "all time"})`;
+          const r = await fetch("/api/fetch", { method: "POST", signal, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ q, sources, mode, max_age_days: fresh }) });
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error || "HTTP " + r.status);
+          setLoadingProgress(1, 1, q);
+          pushHistory(q);
+          render(d, true);
+          goPage("overview");
+        } catch (e) {
+          if (e.name === "AbortError") {
+            $("status").textContent = "ยกเลิกการค้นหาแล้ว (ผลที่ได้ก่อนหน้าถูกเก็บไว้)";
+            $("status").className = "status";
+          } else {
+            $("status").textContent = "Fetch failed: " + e.message;
+            $("status").className = "status err";
+          }
+        } finally {
+          setBusy(false);
+          hideLoading();
+          activeAbort = null;
+          $("loadCancel").disabled = false;
+        }
+      }
+      function showSkeletons() {
+        const rows = Array.from({ length: 8 }, () =>
+          `<div class="skel-row"><span class="skel skel-dot"></span><span class="skel skel-line" style="flex:1"></span><span class="skel skel-line" style="width:78px"></span><span class="skel skel-line" style="width:48px"></span></div>`,
+        ).join("");
+        const fill = (el, html) => {
+          if (!el) return;
+          el.dataset.skelEmpty = el.innerHTML;
+          el.innerHTML = html;
+        };
+        fill($("tableWrap"), `<div class="skel-rows">${rows}</div>`);
+        fill($("bars"), `<div class="skel-bars">${[62, 84, 48, 70, 36].map((h) => `<span class="skel" style="height:${h}%"></span>`).join("")}</div>`);
+        fill($("termsBox"), `<div class="skel-chips">${[70, 92, 64, 84, 58, 76].map((w) => `<span class="skel" style="width:${w}px"></span>`).join("")}</div>`);
+        const hasQuery = !!($("q").value.trim() || ($("profileSel") && $("profileSel").value));
+        if (hasQuery)
+          fill($("suggest"), [100, 92, 70].map((w) => `<li class="skel-item"><div class="skel-lines"><span class="skel" style="display:block;width:${w}%"></span></div></li>`).join(""));
+        fill($("stTopTitle"), `<span class="skel" style="display:block;height:12px;width:80%;margin-bottom:6px"></span><span class="skel" style="display:block;height:12px;width:55%"></span>`);
+        document.querySelectorAll(".line-box").forEach((el) => el.classList.add("skel-box"));
+        ["stTotal", "stSrc", "stScore", "stTop", "invScore", "invCover", "scoreHigh", "scoreLow"].forEach((id) => {
+          const el = $(id);
+          if (el) el.classList.add("skel", "skel-num");
+        });
+      }
+      function clearSkeletons() {
+        document.querySelectorAll(".skel-num").forEach((el) => el.classList.remove("skel", "skel-num"));
+        document.querySelectorAll(".line-box.skel-box").forEach((el) => el.classList.remove("skel-box"));
+        document.querySelectorAll("[data-skel-empty]").forEach((el) => {
+          if (el.querySelector(".skel")) el.innerHTML = el.dataset.skelEmpty || "";
+          delete el.dataset.skelEmpty;
+        });
+      }
+      async function loadDb() {
+        const q = $("q").value.trim();
+        saveUi();
+        showSkeletons();
+        setBusy(true);
+        $("status").textContent = "Reading disk…";
+        $("status").className = "status";
+        try {
+          const r = await fetch("/api/summary" + (q ? "?q=" + encodeURIComponent(q) : ""));
+          const d = await r.json();
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          render(d, false);
+          if (!q && (d.total || 0) > 0) {
+            $("status").textContent = `แสดงข้อมูลทั้งหมดจาก disk · ${d.total} items · พิมพ์ Keyword เพื่อกรอง`;
+            $("status").className = "status";
+          }
+        } catch (e) {
+          $("status").textContent = "Disk read failed: " + e.message;
+          $("status").className = "status err";
+        } finally {
+          setBusy(false);
+          clearSkeletons();
+        }
+      }
+      $("btnFetch").addEventListener("click", fetchNow);
+      document.querySelectorAll("#srcPicker input").forEach((el) =>
+        el.addEventListener("change", () => {
+          renderSrcSummary();
+          saveUi();
+        }),
+      );
+      $("fetchMode")?.addEventListener("change", saveUi);
+      $("freshDays")?.addEventListener("change", saveUi);
+      $("q").addEventListener("input", saveUi);
+      $("profileSel")?.addEventListener("change", () => {
+        const active = !!$("profileSel").value;
+        $("q").disabled = active;
+        if (!active) $("kwTabs").style.display = "none";
+        saveUi();
+      });
+      $("q").addEventListener("input", () => {
+        if ($("profileSel").value) {
+          $("profileSel").value = "";
+          $("q").disabled = false;
+          $("kwTabs").style.display = "none";
+        }
+      });
+      $("q").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") fetchNow();
+      });
+
+      /* ===== settings page logic ===== */
+      function renderSettings() {
+        $("kwList").innerHTML = getHistory()
+          .map(
+            (k) => `
+    <div class="set-row"><div class="t"><b>${esc(k)}</b><span>Click a chip to use</span></div>
+      <div class="kw-actions">
+        <button class="btn btn-ghost" data-use="${esc(k)}" style="padding:6px 12px;font-size:12px">Use</button>
+        <button class="btn btn-ghost" data-del-kw="${esc(k)}" style="padding:6px 12px;font-size:12px">Delete</button>
+      </div></div>`,
+          )
+          .join("");
+        document.querySelectorAll("[data-use]").forEach((b) =>
+          b.addEventListener("click", () => {
+            $("q").value = b.dataset.use;
+            goPage("overview");
+            loadDb();
+          }),
+        );
+        document.querySelectorAll("[data-del-kw]").forEach((b) =>
+          b.addEventListener("click", () => {
+            removeHistory(b.dataset.delKw);
+          }),
+        );
+        $("srcToggles").innerHTML = SOURCES.map((s, i) => {
+          const cb = document.querySelector(`#srcPicker input[value="${s.name}"]`);
+          const on = cb ? cb.checked : false;
+          return `<div class="set-row"><div class="t"><b>${esc(s.label)}</b><span>${esc(s.api)}</span></div>
+      <button class="toggle${on ? " on" : ""}" data-src="${i}" aria-pressed="${on}" aria-label="toggle ${esc(s.label)}"></button></div>`;
+        }).join("");
+        document.querySelectorAll(".toggle[data-src]").forEach((t) =>
+          t.addEventListener("click", () => {
+            const s = SOURCES[+t.dataset.src];
+            const cb = document.querySelector(`#srcPicker input[value="${s.name}"]`);
+            const on = !(cb && cb.checked);
+            if (cb) cb.checked = on;
+            t.classList.toggle("on", on);
+            t.setAttribute("aria-pressed", String(on));
+            renderSrcSummary();
+            saveUi();
+            $("status").textContent = `${s.label} ${on ? "On" : "Off"} (applies next fetch)`;
+            $("status").className = "status";
+          }),
+        );
+      }
+      $("kwAdd").addEventListener("click", () => {
+        const v = $("kwNew").value.trim();
+        if (!v) return;
+        pushHistory(v);
+        $("kwNew").value = "";
+        renderSettings();
+        $("status").textContent = `Keyword "${v}" added`;
+      });
+      $("btnWipe").addEventListener("click", () => {
+        try {
+          localStorage.removeItem(HIST_KEY);
+          localStorage.removeItem(UI_KEY);
+        } catch {}
+        $("q").value = "";
+        renderChips();
+        renderSettings();
+        saveUi();
+        $("status").textContent = "Reset: browser prefs cleared";
+      });
+      /* ===== data backup / import / disk status ===== */
+      async function loadStatus() {
+        try {
+          const s = await (await fetch("/api/status", { cache: "no-store" })).json();
+          sourceLog = s.sources || {};
+          const mb = (n) => (n >= 1048576 ? (n / 1048576).toFixed(2) + " MB" : Math.round(n / 1024) + " KB");
+          if ($("diskInfo"))
+            $("diskInfo").textContent =
+              `${(s.items || 0).toLocaleString()} items · ${s.keywords || 0} keywords · ` +
+              `archive ${s.archived || 0} · data ${mb(s.data_bytes || 0)} · assets ${s.assets || 0} (${mb(s.assets_bytes || 0)})`;
+          /* 2.5 trash count + 2.9 sessions + 2.10 last export */
+          sessionStatus = s.sessions || {};
+          renderSessions();
+          renderLastExport();
+          if ($("trashInfo")) $("trashInfo").textContent = `${s.trash_count || 0} รายการ · ลบแล้วกู้คืนได้ภายใน 7 วัน`;
+          if ($("btnTrashRestore")) $("btnTrashRestore").disabled = !(s.trash_count || 0);
+          if ($("btnTrashEmpty")) $("btnTrashEmpty").disabled = !(s.trash_count || 0);
+          if ($("page-sources")?.classList.contains("active")) renderSources(currentItems);
+          return s;
+        } catch (e) {
+          if ($("diskInfo")) $("diskInfo").textContent = "status failed: " + e.message;
+          return null;
+        }
+      }
+      /* 2.5 Settings trash UI: restore all / empty (purge) */
+      $("btnTrashRestore")?.addEventListener("click", async () => {
+        let list = [];
+        try {
+          list = await (await fetch("/api/trash", { cache: "no-store" })).json();
+        } catch {}
+        if (!Array.isArray(list) || !list.length) {
+          toast("Trash ว่างแล้ว", { error: true });
+          return;
+        }
+        const items = list.map((t) => ({ keyword: t.keyword, url: t.url }));
+        const r = await fetch("/api/trash/restore", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items }) });
+        const d = await r.json();
+        if (!r.ok) {
+          toast("กู้คืนไม่สำเร็จ: " + (d.error || "HTTP " + r.status), { error: true });
+          return;
+        }
+        toast(`กู้คืน ${d.restored || 0} รายการจาก Trash แล้ว`);
+        await loadStatus();
+        await loadDb();
+        await loadArchive();
+      });
+      $("btnTrashEmpty")?.addEventListener("click", async () => {
+        const ok = await askConfirm({ title: "ล้าง Trash", msg: "ลบรายการใน Trash ทั้งหมดถาวร? (กู้คืนไม่ได้)", okText: "ลบถาวร", danger: true });
+        if (!ok) return;
+        try {
+          const r = await fetch("/api/trash", { method: "DELETE" });
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error || "HTTP " + r.status);
+          toast(`ล้าง Trash แล้ว · ${d.purged || 0} รายการ`);
+          await loadStatus();
+        } catch (e) {
+          toast("ล้าง Trash ไม่สำเร็จ: " + e.message, { error: true });
+        }
+      });
+      /* 2.10 record last export time when JSON/ZIP download clicked */
+      $("btnExportJson")?.addEventListener("click", markExported);
+      $("btnExportZip")?.addEventListener("click", markExported);
+      $("btnImport")?.addEventListener("click", () => $("importFile").click());
+      $("importFile")?.addEventListener("change", async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        $("status").textContent = `Importing ${file.name}…`;
+        $("status").className = "status";
+        try {
+          const r = await fetch("/api/import", { method: "POST", headers: { "Content-Type": file.type || "application/octet-stream" }, body: file });
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error || "HTTP " + r.status);
+          $("status").textContent = `Import เสร็จ · +${d.added || 0} items · ${d.duplicates || 0} ซ้ำถูกข้าม`;
+          $("status").className = "status";
+          await loadStatus();
+          if ($("q").value.trim()) loadDb();
+        } catch (err) {
+          $("status").textContent = "Import failed: " + err.message;
+          $("status").className = "status err";
+        } finally {
+          e.target.value = "";
+        }
+      });
+      $("btnClearKw")?.addEventListener("click", async () => {
+        const q = $("q").value.trim() || currentKeyword;
+        if (!q) {
+          $("status").textContent = "ไม่มี keyword ให้ลบ";
+          $("status").className = "status";
+          return;
+        }
+        if (!(await askConfirm({ title: "ลบ keyword", msg: `ลบข้อมูลทั้งหมดของ "${q}"? (items + analysis — กู้คืนไม่ได้)`, okText: "ลบ", danger: true }))) return;
+        try {
+          const r = await fetch("/api/clear", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ q }) });
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error || "HTTP " + r.status);
+          $("status").textContent = `ลบ ${d.removed || 0} items ของ "${q}" แล้ว`;
+          $("status").className = "status";
+          await loadStatus();
+          loadDb();
+        } catch (err) {
+          $("status").textContent = "Clear failed: " + err.message;
+          $("status").className = "status err";
+        }
+      });
+      $("btnPrune")?.addEventListener("click", async () => {
+        const days = +($("pruneDays")?.value || 0);
+        if (!days) return;
+        if (!(await askConfirm({ title: "Prune ข่าวเก่า", msg: `ลบข่าว/คลิปที่เก่ากว่า ${days} วัน (ทุก keyword, ads ไม่ถูกลบ)?`, okText: "Prune", danger: true }))) return;
+        try {
+          const r = await fetch("/api/prune", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ days }) });
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error || "HTTP " + r.status);
+          $("status").textContent = `Prune เสร็จ · ลบ ${d.removed || 0} items · เหลือ ${d.total || 0}`;
+          $("status").className = "status";
+          await loadStatus();
+          loadDb();
+        } catch (err) {
+          $("status").textContent = "Prune failed: " + err.message;
+          $("status").className = "status err";
+        }
+      });
+      $("btnClearAll")?.addEventListener("click", async () => {
+        if (
+          !(await askConfirm({ title: "ลบข้อมูลทั้งหมด", msg: "ลบ items ทุก keyword, analysis/index และ thumbnail ทั้งหมด?\n\nProfiles จะยังอยู่ — กู้คืนไม่ได้", okText: "ลบทั้งหมด", danger: true }))
+        )
+          return;
+        if (!(await askConfirm({ title: "ยืนยันอีกครั้ง", msg: "ลบข้อมูลทั้งหมดเลยไหม? (Trash ถูกลบด้วย — ไม่มี Undo)", okText: "ลบถาวร", danger: true }))) return;
+        try {
+          const r = await fetch("/api/clear-all", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error || "HTTP " + r.status);
+          $("q").value = "";
+          currentItems = [];
+          currentKeyword = "";
+          saveUi();
+          render({}, false);
+          renderChips();
+          await loadStatus();
+          await loadArchive();
+          $("status").textContent = `ลบข้อมูลทั้งหมดแล้ว · ${d.removed || 0} items · ${d.archived || 0} archived · ${d.assets || 0} รูป`;
+          $("status").className = "status";
+        } catch (err) {
+          $("status").textContent = "Clear all failed: " + err.message;
+          $("status").className = "status err";
+        }
+      });
+
+      /* ===== keyword profiles (server disk) ===== */
+      let editingPf = null;
+      let profileCache = [];
+      async function refreshProfiles() {
+        const list = await (await fetch("/api/profiles")).json().catch(() => []);
+        profileCache = list;
+        updateKwSuggest();
+        const sel = $("profileSel");
+        if (sel) {
+          sel.innerHTML = '<option value="">Keyword ใหม่</option>' + list.map((p) => `<option value="${p.id}">${esc(p.name)} (${p.keywords.length} คำ)</option>`).join("");
+          const saved = readUi().profileId;
+          if (saved && list.some((p) => p.id === saved)) {
+            sel.value = saved;
+            $("q").disabled = true;
+          }
+        }
+        renderProfiles(list);
+      }
+      function renderProfiles(list) {
+        const box = $("pfList");
+        if (!box) return;
+        if (!list.length) {
+          box.innerHTML = '<div class="empty">ยังไม่มี profile</div>';
+          return;
+        }
+        box.innerHTML = list
+          .map(
+            (p) => `
+    <div class="set-row"><div class="t"><b>${esc(p.name)}</b><span>${esc(p.keywords.join(" · "))} · ${esc(p.sources.join(", "))}</span>
+      <span class="last-run" id="lastRun-${esc(p.id)}" style="display:block;font-size:11px;color:var(--muted-2);margin-top:2px">${esc(lastRunText((readUi().lastRuns || {})[p.id]))}</span></div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost" data-pfed="${p.id}" style="padding:6px 12px;font-size:12px">Edit</button>
+        <button class="btn btn-ghost" data-pfdel="${p.id}" style="padding:6px 12px;font-size:12px">Delete</button>
+      </div></div>`,
+          )
+          .join("");
+        box.querySelectorAll("[data-pfed]").forEach((b) =>
+          b.addEventListener("click", () => {
+            const p = list.find((x) => x.id === b.dataset.pfed);
+            if (!p) return;
+            editingPf = p.id;
+            $("pfName").value = p.name;
+            $("pfKws").value = p.keywords.join("\n");
+            $("pfSrcYt").checked = p.sources.includes("youtube");
+            $("pfSrcGn").checked = p.sources.includes("gnews");
+            $("pfSrcTt").checked = p.sources.includes("tiktok");
+            $("pfSrcFbAds").checked = p.sources.includes("fbads");
+            $("pfSrcTtAds").checked = p.sources.includes("ttads");
+            $("pfSave").textContent = "Update profile";
+            $("pfCancel").style.display = "";
+          }),
+        );
+        box.querySelectorAll("[data-pfdel]").forEach((b) =>
+          b.addEventListener("click", async () => {
+            if (!(await askConfirm({ title: "ลบโปรไฟล์", msg: "ลบโปรไฟล์นี้? (ข้อมูลที่ fetch แล้วไม่ถูกลบ)", okText: "ลบ", danger: true }))) return;
+            try {
+              const r = await fetch("/api/profiles", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: b.dataset.pfdel }) });
+              if (!r.ok) throw new Error("HTTP " + r.status);
+              if (editingPf === b.dataset.pfdel) {
+                editingPf = null;
+                $("pfSave").textContent = "Add profile";
+                $("pfCancel").style.display = "none";
+              }
+              await refreshProfiles();
+              $("status").textContent = "Profile deleted";
+            } catch (e) {
+              $("status").textContent = "Delete failed: " + e.message;
+              $("status").className = "status err";
+            }
+          }),
+        );
+      }
+      $("pfSave")?.addEventListener("click", async () => {
+        const name = $("pfName").value.trim();
+        const keywords = $("pfKws")
+          .value.split(/\n|,/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+        const sources = [
+          ["pfSrcYt", "youtube"],
+          ["pfSrcGn", "gnews"],
+          ["pfSrcTt", "tiktok"],
+          ["pfSrcFbAds", "fbads"],
+          ["pfSrcTtAds", "ttads"],
+        ]
+          .filter(([id]) => $(id)?.checked)
+          .map(([, v]) => v);
+        try {
+          const body = editingPf ? { id: editingPf, name, keywords, sources } : { name, keywords, sources };
+          const r = await fetch("/api/profiles", { method: editingPf ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+          if (!r.ok) {
+            const e = await r.json();
+            throw new Error(e.error || "HTTP " + r.status);
+          }
+          editingPf = null;
+          $("pfSave").textContent = "Add profile";
+          $("pfCancel").style.display = "none";
+          $("pfName").value = "";
+          $("pfKws").value = "";
+          $("pfSrcYt").checked = true;
+          $("pfSrcGn").checked = $("pfSrcTt").checked = $("pfSrcFbAds").checked = $("pfSrcTtAds").checked = false;
+          await refreshProfiles();
+          $("status").textContent = "Profile saved";
+          $("status").className = "status";
+        } catch (e) {
+          $("status").textContent = "Profile failed: " + e.message;
+          $("status").className = "status err";
+        }
+      });
+      $("pfCancel")?.addEventListener("click", () => {
+        editingPf = null;
+        $("pfSave").textContent = "Add profile";
+        $("pfCancel").style.display = "none";
+        $("pfName").value = "";
+        $("pfKws").value = "";
+        $("pfSrcYt").checked = true;
+        $("pfSrcGn").checked = $("pfSrcTt").checked = $("pfSrcFbAds").checked = $("pfSrcTtAds").checked = false;
+      });
+
+      /* init — live: อ่านจาก API (server.py) ไม่มี mock */
+      if (new URLSearchParams(location.search).get("loadDemo")) {
+        showLoading("กำลังดึงข้อมูล…", "YouTube, TikTok · 30 วัน");
+        setLoadingProgress(1, 3, "เว็บขายของ");
+      }
+      renderChips();
+      renderSettings();
+      renderSources();
+      renderTermsPage();
+      renderIdeas();
+      renderDeep();
+      renderCrm();
+      renderAds();
+      renderCalendar();
+      renderTasks();
+      renderGoals();
+      renderReports();
+      renderCompetitors();
+      setBadge("sources", 0);
+      setBadge("ideas", 0);
+      setBadge("items", 0);
+      setBadge("archive", 0);
+      setBadge("crm", 0);
+      setBadge("competitors", 0);
+      setBadge("ads", 0);
+      setBadge("tasks", 0);
+      $("status").textContent = "Reading disk…";
+      $("status").className = "status";
+      (() => {
+        const s = readUi();
+        const qp = new URLSearchParams(location.search).get("q");
+        if (qp) $("q").value = qp;
+        else if (s.q) $("q").value = s.q;
+        if (Array.isArray(s.sources))
+          document.querySelectorAll("#srcPicker input:not(:disabled)").forEach((el) => {
+            el.checked = s.sources.includes(el.value);
+          });
+        if (s.mode && $("fetchMode")) $("fetchMode").value = s.mode;
+        if (s.itemsTab) itemsTab = s.itemsTab;
+        if (s.freshDays !== undefined && $("freshDays")) $("freshDays").value = s.freshDays;
+        /* 2.1 restore filter/platform/date/sort + archive filter */
+        applyItemsUi(s.itemsUi);
+        applyArchiveUi(s.archiveUi);
+        resetVisible();
+      })();
+      renderSrcSummary();
+      renderSettings();
+      refreshProfiles();
+      /* deep-link/refresh-restore: เปิด /?page=sources หรือ __START= หรือหน้าล่าสุดที่เซฟไว้ */
+      (() => {
+        const p = new URLSearchParams(location.search).get("page") || window.__START || readUi().page;
+        if (p && SUBS[p]) goPage(p);
+      })();
+      loadStatus();
+      loadArchive();
+      loadDb();
+    </script>
+  </body>
+</html>

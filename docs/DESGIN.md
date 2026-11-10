@@ -1,6 +1,9 @@
 # Design System Inspired by Starbucks
 
-> **Live UI tokens (ของจริงใน `app/variables.css`):** สีหลัก `#22c55e` (ชื่อตัวแปร `--blue`), ขอบ `#e7ebf3`/`#2b3044`, ข้อความ `#0f172a`/`#f1f5f9`, การ์ด radius `16px`, ฟอนต์ Inter + LINE Seed Sans TH (self-hosted, ไม่มี CDN), ปุ่ม radius `9px` สูงขั้นต่ำ `42px`, โหมดสว่าง/มืดเปลี่ยนตัวแปรตาม `data-theme`. ชั้น CSS: `variables.css` (tokens) → `base.css` (global/tag defaults) → `component.css` (reusable appearance) → `<style>` ในแต่ละหน้า (layout). เอกสาร Starbucks ข้างล่างเป็น reference ทางกลิ่นอายเท่านั้น ไม่ใช่ tokens ของแอปนี้
+supa pass
+oY7w5oREcW3j9i22
+
+> **Live UI tokens (ของจริงใน `assets/css/variables.css`):** สีหลัก `#22c55e` (ชื่อตัวแปร `--blue`), ขอบ `#e7ebf3`/`#2b3044`, ข้อความ `#0f172a`/`#f1f5f9`, การ์ด radius `16px`, ฟอนต์ Inter + LINE Seed Sans TH (self-hosted, ไม่มี CDN), ปุ่ม radius `9px` สูงขั้นต่ำ `42px`, โหมดสว่าง/มืดเปลี่ยนตัวแปรตาม `data-theme`. ชั้น CSS: `assets/css/variables.css` (tokens) → `assets/css/base.css` (global/tag defaults) → `assets/css/component.css` (reusable appearance) → `assets/css/layout.css` / `layout-live.css` (layout, ไม่มี inline `<style>` ใน HTML). เอกสาร Starbucks ข้างล่างเป็น reference ทางกลิ่นอายเท่านั้น ไม่ใช่ tokens ของแอปนี้
 >
 > **ไฟล์นี้เอง:** `DESGIN.md` (สะกดผิดเดิม) — ยังไม่เปลี่ยนชื่อไฟล์เพราะลิงก์/สคริปต์อาจอ้างถึง
 
