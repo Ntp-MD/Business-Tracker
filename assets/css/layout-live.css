@@ -311,6 +311,20 @@
         min-width: 0;
         padding: 22px 26px 28px;
       }
+      .static-notice {
+        border: 1px solid var(--yellow);
+        border-radius: 10px;
+        background: var(--panel);
+        color: var(--text);
+        padding: 10px 14px;
+        margin-bottom: 12px;
+        font-size: 12px;
+        line-height: 1.55;
+      }
+      .static-notice code {
+        font-size: 11px;
+        white-space: nowrap;
+      }
       .topbar {
         display: flex;
         align-items: center;

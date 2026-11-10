@@ -219,6 +219,12 @@
           ><a href="#page-settings" data-page="settings">Settings</a>
         </nav>
 
+        <div class="static-notice" id="staticNotice" hidden>
+          <b>Static preview</b> — GitHub Pages ไม่มี API จริง. ข้อมูลจะไม่โหลด/ค้นหาไม่ได้
+          จนกว่าจะรัน <code>python server.py</code> หรือตั้ง
+          <code>&lt;meta name="api-base" content="https://..."&gt;</code> แล้วกำหนด CORS
+        </div>
+
         <!-- Fetch strip (global) -->
         <div class="fetch-strip">
           <div class="fetch-main">
@@ -1259,6 +1265,10 @@
     <script>
       const $ = (id) => document.getElementById(id);
       const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+      const API_UNAVAILABLE = (() => {
+        const base = (document.querySelector('meta[name="api-base"]')?.content || "").trim();
+        return !base && (location.protocol === "file:" || /\.github\.io$/i.test(location.hostname));
+      })();
 
       /* date pill */
       (() => {
@@ -1868,6 +1878,7 @@
       /* ===== 2.6/2.8 keyword list cache + autocomplete ===== */
       let kwCache = [];
       async function loadKeywords() {
+        if (API_UNAVAILABLE) return;
         try {
           const d = await (await fetch("/api/keywords", { cache: "no-store" })).json();
           kwCache = Array.isArray(d) ? d : Array.isArray(d.keywords) ? d.keywords : [];
@@ -2208,6 +2219,7 @@
         if ($("archiveBulkCount")) $("archiveBulkCount").textContent = `${archiveSelected.size} selected`;
       }
       async function loadArchive() {
+        if (API_UNAVAILABLE) return;
         try {
           const r = await fetch("/api/archive", { cache: "no-store" });
           archiveCache = await r.json();
@@ -3011,6 +3023,11 @@
         paint(box.querySelector("[data-kw]"));
       }
       async function fetchNow() {
+        if (API_UNAVAILABLE) {
+          $("status").textContent = "Static preview — ต้องเชื่อม API ก่อน (ดูแจ้งเตือนด้านบน)";
+          $("status").className = "status err";
+          return;
+        }
         const pid = $("profileSel") ? $("profileSel").value : "";
         const q = $("q").value.trim();
         const sources = selectedSources();
@@ -3139,6 +3156,12 @@
         });
       }
       async function loadDb() {
+        if (API_UNAVAILABLE) {
+          render({}, false);
+          $("status").textContent = "Static preview — ยังไม่ได้เชื่อม API (GitHub Pages ไม่รัน server.py)";
+          $("status").className = "status";
+          return;
+        }
         const q = $("q").value.trim();
         saveUi();
         showSkeletons();
@@ -3255,6 +3278,7 @@
       });
       /* ===== data backup / import / disk status ===== */
       async function loadStatus() {
+        if (API_UNAVAILABLE) return;
         try {
           const s = await (await fetch("/api/status", { cache: "no-store" })).json();
           sourceLog = s.sources || {};
@@ -3404,6 +3428,7 @@
       let editingPf = null;
       let profileCache = [];
       async function refreshProfiles() {
+        if (API_UNAVAILABLE) return;
         const list = await (await fetch("/api/profiles")).json().catch(() => []);
         profileCache = list;
         updateKwSuggest();
@@ -3566,6 +3591,19 @@
       })();
       renderSrcSummary();
       renderSettings();
+      function applyStaticMode() {
+        if (!API_UNAVAILABLE) return;
+        const notice = $("staticNotice");
+        if (notice) notice.hidden = false;
+        const btn = $("btnFetch");
+        if (btn) {
+          btn.disabled = true;
+          btn.title = "Static preview — ต้องเชื่อม API ก่อน";
+        }
+        $("status").textContent = "Static preview — GitHub Pages ไม่มี API จริง ดูคำแนะนำด้านบน";
+        $("status").className = "status";
+      }
+      applyStaticMode();
       refreshProfiles();
       /* deep-link/refresh-restore: เปิด /?page=sources หรือ __START= หรือหน้าล่าสุดที่เซฟไว้ */
       (() => {
