@@ -36,7 +36,9 @@ Push `main`; Pages serves the repository root. Root and `/live/` both load stati
 
 Until `api-base` is set, `/live/` shows a **Static preview** notice and disables Search Now.
 
-### Render (recommended)
+### Render (legacy — not used in production)
+
+> Current production is Vercel + a local worker. This section is kept for anyone who still wants the old Python HTTP API for GitHub Pages.
 
 1. Push this repo (the included `Dockerfile` + `render.yaml` are ready).
 2. Render → **New → Blueprint** → select the repo. It creates `social-tracker-api` (Docker, free).

@@ -1,10 +1,12 @@
 import Link from "next/link";
 
 import { ItemRows } from "@/components/live/item-rows";
+import { JobStatus } from "@/components/live/job-status";
 import { queryItems, type SortKey } from "@/lib/data/items-query";
 import { getSummary, sourceLabel } from "@/lib/data/live";
 
 import { archiveItem, bulkArchive, bulkDelete, bulkMove, createItem, deleteItem } from "./actions";
+import { enqueueRefresh } from "./refresh-action";
 
 export const dynamic = "force-dynamic";
 
@@ -27,16 +29,19 @@ export default async function ItemsPage({
   const sort = (SORTS.find((s) => s.key === sp.sort)?.key ?? "score") as SortKey;
   const dir = sp.dir === "asc" ? "asc" : "desc";
   const page = Math.max(1, Number(sp.page) || 1);
+  const from = sp.from ?? "";
+  const to = sp.to ?? "";
+  const job = sp.job;
 
   const [data, summary] = await Promise.all([
-    queryItems({ state: "active", q, source, sort, dir, page }),
+    queryItems({ state: "active", q, source, sort, dir, page, from, to }),
     getSummary(),
   ]);
   const sources = Object.keys(summary.bySource);
 
   function link(patch: Record<string, string | number | undefined>) {
     const params = new URLSearchParams();
-    const merged = { q, source, sort, dir, page, ...patch };
+    const merged = { q, source, sort, dir, page, from, to, ...patch };
     for (const [key, value] of Object.entries(merged)) {
       if (value !== undefined && value !== "" && value !== "score" && value !== "desc" && value !== 1) {
         params.set(key, String(value));
@@ -49,6 +54,10 @@ export default async function ItemsPage({
   return (
     <section className="page active" id="page-items">
       <h2 className="visually-hidden">All items</h2>
+      {job ? <JobStatus jobId={Number(job)} /> : null}
+      {sp.error === "jobs_table" ? (
+        <div className="status err">Jobs table missing — run the jobs migration in Supabase.</div>
+      ) : null}
       <div className="card">
         <div className="card-head">
           <h3>All items ({data.total.toLocaleString("en-US")})</h3>
@@ -76,6 +85,8 @@ export default async function ItemsPage({
             <option value="desc">มาก → น้อย</option>
             <option value="asc">น้อย → มาก</option>
           </select>
+          <input type="date" name="from" defaultValue={from} aria-label="From date" />
+          <input type="date" name="to" defaultValue={to} aria-label="To date" />
           <button className="btn btn-primary" type="submit">
             Filter
           </button>
@@ -109,9 +120,15 @@ export default async function ItemsPage({
 
         <div className="card-head" style={{ marginTop: 4 }}>
           <h3>Results</h3>
-          <a className="btn btn-ghost" href="/api/export/items" style={{ padding: "6px 12px", fontSize: 12 }}>
-            Export CSV
-          </a>
+          <form action={enqueueRefresh} className="row-actions">
+            <input type="hidden" name="q" value={q} />
+            <button className="btn btn-ghost" type="submit" style={{ padding: "6px 12px", fontSize: 12 }}>
+              Refresh views
+            </button>
+            <a className="btn btn-ghost" href="/api/export/items" style={{ padding: "6px 12px", fontSize: 12 }}>
+              Export CSV
+            </a>
+          </form>
         </div>
 
         <form action={bulkArchive}>

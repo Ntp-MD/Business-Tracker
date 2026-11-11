@@ -1,7 +1,7 @@
 import type { Item } from "@/lib/types";
 
 /** Fixtures for the `/` mock route. No network, no Supabase. */
-export const MOCK_ITEMS: Item[] = [
+const BASE: [string, string, string, string, number, number][] = [
   ["Digital Marketing", "facebook", "How we get local clients in 30 days", "ITOPPLUS Case", 891, 12000],
   ["Digital Marketing", "tiktok", "Facebook Ads vs TikTok Ads: where to start", "ads.withbeam", 642, 8400],
   ["Digital Marketing", "facebook", "Content strategy ที่ยิงแล้วได้ลูกค้าจริง", "ITOPPLUS", 534, 6100],
@@ -14,26 +14,32 @@ export const MOCK_ITEMS: Item[] = [
   ["ธีมเว็บ", "tiktok", "ธีมเว็บแบบไหนขายของได้", "Web Theme Lab", 198, 1800],
   ["ธีมเว็บ", "facebook", "เลือกธีมเว็บให้ตรงกลุ่มลูกค้า", "Design TH", 174, 1500],
   ["ค่า LINE OA", "youtube", "ค่า LINE OA คุ้มไหมสำหรับ SME", "LINE Business TH", 152, 1300],
-].map(([keyword, source, title, author, score, views], index) => ({
-  id: `mock-${index + 1}`,
-  keyword: keyword as string,
-  source: source as string,
-  url: "https://example.com/mock",
-  canonical_url: "https://example.com/mock",
-  title: title as string,
-  body: "",
-  author: author as string,
-  channel_url: "",
-  score: score as number,
-  metric: "views",
-  views: views as number,
-  published: "2026-11-01",
-  created_at: "2026-11-01T00:00:00Z",
-  asset: null,
-  created: "",
-  archived_at: "",
-  deleted_at: "",
-}));
+];
+
+export const MOCK_ITEMS: Item[] = Array.from({ length: 67 }, (_, index) => {
+  const [keyword, source, title, author, score, views] = BASE[index % BASE.length];
+  const cycle = Math.floor(index / BASE.length);
+  return {
+    id: `mock-${index + 1}`,
+    keyword,
+    source,
+    url: `https://example.com/mock/${index + 1}`,
+    canonical_url: `https://example.com/mock/${index + 1}`,
+    title: cycle ? `${title} · part ${cycle + 1}` : title,
+    body: "",
+    author,
+    channel_url: "",
+    score: score + cycle * 7,
+    metric: "views",
+    views: views + cycle * 50,
+    published: "2026-11-01",
+    created_at: "2026-11-01T00:00:00Z",
+    asset: null,
+    created: "",
+    archived_at: "",
+    deleted_at: "",
+  };
+});
 
 export const MOCK_PROFILES = [
   { name: "Profile 1 — ITOPPLUS", keywords: ["Digital Marketing", "SEO", "เว็บขายของ"], sources: ["facebook", "tiktok"] },

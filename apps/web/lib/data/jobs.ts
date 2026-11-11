@@ -11,12 +11,20 @@ export type FetchPayload = {
 };
 
 export async function createFetchJob(payload: FetchPayload): Promise<number> {
+  return createJob("fetch", payload);
+}
+
+export async function createRefreshJob(payload: FetchPayload): Promise<number> {
+  return createJob("refresh_views", payload);
+}
+
+async function createJob(kind: "fetch" | "refresh_views", payload: FetchPayload): Promise<number> {
   const userId = process.env.SUPABASE_USER_ID;
   if (!userId) throw new Error("SUPABASE_USER_ID missing");
 
   const { data, error } = await supabaseAdmin()
     .from("jobs")
-    .insert({ user_id: userId, kind: "fetch", payload })
+    .insert({ user_id: userId, kind, payload })
     .select("id")
     .single();
   if (error) throw new Error(error.message);

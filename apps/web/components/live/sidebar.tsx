@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { BrandLogo } from "@/components/brand-logo";
+import { PatchNotes } from "@/components/live/patch-notes";
 
 const ITEMS = [
   { href: "/live", label: "Overview", icon: "M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" },
@@ -73,6 +74,7 @@ export function Sidebar({ counts }: { counts: { items: number; sources: number; 
           <span className="ver-num">0.2</span>
         </div>
         <div className="ver-date">11 พ.ย. 2026</div>
+        <PatchNotes />
       </div>
     </aside>
   );

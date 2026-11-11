@@ -14,6 +14,8 @@ export type ItemQuery = {
   dir?: "asc" | "desc";
   page?: number;
   pageSize?: number;
+  from?: string;
+  to?: string;
 };
 
 export async function queryItems({
@@ -24,6 +26,8 @@ export async function queryItems({
   dir = "desc",
   page = 1,
   pageSize = 25,
+  from = "",
+  to = "",
 }: ItemQuery): Promise<{ items: Item[]; total: number; page: number; pages: number }> {
   let query = supabaseAdmin().from("items").select("*", { count: "exact" });
 
@@ -33,11 +37,13 @@ export async function queryItems({
 
   if (source) query = query.eq("source", source);
   if (q) query = query.or(`title.ilike.%${q.replace(/[,%]/g, " ")}%,body.ilike.%${q.replace(/[,%]/g, " ")}%`);
+  if (from) query = query.gte("published", from);
+  if (to) query = query.lte("published", `${to}T23:59:59`);
 
-  const from = (page - 1) * pageSize;
+  const offset = (page - 1) * pageSize;
   const { data, error, count } = await query
     .order(sort, { ascending: dir === "asc", nullsFirst: false })
-    .range(from, from + pageSize - 1);
+    .range(offset, offset + pageSize - 1);
 
   if (error) throw new Error(`items: ${error.message}`);
   const total = count ?? 0;

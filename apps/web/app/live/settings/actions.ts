@@ -55,6 +55,22 @@ type ImportItem = {
   asset?: string | null;
 };
 
+export async function pruneOld(form: FormData): Promise<void> {
+  const days = Number(form.get("days") ?? 0);
+  if (!Number.isFinite(days) || days <= 0) return;
+  const cutoff = new Date(Date.now() - days * 86_400_000).toISOString();
+  const { error } = await supabaseAdmin()
+    .from("items")
+    .delete()
+    .lt("published", cutoff)
+    .in("source", ["youtube", "gnews", "tiktok"])
+    .eq("user_id", userId());
+  if (error) throw new Error(error.message);
+  revalidatePath("/live");
+  revalidatePath("/live/items");
+  revalidatePath("/live/settings");
+}
+
 export async function importItems(form: FormData): Promise<void> {
   const file = form.get("file");
   if (!(file instanceof File) || !file.size) return;

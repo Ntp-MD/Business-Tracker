@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { BrandLogo } from "@/components/brand-logo";
+import { PatchNotes } from "@/components/live/patch-notes";
 import { ThemeToggle } from "@/components/live/theme-toggle";import { MOCK_ITEMS, MOCK_PROFILES, mockBand, mockSourceLabel, mockTerms } from "@/lib/mock/fixtures";
 
 const VIEWS = [
@@ -96,6 +97,7 @@ export default async function MockPage({
           </nav>
           <div className="help-card">
             <span className="proto-tag">PROTOTYPE · mock data — not production</span>
+            <PatchNotes />
           </div>
         </aside>
 

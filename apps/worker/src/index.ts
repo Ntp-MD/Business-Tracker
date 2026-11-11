@@ -13,6 +13,7 @@ const POLL_MS = Number(process.env.WORKER_POLL_MS ?? 3000);
 
 type Job = {
   id: number;
+  kind: string;
   payload: { q?: string; sources?: string[]; mode?: string; max_age_days?: number; profile_id?: string };
 };
 
@@ -34,7 +35,7 @@ async function heartbeat(): Promise<void> {
 }
 
 async function claim(): Promise<Job | null> {
-  const list = await fetch(`${SUPABASE_URL}/rest/v1/jobs?status=eq.queued&order=created_at&limit=1&select=id,payload`, {
+  const list = await fetch(`${SUPABASE_URL}/rest/v1/jobs?status=eq.queued&order=created_at&limit=1&select=id,kind,payload`, {
     headers: headers(),
   });
   const rows = (await list.json()) as Job[];
@@ -61,7 +62,8 @@ async function patch(id: number, body: Record<string, unknown>): Promise<void> {
 async function run(job: Job): Promise<void> {
   const payload = job.payload ?? {};
   try {
-    const res = await fetch(`${API}/api/fetch`, {
+    const endpoint = job.kind === "refresh_views" ? "/api/refresh-stats" : "/api/fetch";
+    const res = await fetch(`${API}${endpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),

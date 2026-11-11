@@ -1,7 +1,7 @@
 import { getCounts } from "@/lib/data/counts";
 import { getSummary, sourceLabel } from "@/lib/data/live";
 
-import { createProfile, deleteProfile, importItems } from "./actions";
+import { createProfile, deleteProfile, importItems, pruneOld } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -105,6 +105,31 @@ export default async function SettingsPage() {
             Import JSON
           </button>
         </form>
+      </div>
+
+      <div className="card" style={{ marginTop: 12 }}>
+        <div className="card-head">
+          <h3>Collector sessions</h3>
+          <span className="chart-note">Local only</span>
+        </div>
+        <p className="src-detail">
+          TikTok / FB Ads / TikTok Ads ต้อง login session บนเครื่อง owner: <code>python pw_login.py</code> แล้วรัน worker.
+          Production ดูสถานะ session ไม่ได้ (ไม่มี service key ฝั่ง browser).
+        </p>
+      </div>
+
+      <div className="card" style={{ marginTop: 12 }}>
+        <div className="card-head">
+          <h3>Prune old items</h3>
+          <span className="chart-note">Organic sources only</span>
+        </div>
+        <form action={pruneOld} className="item-form">
+          <input name="days" type="number" min="1" step="1" placeholder="Older than N days" required aria-label="Days" />
+          <button className="btn btn-ghost" type="submit">
+            Prune
+          </button>
+        </form>
+        <p className="src-detail">ลบถาวรเฉพาะ youtube / gnews / tiktok ที่เก่ากว่า N วัน; ads ไม่ถูกลบ</p>
       </div>
 
       <div className="card" style={{ marginTop: 12 }}>
