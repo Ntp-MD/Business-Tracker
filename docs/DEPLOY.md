@@ -16,26 +16,37 @@ Locally `python server.py` serves the same layout:
 
 ## GitHub Pages
 
-Push `main`; Pages serves the repository root. Root and `/live/` both load statically, but **`live/` needs the Python API** for data (`/api/summary`, `/api/status`, …). GitHub Pages cannot run `server.py`.
+Push `main`; Pages serves the repository root. Root and `/live/` both load statically, but **`live/` needs an API** for data (`/api/summary`, `/api/status`, …). GitHub Pages cannot run `server.py`.
 
-To make `/live/` work on Pages:
+Until `api-base` is set, `/live/` shows a **Static preview** notice and disables Search Now.
 
-1. Host `server.py` somewhere reachable over HTTPS (Render, Fly.io, a tunnel, a VPS).
-2. In `live/index.html` set the API origin:
+### Render (recommended)
 
-```html
-<meta name="api-base" content="https://your-server.example.com" />
-```
+1. Push this repo (the included `Dockerfile` + `render.yaml` are ready).
+2. Render → **New → Blueprint** → select the repo. It creates `social-tracker-api` (Docker, free).
+3. Fill the secret env vars in Render:
+   ```
+   SUPABASE_URL=https://<project>.supabase.co
+   SUPABASE_SERVICE_ROLE_KEY=<service role — server only>
+   SUPABASE_USER_ID=<auth user uuid>
+   SUPABASE_STRICT=1
+   ALLOW_ORIGIN=https://ntp-md.github.io
+   ```
+4. Deploy and copy the HTTPS URL, e.g. `https://social-tracker-api.onrender.com`.
+5. Set it in `live/index.html`:
+   ```html
+   <meta name="api-base" content="https://social-tracker-api.onrender.com" />
+   ```
+6. Push; Pages rebuilds and live becomes read/write via the API.
 
-Rows are written by the adapter to Supabase; the browser never sees the service key.
+`HOST=0.0.0.0` / `$PORT` are already supported by `server.py` and the Dockerfile.
+CORS is handled by `ALLOW_ORIGIN`; the API has no login, so keep the origin narrow and do not set `ALLOW_ORIGIN=*`.
+Container filesystem is ephemeral: Supabase is the data store; TikTok/Facebook *session* logins need a persistent disk or use public mode.
+Free Render services sleep after idle and may take ~30–60s on the first request; Playwright collectors are memory-heavy.
 
-3. Restrict CORS in the server env:
+### Other hosts
 
-```
-ALLOW_ORIGIN=https://ntp-md.github.io
-```
-
-The API has no login. Do not expose it publicly with `ALLOW_ORIGIN=*`; anyone could read/write the data through it.
+Host `server.py` on Fly.io / a VPS / a tunnel, expose HTTPS, set the same env vars, then point `api-base` at it. The Python process must be able to run Chromium for TikTok / FB Ads / TikTok Ads; YouTube + GNews only need stdlib HTTP.
 
 ## Mockup
 

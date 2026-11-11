@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+data/
+sessions/
+shots/
+.agents/
+.taste-skill/
+.git/
+__pycache__/
+tests/
+docs/
+supabase/
+scripts/
+*.md
+assets/*.jpg
+live/_skelcheck.html

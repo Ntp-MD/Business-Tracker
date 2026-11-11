@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: social-tracker-api
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/status
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_USER_ID
+        sync: false
+      - key: SUPABASE_STRICT
+        value: "1"
+      - key: ALLOW_ORIGIN
+        value: https://ntp-md.github.io
