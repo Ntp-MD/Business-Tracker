@@ -4,7 +4,7 @@ import { ItemRows } from "@/components/live/item-rows";
 import { queryItems, type SortKey } from "@/lib/data/items-query";
 import { getSummary, sourceLabel } from "@/lib/data/live";
 
-import { archiveItem, createItem, deleteItem } from "./actions";
+import { archiveItem, bulkArchive, bulkDelete, bulkMove, createItem, deleteItem } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -107,32 +107,51 @@ export default async function ItemsPage({
           </form>
         </details>
 
-        <div className="tbl-scroll">
-          {data.items.length ? (
-            <ItemRows
-              items={data.items}
-              actions={(item) => (
-                <div className="row-actions">
-                  <Link className="mini-btn" href={`/live/items/${item.id}/edit`}>
-                    Edit
-                  </Link>
-                  <form action={archiveItem.bind(null, item.id!)}>
-                    <button className="mini-btn" type="submit">
+        <div className="card-head" style={{ marginTop: 4 }}>
+          <h3>Results</h3>
+          <a className="btn btn-ghost" href="/api/export/items" style={{ padding: "6px 12px", fontSize: 12 }}>
+            Export CSV
+          </a>
+        </div>
+
+        <form action={bulkArchive}>
+          <div className="tbl-scroll">
+            {data.items.length ? (
+              <ItemRows
+                items={data.items}
+                selectable
+                actions={(item) => (
+                  <div className="row-actions">
+                    <Link className="mini-btn" href={`/live/items/${item.id}/edit`}>
+                      Edit
+                    </Link>
+                    <button className="mini-btn" type="submit" formAction={archiveItem.bind(null, item.id!)}>
                       Archive
                     </button>
-                  </form>
-                  <form action={deleteItem.bind(null, item.id!)}>
-                    <button className="mini-btn danger" type="submit">
+                    <button className="mini-btn danger" type="submit" formAction={deleteItem.bind(null, item.id!)}>
                       Delete
                     </button>
-                  </form>
-                </div>
-              )}
-            />
-          ) : (
-            <div className="empty">No items match this view.</div>
-          )}
-        </div>
+                  </div>
+                )}
+              />
+            ) : (
+              <div className="empty">No items match this view.</div>
+            )}
+          </div>
+
+          <div className="bulk-bar">
+            <button className="btn btn-ghost" type="submit">
+              Archive selected
+            </button>
+            <button className="btn btn-ghost" type="submit" formAction={bulkDelete}>
+              Delete selected
+            </button>
+            <input name="to_keyword" placeholder="ย้ายไป keyword…" aria-label="Move to keyword" />
+            <button className="btn btn-ghost" type="submit" formAction={bulkMove}>
+              Move
+            </button>
+          </div>
+        </form>
 
         <div className="pager">
           <span>

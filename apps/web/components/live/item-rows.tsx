@@ -14,16 +14,19 @@ export function ItemRows({
   items,
   withSignal = true,
   actions,
+  selectable = false,
 }: {
   items: Item[];
   withSignal?: boolean;
   actions?: (item: Item) => ReactNode;
+  selectable?: boolean;
 }) {
   return (
     <table>
       <caption className="visually-hidden">Items by score</caption>
       <thead>
         <tr>
+          {selectable && <th scope="col" className="sel-cell" />}
           <th scope="col">Source</th>
           <th scope="col">Title</th>
           <th scope="col">Metric</th>
@@ -37,6 +40,11 @@ export function ItemRows({
           const band = scoreBand(Number(item.score) || 0);
           return (
             <tr key={item.id ?? `${item.keyword}-${item.canonical_url || item.url}`}>
+              {selectable && (
+                <td className="sel-cell">
+                  <input type="checkbox" name="ids" value={item.id} aria-label={`Select ${item.title}`} />
+                </td>
+              )}
               <td>
                 <span className="src-name">{sourceLabel(item.source)}</span>
               </td>

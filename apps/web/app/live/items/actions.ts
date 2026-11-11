@@ -105,3 +105,49 @@ export async function updateItem(id: string, form: FormData): Promise<void> {
   revalidatePath("/live/items");
   redirect("/live/items");
 }
+
+function ids(form: FormData): string[] {
+  return form.getAll("ids").map(String).filter(Boolean);
+}
+
+export async function bulkArchive(form: FormData): Promise<void> {
+  const list = ids(form);
+  if (!list.length) return;
+  const { error } = await supabaseAdmin()
+    .from("items")
+    .update({ archived_at: new Date().toISOString(), deleted_at: null })
+    .in("id", list)
+    .eq("user_id", userId());
+  if (error) throw new Error(error.message);
+  revalidatePath("/live");
+  revalidatePath("/live/items");
+  revalidatePath("/live/archive");
+}
+
+export async function bulkDelete(form: FormData): Promise<void> {
+  const list = ids(form);
+  if (!list.length) return;
+  const { error } = await supabaseAdmin()
+    .from("items")
+    .update({ deleted_at: new Date().toISOString() })
+    .in("id", list)
+    .eq("user_id", userId());
+  if (error) throw new Error(error.message);
+  revalidatePath("/live");
+  revalidatePath("/live/items");
+  revalidatePath("/live/trash");
+}
+
+export async function bulkMove(form: FormData): Promise<void> {
+  const list = ids(form);
+  const keyword = text(form, "to_keyword");
+  if (!list.length || !keyword) return;
+  const { error } = await supabaseAdmin()
+    .from("items")
+    .update({ keyword })
+    .in("id", list)
+    .eq("user_id", userId());
+  if (error) throw new Error(error.message);
+  revalidatePath("/live");
+  revalidatePath("/live/items");
+}

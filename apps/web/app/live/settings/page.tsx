@@ -1,6 +1,8 @@
 import { getCounts } from "@/lib/data/counts";
 import { getSummary, sourceLabel } from "@/lib/data/live";
 
+import { createProfile, deleteProfile } from "./actions";
+
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
@@ -15,17 +17,48 @@ export default async function SettingsPage() {
           <span className="chart-note">{summary.profiles.length} saved</span>
         </div>
         {summary.profiles.length ? (
-          <div className="terms">
-            {summary.profiles.map((profile) => (
-              <span className="term" key={profile.id ?? profile.name}>
-                {profile.name}
-                <b>{profile.keywords?.length ?? 0}</b>
-              </span>
-            ))}
+          <div className="tbl-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Profile</th>
+                  <th scope="col">Keywords</th>
+                  <th scope="col">Sources</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {summary.profiles.map((profile) => (
+                  <tr key={profile.id ?? profile.name}>
+                    <td>{profile.name}</td>
+                    <td>{(profile.keywords ?? []).join(", ") || "—"}</td>
+                    <td>{(profile.sources ?? []).map(sourceLabel).join(", ") || "—"}</td>
+                    <td>
+                      <div className="row-actions">
+                        <form action={deleteProfile.bind(null, profile.id!)}>
+                          <button className="mini-btn danger" type="submit">
+                            Delete
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         ) : (
           <div className="empty">No profiles yet.</div>
         )}
+
+        <form action={createProfile} className="item-form" style={{ marginTop: 12 }}>
+          <input name="name" placeholder="Profile name" required aria-label="Profile name" />
+          <input name="keywords" placeholder="keywords คั่นด้วย ," aria-label="Keywords" />
+          <input name="sources" placeholder="youtube, gnews, tiktok" aria-label="Sources" />
+          <button className="btn btn-primary" type="submit">
+            Save profile
+          </button>
+        </form>
       </div>
 
       <div className="card" style={{ marginTop: 12 }}>
