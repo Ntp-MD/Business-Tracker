@@ -13,3 +13,8 @@ __pycache__/
 # Supabase secrets (service role key, owner uuid)
 .env.local
 .env
+# Node / Next migration workspaces
+node_modules/
+apps/web/.next/
+apps/worker/dist/
+*.tsbuildinfo

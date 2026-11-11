@@ -116,6 +116,9 @@ Never claim done if a listed verification failed.
 | `supabase/migrations/` | Schema + RLS + storage bucket |
 | `scripts/import_to_supabase.py` | Import `data/*.json` + thumbnails |
 | `scripts/capture_baseline.py` | Parity screenshots (1440/390) of legacy `/` + `/live/` |
+| `apps/web/` | Next.js scaffold (`/` mock, `/live`); Phase 1 only, not deployed |
+| `apps/worker/` | Node/TS Playwright worker scaffold; Phase 1 only |
+| `packages/shared/` | Shared TS types (items, profiles, jobs) |
 | `tests/` | stdlib unittest; forced local adapter, never Supabase |
 | `Dockerfile`, `render.yaml`, `.dockerignore` | Render API deployment |
 | `docs/DEPLOY.md` | Pages + Render + `api-base` + CORS |

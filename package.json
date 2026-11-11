@@ -1,0 +1,14 @@
+{
+  "name": "social-tracker",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w apps/web && npm run build -w apps/worker",
+    "build:web": "npm run build -w apps/web",
+    "build:worker": "npm run build -w apps/worker",
+    "typecheck": "npm run typecheck -w packages/shared && npm run typecheck -w apps/worker"
+  }
+}

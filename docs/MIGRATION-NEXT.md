@@ -78,6 +78,9 @@
 
 ## 3. Target structure
 
+Scaffold commands (Phase 1): `npm install` → `npm run build` (Next + worker) →
+`npm run typecheck` (shared + worker). Legacy `python server.py` is unaffected.
+
 ```
 apps/web/                    Next.js + TypeScript (Vercel)
   app/(mock)/page.tsx        mockup  /
@@ -284,7 +287,7 @@ Order: Overview → All items → Sources → Archive → Ads → Terms/Ideas �
 | Phase | Status | Commit | Notes |
 |---|---|---|---|
 | 0 baseline | ☑ | `54bd389` + tag `pre-next-migration` | tag/backup/50 screenshots/inventory done 2026-11-11 |
-| 1 scaffold | ☐ | | |
+| 1 scaffold | ☑ | `Phase 1 commit` | npm workspaces; Next builds `/` + `/live` placeholders; worker tsc passes (2026-11-11) |
 | 2 auth/read | ☐ | | |
 | 3 live read | ☐ | | |
 | 4 CRUD | ☐ | | |
