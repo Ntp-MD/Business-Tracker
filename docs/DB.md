@@ -1,6 +1,8 @@
 # Database (Supabase)
 
-Schema: `supabase/migrations/20261110000000_init.sql`. Postgres 15, RLS on every table (`user_id = auth.uid()`).
+> **Current mode:** `server.py` uses `db.py` when `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` + `SUPABASE_USER_ID` are set; otherwise it uses local `data/*.json`. The browser never gets the service key. Static `/live` cannot read these tables directly because RLS requires `authenticated` — that needs Supabase Auth + anon key (planned in `MIGRATION-NEXT.md`), or the hosted API.
+>
+> Schema: `supabase/migrations/20261110000000_init.sql`. Apply it in the Supabase SQL editor (or `supabase db push`). Postgres 15, RLS on every table (`user_id = auth.uid()`).
 
 ## Mapping from `data/*.json`
 

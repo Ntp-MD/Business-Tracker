@@ -1,5 +1,11 @@
 # PLAN — Social Tracker (owner-approved checklist)
 
+> **STATUS 2026-11-11: HISTORICAL.** ไฟล์นี้เป็น checklist รุ่นแรก (paths `app/dashboard*.html`)
+> ซึ่งถูกแทนแล้วด้วย `index.html` + `live/index.html` และ Supabase/Render.
+> เอกสารปัจจุบัน: `docs/AGENTS.md` (rules), `docs/ARCHITECTURE.md` (CURRENT header + §9.5),
+> `docs/DEPLOY.md`, `docs/DB.md`, `docs/MIGRATION-NEXT.md`.
+> อ่านไฟล์นี้เพื่อประวัติเท่านั้น อย่าใช้เป็นแนวทาง implement.
+
 > Companion: `docs/ARCHITECTURE.md` (spec), `docs/AGENTS.md` (how we work).
 > แผนนี้คือ checklist ทำงาน — ติ๊ก [x] เมื่อเสร็จ + ผ่าน verification แล้วเท่านั้น.
 > ไม่ลงโค้ดจนกว่าเฟส 1 (spec lock) จะผ่านและ owner บอก "go".

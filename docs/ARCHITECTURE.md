@@ -1,9 +1,32 @@
 # Social Tracker — How We Build It
 
-> **Companion:** `AGENTS.md` — the binding implementation brief (scope, authority, failure protocol,
-> §9.6 verify). This file is the spec; that file is the agent's handle. Keep them in sync.
+> **Companion:** `AGENTS.md` — current operating brief. This file retains the original
+> architecture/spec below for history; the **CURRENT** section here overrides stale parts.
 >
-> **State (2026-11-06, revised):** owner changed the storage direction. **All data lives on disk**
+> ## CURRENT (2026-11-11)
+>
+> - **Frontend:** `/` = mockup (`index.html`), `/live` = live (`live/index.html`) — always separate.
+>   CSS in `assets/css/` (`variables`, `base`, `component`, `layout`, `layout-live`); no inline `<style>`.
+> - **Runtime:** `server.py` (stdlib HTTP) + Playwright for TikTok / FB Ads / TikTok Ads.
+>   Local URL: `http://127.0.0.1:8000/live/`. `HOST`/`PORT` can be set by the host.
+> - **Storage:** Supabase via `db.py` when `.env.local` is configured (service role, server only);
+>   otherwise local JSON (`data/*.json`) + `assets/` thumbnails. Tables: `items`, `profiles`,
+>   `keyword_stats`, `source_status`; archive/trash are `archived_at` / `deleted_at`.
+> - **Deploy:** Render API via `Dockerfile` + `render.yaml`; GitHub Pages/Vercel serve static
+>   `/` and `/live`. `/live` needs `<meta name="api-base" content="https://api…">` + CORS
+>   (`ALLOW_ORIGIN`). Without it, static preview disables Search Now.
+> - **Auth/security:** service role only on server/worker; browser must use Supabase Auth + RLS.
+> - **Next step:** `docs/MIGRATION-NEXT.md` (Next.js + TS worker) is gated; not started.
+>
+> The original 2026-11-06/13 decision text below is **historical**; where it conflicts
+> (disk-only, no deploy, mock untouched), this header + `AGENTS.md` win.
+>
+> **Reading map:** current = this header, §2 stack table, §5 sources, §9.4–§9.7.
+> Historical = §1, §3, §4, §6, §7, §8 (kept for decision history; do not implement from them).
+>
+> ---
+
+> **Historical state (2026-11-06, revised):** owner changed the storage direction. **All data lives on disk**
 > (JSON + cached image assets). No SQLite database file. **A lightweight stdlib-only localhost server
 > stays** so the Dashboard buttons work. **No code is written yet** — docs lead, code follows.
 > The mockup dashboard (`dashboard.html` + `page-*.html`) stays untouched; the HTTP contract
@@ -25,6 +48,10 @@
 ---
 
 ## 1. How the app works
+
+> **HISTORICAL (2026-11-06).** Diagram/flows below describe the original disk-only build.
+> Current runtime: `server.py` + `db.py` (Supabase when configured), with archive/trash and
+> ads collectors. See the CURRENT header and `docs/AGENTS.md`.
 
 ### The shape
 
@@ -91,13 +118,13 @@ If a source dies mid-run → its message goes into `errors[]`, the run continues
 | Layer | We use |
 |-------|--------|
 | Language | Python 3 (stdlib + `playwright` for TikTok/FB only) — `http.server`, `urllib`, `xml.etree`, `json`, `re`, `collections.Counter` |
-| Storage | Disk files — `data/items.json`, `data/index.json`, `data/analysis.json`, `data/profiles.json`. **No SQLite** |
-| Assets | `assets/{videoId}.jpg` — YT thumbnails downloaded on collect. **No bytes in JSON, no base64** |
-| Frontend | Existing `dashboard.html` (+ `page-*.html`) — mock kept as-is; endpoints preserved so mock goes live unchanged |
+| Storage | Local JSON **or Supabase** via `db.py` when env is configured — `items`, `profiles`, `keyword_stats`, `source_status`; local fallback `data/*.json`. No SQLite |
+| Assets | `assets/{videoId}.jpg` — YT thumbnails; Supabase Storage `thumbnails` in remote mode |
+| Frontend | `index.html` mock (`/`) + `live/index.html` live (`/live`) — separate; CSS in `assets/css/` |
 | Sources | YouTube search (`ytInitialData`) · Google News RSS TH · TikTok (public Playwright) · FB Ad Library · TikTok Creative Center (fail-soft) |
-| Runtime | `python server.py` → open `http://127.0.0.1:8000/dashboard-live.html` |
-| Installer | none — local run only (`python server.py`); installer removed by owner |
-| Repo/data | flat folder; `data/` + `assets/` disposable |
+| Runtime | `python server.py` → `http://127.0.0.1:8000/live/`; Render Docker for HTTPS API |
+| Installer | none — `python server.py` locally; Render via `render.yaml`/Dockerfile |
+| Repo/data | `data/` + `assets/` disposable; secrets in `.env.local` (gitignored) |
 
 ### Explicitly not used
 
@@ -114,6 +141,10 @@ A = free sources (stdlib only) · B = Playwright (+pip) · C = Meta/TikTok keys 
 ---
 
 ## 3. How the files are laid out
+
+> **HISTORICAL (2026-11-06).** Current layout: `index.html` (mock), `live/index.html` (live),
+> `assets/css/`, `assets/icons/`, `server.py`, `db.py`, `Dockerfile`, `render.yaml`.
+> No `app/` folder anymore.
 
 ### Working layout (rebuild same way)
 
@@ -148,10 +179,13 @@ Split trigger: editing `server.py` breaks elsewhere, or 2+ people edit concurren
 
 ## 4. How we run it
 
+> **HISTORICAL (2026-11-06).** Current run: `python server.py` → `/live/`; hosted API on
+> Render; static `/` on Pages/Vercel. Verification lives in §9.6 and `docs/AGENTS.md`.
+
 ### Everyday loop
 
 ```
-1. run `python server.py`       → open `http://127.0.0.1:8000/dashboard-live.html` manually
+1. run `python server.py`       → open `http://127.0.0.1:8000/live/` manually
 2. type a Thai keyword            → e.g. "เว็บขายของ" (placeholder until business keywords decided)
 3. press **Fetch now (= Collect/gather)** → POST /api/fetch → pulls YouTube + GNews,
    merges into data/items.json, downloads thumbnails into assets/
@@ -207,7 +241,12 @@ Everything else stays out of parts 2–3:
 
 ## 6. How we store the data
 
-> **Rule (revised 2026-11-06):** **everything lives on disk** — JSON is the record, files are files.
+> **HISTORICAL (2026-11-06) — superseded.** Storage is local JSON **or** Supabase Postgres
+> (`items`, `profiles`, `keyword_stats`, `source_status`) via `db.py`. No SQLite either way.
+> Archive/trash are `archived_at` / `deleted_at`, not separate `archive.json` / `trash.json`
+> files. Details: `docs/DB.md`.
+
+> **Original rule (revised 2026-11-06):** **everything lives on disk** — JSON is the record, files are files.
 > No database. All of it is disposable: delete `data/` + `assets/` to reset. Never base64/blob inside JSON.
 
 ### 6.1 `data/` layout (merged store)
@@ -356,7 +395,7 @@ Discovery (TikTok/FB) → views · Trust (YouTube) → views/comments · Close (
 
 **Steps the owner runs:**
 1. (once) `python -m pip install playwright` + `python -m playwright install chromium` — needed only for TikTok/FB collectors; YouTube/GNews work without
-2. `python server.py` → open `http://127.0.0.1:8000/dashboard-live.html` in the browser
+2. `python server.py` → open `http://127.0.0.1:8000/live/` in the browser
 
 ### 9.2 How fetching works (COLLECT)
 
@@ -395,7 +434,7 @@ Discovery (TikTok/FB) → views · Trust (YouTube) → views/comments · Close (
 ### 9.4 How the server serves it
 
 - `BaseHTTPRequestHandler`, fixed port 8000, localhost only
-- `GET /` → `app/dashboard.html`, `/logo.svg` → `app/logo.svg` raw files (both live in `app/` since 2026-11-06 reorg); `/fonts/*` served from `assets/fonts/`; `/assets/*` thumbnails; `/logo.webp` when present (path traversal guarded via `.resolve()` + `ROOT in rel.parents`)
+- `GET /` → `index.html` (mock), `/live/` → `live/index.html` (live); `/assets/*` and `/fonts/*` static; `/dashboard-live.html` redirects to `/live/`; path traversal guarded
 - `GET /api/summary?q=` → `analyze(q)` JSON (UTF-8 `ensure_ascii=False`; reads disk, no fetch). Omit `q` → returns the whole local store (All items view on first open)
 - `GET /api/progress` → live fetch heartbeat: `{active, keyword, source, stage, elapsed, since_update}`; collectors push stage strings while running (browser open → page load → wait → read). The loading modal polls it every 1.5 s: the stage line proves the server is moving, and > 60 s without a stage update (or 4 failed polls) turns it into a "not responding" warning. Read-only, never writes
 - `POST /api/fetch` → `collect(q)` → `analyze(q)` → JSON with `added`, `duplicates`, `errors`, `cancelled`, `fetched_at` (button: Search Now)
@@ -403,7 +442,7 @@ Discovery (TikTok/FB) → views · Trust (YouTube) → views/comments · Close (
 - `GET /api/export[?q=]` → JSON envelope `{format, version, app_version, exported_at, keywords, count, items}` as a download
 - `GET /api/export.zip[?q=]` → zip with `items.json` + referenced `assets/*.jpg`
 - `POST /api/import` → JSON envelope or zip body; validates `format`/`version`, canonical dedup per keyword, rebuilds index/analysis; returns `{added, duplicates, keywords, per_keyword}`
-- `GET /api/status` → `{app_version, items, keywords, data_bytes, assets, assets_bytes, sources, sessions}`; `sources` holds last success/error per collector
+- `GET /api/status` → `{app_version, items, archived, trash_count, keywords, data_bytes, assets, assets_bytes, sources, sessions}`; `sources` holds last success/error per collector
 - `GET /api/archive` → archived items (`archived_at` preserved)
 - `POST /api/archive {items:[{keyword,url}]}` → move active items to `data/archive.json` (bulk)
 - `POST /api/archive/restore {items}` → move archived items back to active (skips URL conflicts)
@@ -414,13 +453,13 @@ Discovery (TikTok/FB) → views · Trust (YouTube) → views/comments · Close (
 - `DELETE /api/items {keyword, url}` → delete one item + its unused thumbnail; rebuilds index/analysis
 - `POST /api/clear-all` → wipe items/index/analysis/source-log and all thumbnails; **profiles are kept**
 - `POST /api/clear {q}` → deletes one keyword's items + analysis entry, removes unreferenced thumbnails; returns `{removed, total}`
-- `POST /api/refresh-stats {q, sources?}` → re-reads view/play/like counts for existing items only (YouTube watch page per item, TikTok/TikTok Ads re-scrape); never adds items; returns `{updated, total, errors, cancelled}`
+- `POST /api/refresh-stats {q, sources?, items?}` → re-reads view/play/like counts for existing items only (YouTube watch page per item, TikTok/TikTok Ads re-scrape); `items` limits to selected rows; never adds items; returns `{updated, total, errors, cancelled}`
 - `POST /api/prune {days}` → deletes dated organic items older than N days across all keywords (ads stay), refreshes index/analysis, removes orphan thumbnails
 - `POST /api/analyze` → `analyze(q)` only, no fetch (button: Analyze); JSON with `analysis`, `fetched_at`
 - Only POST presses write to disk; GET endpoints never write; no auto-run on server start
 - 404 for anything else; `log_message` silenced
 
-### 9.5 Decisions — locked 2026-11-06 (rev 2, owner-approved direction change)
+### 9.5 Decisions — locked 2026-11-06, updated 2026-11-11 (Supabase + deploy)
 
 | What | We use / do | Locked because |
 |------|-------------|----------------|
@@ -429,43 +468,45 @@ Discovery (TikTok/FB) → views · Trust (YouTube) → views/comments · Close (
 | Freshness | `POST /api/fetch` takes `max_age_days` (UI: 1 / 3 / 7 / 15 / 30 / ทั้งหมด, default 30; 1/3 map to the nearest supported 7d source window, then prune by real date). YouTube adds upload-date `sp` + parses `publishedTimeText`; GNews adds `when:` + filters `pubDate`; TikTok reads `createTime` from the search page's own JSON; TikTok Ads uses the page's period filter (7/30/180d); prune applies only to dated organic sources (`youtube`/`gnews`/`tiktok`) — ads stay because active ads are current by definition | owner: content must be recent, not "all years"; search engines block automation (tested Google/Bing/DDG/Brave/Mojeek), so use platform pages instead |
 | Profiles | keyword profiles stored on disk: `data/profiles.json` (name + keywords[] + sources[]); `/api/profiles` CRUD; `POST /api/fetch` accepts `profile_id` + `mode` (`public`\|`session` for TikTok/FB) (collects every keyword × source sequentially, dedup by canonical URL + title layers); UI: picker + mode in fetch strip, manage in Settings, per-keyword tabs, Top items table has per-platform tabs and filters rows | multi-keyword preset, no DB, no new deps |
 | Thai top terms | plain Counter, broken output accepted | avoid adding pythainlp until needed |
-| Storage | **disk JSON** — `data/items.json` (dedup per keyword: canonical URL + title key + near-dup, atomic rename) + `data/archive.json` (bookmarked items + `archived_at`) + `data/index.json` (derived rollup) + `data/analysis.json` (advice, no `items` copy) + `data/sources.json` (last fetch status per collector) | owner wants all data on disk; files inspectable/resettable; no database |
-| Archive | per-item/ bulk bookmark: move active items out of `items.json` into `archive.json`, restore or delete permanently; thumbnails of archived items are kept until deleted | user wants a "keep for later" store without a database |
-| Backup | JSON export/import + zip with thumbnails, schema `social-tracker.items` v1; import is idempotent (same dedup, no overwrite) | data must survive disk loss/machine moves without a DB |
-| Cancel | loading modal has a stop button → `POST /api/cancel`; server stops before the next source, partial results kept | profile runs can take 10–15 min; closing the tab must not be the only exit |
-| Ads page | unlocked, renders collected `fbads` + `ttads` items (advertiser, copy, started, link) plus counts/last fetch; other 6 menu items stay locked | ads data already fetched; user-facing proof of what exists |
-| Local CRUD | profiles create/edit/delete; items create/edit/delete (URL/keyword are the identity); recent keywords add/delete; data export/import/clear/prune. `index.json` + `analysis.json` stay derived — never edited directly | owner wants to manage local data without hand-editing JSON |
-| Frontend | mock is a **static prototype** (`app/dashboard.html`), not the feature-parity target: export/import, cancel, live ads and locked menus live only in `dashboard-live.html` | avoid duplicating backend features manually; mock stays as design reference |
-| Tests | stdlib `unittest` in `tests/` (canonical URL, dedup layers, per-keyword identity, import/clear); manual API smoke for export/import/cancel/clear | no new dependencies; regression safety for dedup |
-| Thumbnails | **stored**: `assets/{videoId}.jpg`, YT `mqdefault.jpg` as-is, fail-soft | owner wants images cached locally; PDPA: public video thumbnails only |
-| Fragility | YouTube kept, wrapped fail-soft, error shown in UI; asset download failure never kills the item | GNews keeps working when YT markup changes; cache is opportunistic |
-| Config | none; port 8000 fixed | YAGNI |
-| Dependencies | `playwright` (pip) + chromium browser (TikTok / TikTok Ads / FB Ads; YT/GNews stdlib only) — approved 2026-11-13 | pythainlp rejected; no image libs — raw `mqdefault` kept |
-| `app/` refactor | stay flat | stay flat |
-| Runtime | lightweight localhost server stays; dashboard buttons must work | owner picked option A |
+| Storage | **local JSON or Supabase** — local: `data/items.json` (dedup per keyword: canonical URL + title key + near-dup, atomic rename) + `archive.json` + `trash.json` + `index.json` + `analysis.json` + `sources.json`. Supabase mode via `db.py` (PostgREST) writes `items/profiles/keyword_stats/source_status`; service role server-only | local-first, cloud when configured; inspectable/resettable; no SQLite |
+| Archive | per-item/ bulk bookmark: `archived_at` (Supabase) or `archive.json`; restore or delete permanently; thumbnails kept until deleted | user wants a "keep for later" store |
+| Backup | JSON export/import + zip with thumbnails, schema `social-tracker.items` v1; import idempotent | data must survive disk loss/machine moves |
+| Cancel | loading modal stop button → `POST /api/cancel`; server stops before next source | profile runs can take 10–15 min |
+| Ads page | unlocked, renders `fbads` + `ttads` items; other 6 menu items locked | ads data already fetched |
+| Local CRUD | profiles + items create/edit/delete; recent keywords; export/import/clear/prune. derived stats never edited directly | manage data without hand-editing JSON |
+| Frontend | `index.html` mock (`/`) and `live/index.html` live (`/live`) — **separate**; both maintained; CSS in `assets/css/` (no inline style) | owner wants distinct mock/live |
+| Tests | stdlib `unittest` in `tests/`; forced local adapter so tests never touch Supabase | regression safety |
+| Thumbnails | local `assets/{videoId}.jpg` or Supabase Storage `thumbnails`; raw `mqdefault.jpg` | owner wants cached images |
+| Fragility | collectors fail-soft; YouTube/GNews stdlib keep working; Playwright errors surface in UI | resilience |
+| Config | `.env.local` optional: Supabase URL/service role/user id, `SUPABASE_STRICT`, `ALLOW_ORIGIN`; `HOST`/`PORT` env | local + hosted |
+| Dependencies | Python stdlib + `playwright`/chromium (TikTok/FB/TT Ads); Supabase via REST adapter | no SDK/npm in current app |
+| Deploy | local `python server.py`; Render Docker (`Dockerfile`, `render.yaml`); GitHub Pages static `/` + guarded `/live` with `api-base` | owner chose hosted API + static frontend |
+| Runtime | local + Render; Search Now requires Chromium; not available on Pages/Vercel serverless | known platform limit |
 
 **If a decision changes:** edit §9.5 here — nothing else in the codebase is allowed to drift from it.
 
 ### 9.6 How we verify (done when all are true on a clean Windows + Python 3)
 
-1. `python server.py` → open `http://127.0.0.1:8000/dashboard-live.html` manually; `data/` + `assets/` get created; no database file appears
-2. Type keyword → Search Now → rows land in `data/items.json` (valid JSON, same canonical URL/title not duplicated); thumbnails appear in `assets/` for new YouTube items
-3. Summary shows `by_source`, hot item, top terms; `data/index.json` written
+1. `python server.py` → open `http://127.0.0.1:8000/live/` manually; local mode creates `data/` + `assets/`; Supabase mode (`.env.local`) writes remote tables instead
+2. Type keyword → Search Now → rows land in `data/items.json` **or Supabase `items`** (same canonical URL/title not duplicated); thumbnails appear locally or in Storage
+3. Summary shows `by_source`, hot item, top terms; `data/index.json` / `keyword_stats` written
 4. Kill YouTube (disconnect network) → Search Now still returns GNews rows; `errors` shows `youtube: ...`; app never crashes
 5. Search the same keyword twice → `total` unchanged and the response reports `duplicates` (dedup works)
-6. Press Analyze → `data/analysis.json` written (summary only, no items); JSON parses; advice renders inline
-7. Delete `data/` + `assets/` → app still starts and re-creates them empty
+6. Press Analyze → `data/analysis.json` / `keyword_stats` summary written (no items copy); advice renders inline
+7. Delete `data/` + `assets/` (local mode) → app starts and re-creates them; Supabase mode still reads remote
 8. Export JSON + ZIP → re-import both → `added` 0, `duplicates` = item count (idempotent); files download with content-disposition
 9. Start a profile fetch → press Stop → response has `cancelled: true`; later sources do not run; partial results stay
 10. Settings → disk usage matches files; clear a test keyword → only that keyword's items disappear, orphan thumbnails removed
 11. Add item → edit title/score → delete → All items reflects each step; Clear all wipes items/analysis/thumbnails but keeps profiles
 12. Select 2 items → Archive → Archive page shows them, active count drops → Restore → active count returns; bulk Move/Delete works
+13. `python -m unittest discover -s tests -t .` passes; tests never touch Supabase
+14. GitHub Pages `/live` without `api-base` shows static preview (no JSON parse error); with a valid API base, read/CRUD work
 
 ### 9.7 What is not in parts 2 + 3
 
 - IG · Trends RSS · Pantip · LINE (no public trend surface)
 - Browser sessions (`sessions/`) are machine-local only; gitignored, never committed
-- Any database file at any point — JSON only
+- SQLite files — local JSON or Supabase Postgres only
 - Re-encoding/resizing images — raw `mqdefault.jpg` only (needs owner sign-off to add image libs)
 - Long-form snapshots (`data/docs/`) — needs owner sign-off
 - LINE OA wiring, KPI tracking, content strategy (parked §8)

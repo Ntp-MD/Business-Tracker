@@ -1,118 +1,134 @@
-# AGENTS.md — Implementation brief, pairs with ARCHITECTURE.md
+# AGENTS.md — current operating brief
 
-> Read `ARCHITECTURE.md` **fully** before writing any code — it is the build spec.
-> This file is the binding layer: it tells you HOW you work, and where you must stop and ask.
-> If anything here conflicts with ARCHITECTURE.md, **ARCHITECTURE.md wins** — then tell the owner it is inconsistent.
+> **Current direction (2026-11-11):** local Python app + optional Supabase storage,
+> deployable API (Render Docker), static `/` mock + `/live` live.
+> `docs/ARCHITECTURE.md` still contains the original 2026-11 spec; where it conflicts with
+> this file or the “CURRENT” header there, **this file wins**.
 >
-> **Scope: parts 2 + 3 only** — local run (no installer) and the collector → **JSON disk store** → analyze pipeline.
-> Part 1 (mockup dashboard) stays as-is. Do not open or edit `dashboard.html`, `page-*.html`, `gen_page.py`, `DESGIN.md`, `fonts/`, `shots/` unless the owner explicitly asks.
->
-> **Direction rev 3 (2026-11-13, owner-approved):** all data on disk — `data/items.json` + `data/index.json` + `data/analysis.json` + `data/profiles.json`. No SQLite. Thumbnails cached in `assets/`. Playwright + chromium approved for TikTok/FB session collectors. No installer — run `python server.py` locally.
+> Future: `docs/MIGRATION-NEXT.md` (Next.js + TS worker) is a gated plan — do not start it
+> without the owner’s go-ahead and Phase 0 baseline.
 
 ---
 
 ## 0. Project in one line
 
-Make Thai social trends turn into sellable content, with a free localhost tool — Collect fills the disk cache, Analyze reads it, a human picks the angle.
+Thai social trends → collect → store (local JSON or Supabase) → dashboard → content angles.
+Mockup and live are separate products: `/` = mock sample data, `/live` = real data.
 
-## 1. Authority and non-negotiables
+---
 
-You build exactly what ARCHITECTURE.md §9 specifies. You do **not**:
+## 1. Non-negotiables
 
-- add any dependency except approved `playwright` (+ chromium for TikTok/FB) — ARCHITECTURE §9.5 locks this
-- touch the frontend, theme, logo, screenshots, or design system files (mock stays as-is)
-- add IG/Trends RSS/Pantip/LINE integration of any kind
-- make fetch automatic, add cron, auto-post, or multi-user/deploy
-- create any database file — storage is JSON on disk only
-- store images beyond YT `mqdefault.jpg` raw in `assets/` — no re-encode, no PNG, no base64 in JSON
-- change the HTTP contract: `GET /api/summary?q=` · `POST /api/fetch` (+ `POST /api/analyze`, `GET/POST/PUT/DELETE /api/profiles`) without updating §9.5 first
+- **Keep mock and live separate**: `index.html` (`/`) and `live/index.html` (`/live`).
+  Never merge routes or reuse live data in mock.
+- **No inline `<style>`**: CSS lives in `assets/css/` (`variables`, `base`, `component`,
+  `layout`, `layout-live`).
+- **Platform icons**: only `assets/icons/*.png` (owner-supplied); no other icon set.
+- **Backend**: `server.py` + `db.py`. Python stdlib first; Playwright is approved for
+  TikTok / FB Ads / TikTok Ads.
+- **Supabase mode**: when `.env.local` has `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`,
+  `SUPABASE_USER_ID`, storage goes through `db.py` (PostgREST), **instead of** local JSON.
+  `SUPABASE_STRICT=1` fails loudly; `0` falls back to local files.
+- **Secrets**: service role key only on the server/worker. Never in HTML/JS, never committed.
+  `.env.local` is gitignored.
+- **Deploy**: local `python server.py`; Render API (`Dockerfile`, `render.yaml`);
+  GitHub Pages serves static `/` and a guarded `/live` until `api-base` is set.
+- **Search Now requires a real server**: Playwright cannot run on GitHub Pages/Vercel
+  serverless. Static Pages shows a preview notice and disables Search.
+- **No service-role writes from browser**; web auth/CRUD must use Supabase Auth + RLS.
+- **Do not delete user data** (`data/`, `archive`, `trash`, Supabase rows) without explicit
+  owner instruction; destructive UI requires confirmation.
 
-You **may** decide (no need to ask): variable names, internal structure inside `server.py`, error-message wording, CSS of nothing (there is none), order of `collect()` jobs, logging format.
+### Must ask before
 
-You **must ask** the owner before doing any of these:
+- adding any dependency (npm/Next included) or changing the future migration phases
+- changing Supabase schema/RLS, source list, or API contract
+- exposing the API publicly / widening CORS / adding auth
+- deleting user files or rewriting a whole page
+- business decisions (keywords, KPI, content strategy, LINE OA)
 
-- adding `pythainlp` or ANY package · deleting user files · changing source list
-- switching YouTube scraping to Playwright or another method
-- editing `ARCHITECTURE.md` §9.5 (decisions live there, not here)
-- anything about business: keywords, KPI, LINE OA, content strategy (all §8, parked)
+---
 
-When in doubt: **stop and ask** — do not improvise around a constraint.
+## 2. Tool ladder
 
-## 2. Tool ladder (use in this order)
+1. Python stdlib (`urllib`, `json`, `http.server`, `re`, `collections`, `os`)
+2. Manual stdlib code around it
+3. Approved: `playwright` (+ chromium); Supabase via `db.py` REST (no SDK)
+4. New dependency/framework (Next.js, etc.) — **ask first**
 
-1. Python stdlib (`urllib`, `xml.etree`, `json`, `http.server`, `re`, `collections`, `os`) — always preferred
-2. Manual code around stdlib — fine
-3. A new dependency — **ask first** (`playwright` already approved for TikTok/FB; anything else still needs approval)
-4. Paid/keyed service — **not allowed now**; Phase 2-C only on explicit owner approval
+Do not substitute collectors: YouTube `ytInitialData`; GNews RSS; TikTok/FB/TT Ads Playwright.
+Storage writes are atomic; GET endpoints never write.
 
-Concrete mappings (do not substitute): RSS → `xml.etree` · YouTube → fixed-UA GET + regex `ytInitialData` + `json.loads` + recursive walk `depth > 14` · STORE → JSON merge on `url` (atomic `.tmp` + `os.replace()`) · ASSETS → `assets/{videoId}.jpg` · server → `BaseHTTPRequestHandler`, port 8000, localhost only, 404 for everything else.
+---
 
-## 3. Acceptance — the owner's clean-machine test (ARCHITECTURE §9.6)
+## 3. Verification (current)
 
-Your work is done only when ALL pass on a machine with Python 3 and nothing else:
+Run before claiming done:
 
-1. `python server.py` → open `http://127.0.0.1:8000/dashboard-live.html`; `data/` + `assets/` get created; no `.db` file appears
-2. Type a keyword → press Fetch now (= Collect/gather, manual) → rows land in `data/items.json`; YT thumbnails in `assets/`
-3. Summary shows `by_source`, `hot` item, `top_terms`; `data/index.json` written
-4. Disconnect network or block YouTube → GNews still returns rows; UI shows `youtube: ...` in errors; app does not crash
-5. Same keyword twice → item count unchanged (dedup verified)
-6. Analyze → `data/analysis.json` written; renders advice inline
-7. Delete `data/` + `assets/` → app re-creates them empty on next start, never crashes
+1. `python -m unittest discover -s tests -t .` → all tests pass
+2. `python -m py_compile server.py db.py`
+3. Inline scripts: extract each `<script>` body to a temp `.js` and run `node --check`
+4. Local: `python server.py` → `/live/` loads; Search Now; CRUD; archive/trash; no console error
+5. Static: `/` mock loads with no network calls; `/live` on GitHub Pages shows static notice,
+   no JSON parse error, when `api-base` is empty
+6. Supabase mode: rows land in Supabase (`items`, `profiles`, `keyword_stats`,
+   `source_status`); service key never in browser
+7. Mobile 390 / desktop 1440 screenshots unchanged where expected
 
-"It compiles" does not pass. "Tests pass locally" does not pass. Only §9.6 passes.
+---
 
 ## 4. Failure protocol
 
-- A source returns an error → collect it into `errors[]`, continue with the other source, show the error in the UI JSON response
-- Both sources fail → return the errors, never crash the server
-- `data/` corrupt/inconsistent → delete `items.json`/`index.json`/`analysis.json` (or both folders), fetch fresh; tell the owner (it is a disposable cache)
-- Partial write crash → `items.json.tmp` left behind; `items.json` stays intact; delete the orphan tmp on next start
-- YouTube markup changed and `ytInitialData` regex fails → report immediately; do NOT silently switch methods
-- Any doc/spec inconsistency → name it, ask, do not resolve silently
+- Collector error → `errors[]`, continue other sources, never crash.
+- Playwright browser missing → clear error; suggest `python -m playwright install chromium`
+  or a host with Chromium. Do not silently drop the source.
+- `Connection closed` → ensure one server instance / one `PW_LOCK`; retry once.
+- Supabase error with `SUPABASE_STRICT=1` → request fails with the Supabase message;
+  `0` → local fallback. Report which mode is active.
+- Static host `/api` returns HTML → show static preview, not `Unexpected token '<'`.
+- Corrupt local JSON → disposable; re-fetch. Do not delete Supabase rows without confirmation.
+- Doc/spec inconsistency → flag it; do not silently resolve.
 
-## 5. Communication format (how you report)
+---
 
-Use short Thai/English mixed updates, in this order:
+## 5. How to report
 
-1. **What you did** — one line per change
-2. **How you verified** — the exact §9.6 steps run and result
-3. **What is blocked** — list with the owner action needed
-4. **What remains** — short checklist to full done
+1. What changed (one line each)
+2. How verified (tests / exact flows / screenshots)
+3. Blocked + owner action
+4. Remaining
 
-Never claim done before §9.6 passes in full. If only partial, say exactly which step failed.
+Never claim done if a listed verification failed.
 
-## 6. Keep the doc alive
+---
 
-- Any decision change → edit `ARCHITECTURE.md §9.5` (this file points to it; it does not duplicate it)
-- New failure discovered → add it to §4 (Failure protocol) or §5 (known fragility)
-- Never let this file and ARCHITECTURE.md drift apart — ARCHITECTURE.md is truth, this file is the handle
+## 6. File map (current)
 
-## 7. Quick file map
+| File | Purpose |
+|---|---|
+| `index.html` | Mockup `/`; sample data, no backend |
+| `live/index.html` | Live `/live/`; API/Supabase, QOL features |
+| `assets/css/*.css` | Layered CSS; no inline styles |
+| `assets/icons/*.png` | Platform icons (Flaticon; see README) |
+| `server.py` | Local/Render API, collectors, routing, static serving |
+| `db.py` | Supabase adapter (PostgREST/Storage); service role only |
+| `pw_login.py` | One-time headed login for TikTok/FB sessions |
+| `supabase/migrations/` | Schema + RLS + storage bucket |
+| `scripts/import_to_supabase.py` | Import `data/*.json` + thumbnails |
+| `tests/` | stdlib unittest; forced local adapter, never Supabase |
+| `Dockerfile`, `render.yaml`, `.dockerignore` | Render API deployment |
+| `docs/DEPLOY.md` | Pages + Render + `api-base` + CORS |
+| `docs/DB.md` | Supabase schema/mapping |
+| `docs/MIGRATION-NEXT.md` | Future Next.js rails/phases (plan only) |
+| `docs/DESGIN.md` | Design spec / visual language |
+| `data/`, `sessions/`, `assets/*.jpg` | Runtime/disposable; gitignored |
 
-| File | Your use |
-|------|----------|
-| `docs/ARCHITECTURE.md` | Read fully first; all decisions live here |
-| `docs/QOL-PLAN.md` | Detailed 0.2 QOL plan (filters, sort, toast/undo, trash, archive QOL, load more) |
-| `docs/AGENTS.md` (this file) | How you work; binding rules; all |
-| `server.py` (repo root) | Only backend code; single file |
-| `tests/` | stdlib `unittest` for dedup/import/clear — run `python -m unittest discover -s tests -t .` |
-| `pw_login.py` (repo root) | One-time headed login into `sessions/` (TikTok/FB) |
-| `social.db` | Legacy garbage from the old design — do not create; delete candidate if owner approves |
-| `data/` · `assets/` | Created on first run; disposable — delete to reset |
-| `app/dashboard.html`, `views/archive/page-*.html`, `gen_page.py` | Read-only context — never edit without explicit owner approval |
-| `live/index.html` | Live UI (`/live/`). Links `assets/css/*.css`; no inline `<style>` |
-| `index.html` | Mock (`/`). Same CSS layers + its own `assets/css/layout.css` |
-| `assets/css/variables.css` | Tokens only: `@font-face` + CSS variables for light/dark |
-| `assets/css/base.css` | Global and tag defaults (appearance); no component classes |
-| `assets/css/component.css` | Reusable appearance classes; no layout properties |
-| `assets/css/layout.css`, `assets/css/layout-live.css` | Page layout extracted from the two HTML files (was inline `<style>`) |
-| `docs/DESGIN.md`, `assets/fonts/`, `shots/`, `logo.svg` | Not yours, never touched |
+---
 
-## 8. First moves for the implementing session
+## 7. First moves
 
-1. Read `ARCHITECTURE.md` end to end (incl. §5 limits, §6 storage, §9 method)
-2. Confirm no backend exists (owner deleted it) — rebuild, never "restore"
-3. Confirm the owner said "go" — docs are locked first
-4. Write `server.py` per §9.2–9.4 (COLLECT → disk JSON merge / ANALYZE)
-5. No installer — owner runs `python server.py` locally
-6. Run §9.6 checklist on a clean profile; report in the §5 format
+1. Read this file + `docs/DEPLOY.md` + `docs/DB.md`
+2. Check `.env.local` mode (Supabase vs local)
+3. Run tests + local smoke before editing
+4. Make the smallest change; verify with §3
+5. For Next migration, follow `docs/MIGRATION-NEXT.md` gates — no big-bang rewrite

@@ -1,4 +1,4 @@
-#Deploy (GitHub Pages + local server)
+# Deploy (Render API + static frontend)
 
 ## Paths
 
@@ -6,13 +6,17 @@
 |---|---|---|
 | `/Business-Tracker/` | mockup | `index.html` |
 | `/Business-Tracker/live/` | real dashboard | `live/index.html` |
-| `/Business-Tracker/app/` | shared CSS / logo / icons | `app/` |
+| `/Business-Tracker/assets/` | CSS / icons / fonts / thumbnails | `assets/` |
 
 Locally `python server.py` serves the same layout:
 
 - `http://127.0.0.1:8000/` → mockup
 - `http://127.0.0.1:8000/live/` → live
 - old links `/dashboard-live.html` and `/app/dashboard.html` redirect.
+
+## Vercel
+
+Vercel can host the static `/` and `/live/` pages, but **cannot run Playwright or the Python collectors**. Point `api-base` at the Render/Fly/VPS API exactly like GitHub Pages. A Next.js migration is planned in `docs/MIGRATION-NEXT.md`; do not run Playwright in serverless functions.
 
 ## GitHub Pages
 
@@ -50,4 +54,4 @@ Host `server.py` on Fly.io / a VPS / a tunnel, expose HTTPS, set the same env va
 
 ## Mockup
 
-`index.html` is static sample data and needs no backend. The live page keeps its own copy only through `live/index.html`; both load CSS from `app/`.
+`index.html` is static sample data and needs no backend. The live page keeps its own copy only through `live/index.html`; both load CSS from `assets/css/`.
