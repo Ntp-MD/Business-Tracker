@@ -15,7 +15,11 @@ export async function getCounts(): Promise<Counts> {
       .is("deleted_at", null)
       .is("archived_at", null)
       .in("source", ["fbads", "ttads"]),
-    db.from("source_status").select("source"),
+    db
+      .from("items")
+      .select("source")
+      .is("deleted_at", null)
+      .is("archived_at", null),
   ]);
   return {
     items: items.count ?? 0,
