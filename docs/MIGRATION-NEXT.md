@@ -28,6 +28,7 @@
 | Mock | sample/fixture only; never calls Supabase/worker |
 | Search Now | enqueue `jobs` row; local worker claims it. Nothing Playwright runs in Vercel |
 | Secrets | `SUPABASE_SERVICE_ROLE_KEY` stays on server/worker; never in a browser bundle |
+| Storage writes | Automatic: `server.py`/worker upsert to Supabase and upload thumbnails on every collect. No manual import (one-time script only for old local data) |
 | Legacy | keep `index.html` + `live/index.html` until Phase 7; keep `server.py` after that as collector |
 
 ---
@@ -123,6 +124,7 @@ render.yaml                  worker service
 ### Live `/live`
 - [ ] Fetch strip: profile, keyword, sources, mode, fresh
 - [ ] Search Now: start job, queued/running progress, cancel, errors, worker offline state
+- [ ] Worker-offline hint: says the job is queued in Supabase, why (worker runs on the owner's PC), and how to start it (exact command)
 - [ ] Playwright sources (TikTok / FB Ads / TikTok Ads): disabled + "login required" when no session
 - [ ] Overview: KPI, top items, terms, ideas, charts
 - [ ] Sources: cards, counts, last error/log
@@ -166,6 +168,7 @@ render.yaml                  worker service
 | `/api/refresh-stats` | `jobs` kind=`refresh_views` | worker |
 | `/api/export/import` | browser + Supabase Storage/JSON | |
 | `GET /api/keywords` | view/query | |
+| `GET /assets/*.jpg` | Next asset route → Supabase Storage | `asset_path` keeps its current value |
 
 **Never** expose the service role to the browser; every write goes through a Next route or the worker.
 
@@ -183,6 +186,9 @@ render.yaml                  worker service
 - Cancel: `cancel_requested=true`; worker checks between sources
 - Retry: transient errors twice, with backoff
 - Progress: update `progress/total`; a heartbeat row lets the UI show "worker offline"
+- Offline UX: Search Now still creates the job; UI shows "queued — worker offline" plus a
+  hint (why: worker runs on the owner's PC; how: start command + `pw_login.py` for sessions).
+  Never fake progress or silently drop the job.
 - Session login: Playwright profile in local `sessions/`; missing session = job refused with a clear error, UI disables those sources
 - If the owner's PC is off: jobs stay `queued`; UI says so instead of pretending to run
 
