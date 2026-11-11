@@ -38,3 +38,53 @@ export async function deleteProfile(id: string): Promise<void> {
   if (error) throw new Error(error.message);
   revalidatePath("/live/settings");
 }
+
+type ImportItem = {
+  keyword?: string;
+  source?: string;
+  url?: string;
+  canonical_url?: string;
+  title?: string;
+  body?: string;
+  author?: string;
+  channel_url?: string;
+  score?: number;
+  metric?: string;
+  views?: number | null;
+  published?: string | null;
+  asset?: string | null;
+};
+
+export async function importItems(form: FormData): Promise<void> {
+  const file = form.get("file");
+  if (!(file instanceof File) || !file.size) return;
+
+  const parsed = JSON.parse(await file.text()) as { format?: string; items?: ImportItem[] };
+  if (parsed.format && parsed.format !== "social-tracker.items") throw new Error("unsupported format");
+  const incoming = Array.isArray(parsed.items) ? parsed.items : [];
+  const rows = incoming
+    .filter((item) => item.keyword && item.url && item.title)
+    .map((item) => ({
+      user_id: userId(),
+      keyword: item.keyword,
+      source: item.source || "youtube",
+      url: item.url,
+      canonical_url: item.canonical_url || item.url,
+      title: item.title,
+      body: item.body ?? "",
+      author: item.author ?? "",
+      channel_url: item.channel_url ?? "",
+      score: Number(item.score) || 0,
+      metric: item.metric || "none",
+      views: item.views ?? null,
+      published: item.published || null,
+      asset_path: item.asset || null,
+    }));
+
+  if (!rows.length) return;
+  const { error } = await supabaseAdmin().from("items").upsert(rows, { onConflict: "user_id,keyword,canonical_url" });
+  if (error) throw new Error(error.message);
+  revalidatePath("/live");
+  revalidatePath("/live/items");
+  revalidatePath("/live/settings");
+}

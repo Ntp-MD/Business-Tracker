@@ -313,7 +313,7 @@ Order: Overview → All items → Sources → Archive → Ads → Terms/Ideas �
 | 1 scaffold | ☑ | `Phase 1 commit` | npm workspaces; Next builds `/` + `/live` placeholders; worker tsc passes (2026-11-11) |
 | 2 read layer | ☑ | `Phase 2 commit` | server-only Supabase client; `/api/health` matches Python counts (2026-11-11) |
 | 3 live read | ◐ | `Phase 3 commit` | all 8 live pages render from Supabase; filters/parity gaps remain |
-| 4 CRUD | ◐ | `Phase 4 commit` | add/edit/delete/archive/restore/purge, bulk, CSV, profiles; JSON import/export + refresh views pending |
+| 4 CRUD | ◐ | `Phase 4 commit` | add/edit/delete/archive/restore/purge, bulk, CSV, JSON import/export, profiles; refresh views + archive tabs pending |
 | 5 worker/jobs | ☑ | `Phase 5 commit` | jobs migration applied; queued→running→done verified end-to-end |
 | 6 mock | ☑ | `Phase 6 commit` | React `/` with fixtures: overview/items/sources/terms/ideas/archive/ads/settings; no network |
 | 7 cutover | ☐ | | |

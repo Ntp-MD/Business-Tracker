@@ -1,7 +1,7 @@
 import { getCounts } from "@/lib/data/counts";
 import { getSummary, sourceLabel } from "@/lib/data/live";
 
-import { createProfile, deleteProfile } from "./actions";
+import { createProfile, deleteProfile, importItems } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -84,6 +84,27 @@ export default async function SettingsPage() {
             <span>Sources</span>
           </div>
         </div>
+      </div>
+
+      <div className="card" style={{ marginTop: 12 }}>
+        <div className="card-head">
+          <h3>Backup</h3>
+          <span className="chart-note">JSON export/import</span>
+        </div>
+        <div className="row-actions" style={{ marginBottom: 12 }}>
+          <a className="btn btn-ghost" href="/api/export">
+            Export JSON
+          </a>
+          <a className="btn btn-ghost" href="/api/export/items">
+            Export CSV
+          </a>
+        </div>
+        <form action={importItems} className="item-form">
+          <input type="file" name="file" accept="application/json,.json" required aria-label="Import JSON" />
+          <button className="btn btn-primary" type="submit">
+            Import JSON
+          </button>
+        </form>
       </div>
 
       <div className="card" style={{ marginTop: 12 }}>
