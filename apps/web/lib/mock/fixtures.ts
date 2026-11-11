@@ -1,4 +1,4 @@
-import type { Item } from "@social-tracker/shared";
+import type { Item } from "@/lib/types";
 
 /** Fixtures for the `/` mock route. No network, no Supabase. */
 export const MOCK_ITEMS: Item[] = [

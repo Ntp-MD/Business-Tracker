@@ -1,5 +1,5 @@
 import "server-only";
-import type { Item, Profile } from "@social-tracker/shared";
+import type { Item, Profile } from "@/lib/types";
 
 import { supabaseAdmin } from "@/lib/supabase/server";
 

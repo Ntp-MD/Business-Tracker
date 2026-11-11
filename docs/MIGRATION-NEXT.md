@@ -316,4 +316,4 @@ Order: Overview → All items → Sources → Archive → Ads → Terms/Ideas �
 | 4 CRUD | ◐ | `Phase 4 commit` | add/edit/delete/archive/restore/purge, bulk, CSV, JSON import/export, profiles; refresh views + archive tabs pending |
 | 5 worker/jobs | ☑ | `Phase 5 commit` | jobs migration applied; queued→running→done verified end-to-end |
 | 6 mock | ☑ | `Phase 6 commit` | React `/` with fixtures: overview/items/sources/terms/ideas/archive/ads/settings; no network |
-| 7 cutover | ☐ | | |
+| 7 cutover | ◐ | `Vercel prod` | live at social-tracker-pink.vercel.app; Pages retirement + legacy redirect pending |
