@@ -186,7 +186,7 @@ Split trigger: editing `server.py` breaks elsewhere, or 2+ people edit concurren
 
 ```
 1. run `python server.py`       → open `http://127.0.0.1:8000/live/` manually
-2. type a Thai keyword            → e.g. "เว็บขายของ" (placeholder until business keywords decided)
+2. type a Thai keyword            → e.g. "เว็บขายของ" (Thai for "online store site"; placeholder until business keywords are decided)
 3. press **Fetch now (= Collect/gather)** → POST /api/fetch → pulls YouTube + GNews,
    merges into data/items.json, downloads thumbnails into assets/
 4. summary loads automatically (GET /api/summary on open) and after each fetch → by_source, hot,
@@ -235,7 +235,7 @@ No auto-posting, no scheduling, no FB/TikTok/IG, no AI author, no deploy — one
 Everything else stays out of parts 2–3:
 - Google Trends RSS — separate daily-trends dashboard panel, not keyword search (§8.4) · Pantip — no official API, client-side render · Meta/TikTok — Phase 2-C only.
 
-**Thai market keywords to track:** `เว็บร้านอาหาร` · `เว็บขายของ LINE` · `ระบบจอง` · `เว็บธุรกิจ` · `ค่า LINE OA` · `ธีมเว็บ` — replace after business questions answered (§8.1).
+**Thai market keywords to track:** `เว็บร้านอาหาร` (restaurant site) · `เว็บขายของ LINE` (LINE store site) · `ระบบจอง` (booking system) · `เว็บธุรกิจ` (business site) · `ค่า LINE OA` (LINE OA cost) · `ธีมเว็บ` (web theme) — replace after business questions are answered (§8.1).
 
 ---
 
@@ -337,7 +337,7 @@ Volume ≠ reach; paid-first loses to organic proof; template "engagement" is a 
 
 ### Keyword/SME angle for the tracker
 
-`เว็บขายของ` · `ระบบจอง` · `Line OA` · `ธีมเว็บ` · `เว็บร้านอาหาร` — replace once §8.1 answered.
+`เว็บขายของ` (online store site) · `ระบบจอง` (booking system) · `Line OA` · `ธีมเว็บ` (web theme) · `เว็บร้านอาหาร` (restaurant site) — replace once §8.1 is answered.
 
 ### Funnel → tool mapping
 
@@ -465,7 +465,7 @@ Discovery (TikTok/FB) → views · Trust (YouTube) → views/comments · Close (
 |------|-------------|----------------|
 | Installer | **none** — owner runs locally only: `python server.py` (one command) | installer decision removed (owner), installer must not reappear without sign-off |
 | Sources | YouTube (stdlib scrape) + Google News TH (stdlib RSS) + TikTok via Playwright, 2 modes: `public` (no login, works) vs `session` (logged-in profile in `sessions/`, optional); ad libraries: FB Ad Library (keyword, TH, active) + TikTok Creative Center Top Ads (TH, period) — public pages, no login | Thai market, free, no key; Facebook organic dropped (owner 2026-11-13): login wall, no dates |
-| Freshness | `POST /api/fetch` takes `max_age_days` (UI: 1 / 3 / 7 / 15 / 30 / ทั้งหมด, default 30; 1/3 map to the nearest supported 7d source window, then prune by real date). YouTube adds upload-date `sp` + parses `publishedTimeText`; GNews adds `when:` + filters `pubDate`; TikTok reads `createTime` from the search page's own JSON; TikTok Ads uses the page's period filter (7/30/180d); prune applies only to dated organic sources (`youtube`/`gnews`/`tiktok`) — ads stay because active ads are current by definition | owner: content must be recent, not "all years"; search engines block automation (tested Google/Bing/DDG/Brave/Mojeek), so use platform pages instead |
+| Freshness | `POST /api/fetch` takes `max_age_days` (UI: 1 / 3 / 7 / 15 / 30 / All (`ทั้งหมด`), default 30; 1/3 map to the nearest supported 7d source window, then prune by real date). YouTube adds upload-date `sp` + parses `publishedTimeText`; GNews adds `when:` + filters `pubDate`; TikTok reads `createTime` from the search page's own JSON; TikTok Ads uses the page's period filter (7/30/180d); prune applies only to dated organic sources (`youtube`/`gnews`/`tiktok`) — ads stay because active ads are current by definition | owner: content must be recent, not "all years"; search engines block automation (tested Google/Bing/DDG/Brave/Mojeek), so use platform pages instead |
 | Profiles | keyword profiles stored on disk: `data/profiles.json` (name + keywords[] + sources[]); `/api/profiles` CRUD; `POST /api/fetch` accepts `profile_id` + `mode` (`public`\|`session` for TikTok/FB) (collects every keyword × source sequentially, dedup by canonical URL + title layers); UI: picker + mode in fetch strip, manage in Settings, per-keyword tabs, Top items table has per-platform tabs and filters rows | multi-keyword preset, no DB, no new deps |
 | Thai top terms | plain Counter, broken output accepted | avoid adding pythainlp until needed |
 | Storage | **local JSON or Supabase** — local: `data/items.json` (dedup per keyword: canonical URL + title key + near-dup, atomic rename) + `archive.json` + `trash.json` + `index.json` + `analysis.json` + `sources.json`. Supabase mode via `db.py` (PostgREST) writes `items/profiles/keyword_stats/source_status`; service role server-only | local-first, cloud when configured; inspectable/resettable; no SQLite |
