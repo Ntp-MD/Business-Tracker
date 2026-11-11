@@ -1,28 +1,30 @@
 export type Source = "youtube" | "gnews" | "tiktok" | "fbads" | "ttads";
 
-/** Mirrors the current `items` row (docs/DB.md). */
+/** Item shape returned by the legacy API and stored in `items` (snake_case on purpose). */
 export interface Item {
-  id: string;
-  keyword: string;
-  source: Source;
+  id?: string;
   url: string;
-  canonicalUrl: string;
   title: string;
-  body?: string | null;
-  author?: string | null;
-  channelUrl?: string | null;
+  body: string;
+  source: Source | string;
+  keyword: string;
+  author: string;
   score: number;
-  metric?: string | null;
-  views?: number | null;
-  published?: string | null;
-  assetPath?: string | null;
-  archivedAt?: string | null;
-  deletedAt?: string | null;
+  created: string;
+  created_at: string;
+  asset: string | null;
+  canonical_url: string;
+  metric: string;
+  views: number | null;
+  channel_url: string;
+  published: string;
+  archived_at: string;
+  deleted_at: string;
 }
 
-/** Mirrors the current `profiles` row. */
+/** Mirrors the `profiles` row. */
 export interface Profile {
-  id: string;
+  id?: string;
   name: string;
   keywords: string[];
   sources: Source[];
@@ -40,5 +42,5 @@ export interface Job {
   progress: number;
   total: number;
   error?: string | null;
-  cancelRequested: boolean;
+  cancel_requested: boolean;
 }

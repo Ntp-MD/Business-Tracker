@@ -1,11 +1,12 @@
 # Migration Plan — Next.js + Supabase + TypeScript worker
 
-> **Status (2026-11-11): PLAN ONLY — rewrite not started.** The app is still
-> Python `server.py` + static HTML (`/` mock, `/live` live) and already deploys.
-> This file is the rail for later; do not start without Phase 0.
+> **Status (2026-11-11): Phase 0–2 done.** Baseline frozen, npm workspaces scaffolded,
+> Supabase read layer live in `apps/web`. Legacy `/` + `/live/` still the deployed app.
+> Phase 3 (read-only UI) is next.
 >
 > Goal: move from Python `server.py` + static HTML to a stack that fits Vercel/Supabase,
-> while **keeping `/` = mockup and `/live/` = live separate at all times**.
+> while **keeping `/` = mockup and `/live/` = live separate at all times**. `server.py`
+> stays as the local YouTube/GNews collector; the worker handles only Playwright sources.
 >
 > Every phase must pass its gate before the next; no new features during the migration
 > until parity is complete.
@@ -17,14 +18,17 @@
 | Topic | Decision |
 |---|---|
 | Framework | Next.js (App Router) + TypeScript |
-| Frontend host | Vercel |
-| Data/Auth/Storage | Supabase (Postgres + Auth + Storage + RLS) |
-| Worker | Node + TypeScript + Playwright (Render/Fly/VPS) |
+| Frontend host | Vercel (replaces GitHub Pages at cutover; Pages is fallback until then) |
+| Data/Auth/Storage | Supabase (Postgres + Storage). RLS stays in schema; **no end-user auth yet** (single owner) |
+| Web → data | Browser calls Next routes; Next server holds the service role key. Browser never gets it |
+| Worker | Node + TypeScript + Playwright, **runs local**, polls Supabase `jobs`; Playwright sources only |
+| Sources split | YouTube + GNews stay in `server.py`; TikTok / FB Ads / TikTok Ads go through the worker |
+| Playwright login | TikTok / FB Ads / TikTok Ads require a collector session; UI disables them + explains when missing |
 | Routes | `/` = mockup, `/live` = live; never merge |
 | Mock | sample/fixture only; never calls Supabase/worker |
-| Search Now | enqueue job → worker; never run Playwright in Next/Vercel |
-| Secrets | `SUPABASE_SERVICE_ROLE_KEY` stays on worker/server only |
-| Legacy | keep `index.html` + `live/index.html` until Phase 7 |
+| Search Now | enqueue `jobs` row; local worker claims it. Nothing Playwright runs in Vercel |
+| Secrets | `SUPABASE_SERVICE_ROLE_KEY` stays on server/worker; never in a browser bundle |
+| Legacy | keep `index.html` + `live/index.html` until Phase 7; keep `server.py` after that as collector |
 
 ---
 
@@ -38,7 +42,8 @@
 6. **Every phase has a rollback** — feature flag or revert commit
 7. **No service key in browser** — grep before every merge
 8. **No Playwright in Vercel functions** — worker only
-9. **Data writes go through RLS** — web uses user JWT; worker uses service role
+9. **Service key stays server-side** — Python/Next server only; browser talks to our routes.
+   RLS remains in the schema for future real auth, but is not the current access path
 10. **Every phase needs:** unit test + Playwright screenshot 1440/390 + parity checklist
 
 ---
@@ -81,6 +86,9 @@
 Scaffold commands (Phase 1): `npm install` → `npm run build` (Next + worker) →
 `npm run typecheck` (shared + worker). Legacy `python server.py` is unaffected.
 
+Next server env (Vercel + local dev): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`.
+They are read only on the server; never prefix with `NEXT_PUBLIC_`.
+
 ```
 apps/web/                    Next.js + TypeScript (Vercel)
   app/(mock)/page.tsx        mockup  /
@@ -114,7 +122,8 @@ render.yaml                  worker service
 
 ### Live `/live`
 - [ ] Fetch strip: profile, keyword, sources, mode, fresh
-- [ ] Search Now: start job, progress, cancel, errors
+- [ ] Search Now: start job, queued/running progress, cancel, errors, worker offline state
+- [ ] Playwright sources (TikTok / FB Ads / TikTok Ads): disabled + "login required" when no session
 - [ ] Overview: KPI, top items, terms, ideas, charts
 - [ ] Sources: cards, counts, last error/log
 - [ ] Terms: list/detail
@@ -150,29 +159,32 @@ render.yaml                  worker service
 | `POST /api/cancel` | `jobs.cancel_requested` | worker checks before the next source |
 | `GET /api/summary?q=` | Supabase query + `keyword_stats` | or RPC `summary(q)` |
 | `GET /api/status` | counts + `source_status` | one RPC / several queries |
-| `/api/profiles` CRUD | Supabase table directly (RLS) | no middle API needed |
-| `/api/items` CRUD | Supabase `items` (RLS) | soft delete/archive |
+| `/api/profiles` CRUD | Next route → Supabase table | server-side service role |
+| `/api/items` CRUD | Next route → Supabase `items` | soft delete/archive, server-side |
 | `/api/archive` | `items.archived_at` | |
 | `/api/trash` | `items.deleted_at` | purge after 7 days |
 | `/api/refresh-stats` | `jobs` kind=`refresh_views` | worker |
 | `/api/export/import` | browser + Supabase Storage/JSON | |
 | `GET /api/keywords` | view/query | |
 
-**Never** let the web write with the service role; RLS must go through the user JWT.
+**Never** expose the service role to the browser; every write goes through a Next route or the worker.
 
 ---
 
 ## 6. Worker design (performance)
 
-- `jobs` table: `id, user_id, kind, status(queued|running|done|error|cancelled), payload jsonb, progress, total, error, created_at, started_at, finished_at`
+- Runs **locally** (owner PC) next to `server.py`; polls Supabase. No worker on Vercel.
+- Scope: TikTok / FB Ads / TikTok Ads only — YouTube + GNews stay in `server.py`.
+- `jobs` table: `id, kind, status(queued|running|done|error|cancelled), payload jsonb, progress, total, error, created_at, started_at, finished_at`
 - Worker polls every 2s, claims atomically:
   `update jobs set status='running', started_at=now() where id = (select id ... for update skip locked limit 1) returning *`
 - 1 job = 1 keyword/source set; results written to `items`/`source_status`
 - Concurrency starts at 1 (Playwright is heavy), raise to 2 once sessions are separate
 - Cancel: `cancel_requested=true`; worker checks between sources
 - Retry: transient errors twice, with backoff
-- Progress: update `progress/total`
-- Session login: Playwright profile on the worker's persistent disk; never on Vercel
+- Progress: update `progress/total`; a heartbeat row lets the UI show "worker offline"
+- Session login: Playwright profile in local `sessions/`; missing session = job refused with a clear error, UI disables those sources
+- If the owner's PC is off: jobs stay `queued`; UI says so instead of pretending to run
 
 ---
 
@@ -187,9 +199,9 @@ render.yaml                  worker service
 **Forbidden:** changing routes that are already deployed
 **Gate:** `npm run build` passes; worker `tsc` passes; legacy still opens
 
-### Phase 2 — Auth + read layer
-**Work:** Supabase Auth (email/password), `/live` middleware, queries read items/profiles/stats
-**Gate:** login/logout works; data readable through RLS; mock untouched
+### Phase 2 — Read layer (no auth)
+**Work:** server-only Supabase client, item/profile reads, `/api/health` smoke route
+**Gate:** counts match the Python API; service key absent from client bundles; mock untouched
 
 ### Phase 3 — Live read-only pages (one at a time)
 Order: Overview → All items → Sources → Archive → Ads → Terms/Ideas → Settings (read)
@@ -197,20 +209,20 @@ Order: Overview → All items → Sources → Archive → Ads → Terms/Ideas �
 **Flag:** `NEXT_PUBLIC_LIVE_UI=legacy|next` (switch back anytime)
 
 ### Phase 4 — CRUD
-**Work:** item edit/delete/archive/move, bulk, profiles, trash, import/export
-**Gate:** RLS test with user A/B; user A cannot see or edit B's data; operation parity
+**Work:** item edit/delete/archive/move, bulk, profiles, trash, import/export (Next routes)
+**Gate:** operation parity; archive/trash filters match; no service key in the browser
 
-### Phase 5 — Worker + job queue
-**Work:** jobs table, worker Node collectors, Search Now/Refresh views, cancel/progress
-**Gate:** job from web → worker → Supabase; retry/cancel; legacy fetch still falls back
-**Forbidden:** calling the worker from the browser with the service key
+### Phase 5 — Local worker + job queue
+**Work:** `jobs` table, local worker for Playwright sources, Search Now/Refresh views, cancel/progress, session gate
+**Gate:** job from web → local worker → Supabase; retry/cancel; YouTube/GNews still flow through `server.py`
+**Forbidden:** calling the worker from the browser with the service key; running Playwright in Vercel
 
 ### Phase 6 — Port mock
 **Work:** `/` as React + fixtures; UI parity
 **Gate:** mock makes no network calls; screenshot parity; `/live` unaffected
 
 ### Phase 7 — Cutover + cleanup
-**Work:** Vercel routes `/` + `/live`; legacy redirect; delete the Python server once parity is complete
+**Work:** Vercel serves `/` + `/live`; GitHub Pages retired; `server.py` stays as local collector (no public API needed)
 **Gate:** full smoke test; backup; rollback tag; one week of monitoring
 
 ---
@@ -220,15 +232,15 @@ Order: Overview → All items → Sources → Archive → Ads → Terms/Ideas �
 | Level | Tool | Passes when |
 |---|---|---|
 | Unit | Vitest | shared/types, adapters, collectors parsing |
-| DB/RLS | SQL tests | user A/B separated; anon cannot read |
+| Data access | smoke script | next `/api/health` counts match `server.py` /api/status |
 | API | smoke script | summary/status/CRUD/job match the schema |
 | UI parity | Playwright | screenshot 1440/390 + main flows |
 | Data parity | export comparison | count/by_source/top items match legacy |
 | Worker | integration | job succeeds, cancel, retry, progress |
 
 **Flows to test at every cutover phase**
-1. Login → Overview
-2. Search Now → progress → cancel → result
+1. Open `/live` → Overview
+2. Search Now → queued → running → cancel → result (or "worker offline")
 3. Filter/sort/pager/CSV
 4. Add/edit/delete item
 5. Bulk archive → Archive restore/delete
@@ -254,26 +266,31 @@ Order: Overview → All items → Sources → Archive → Ads → Terms/Ideas �
 | Risk | Mitigation |
 |---|---|
 | Rewrite drifts the UI | per-page parity screenshots + flag |
-| Wrong Supabase RLS | user A/B tests + service key audit |
-| Worker/Vercel timeouts | queue + separate worker + retry |
+| Open API (no login) | narrow scope accepted by owner; add auth before sharing the URL |
+| Worker/Vercel timeouts | job queue + local worker + retry |
 | Mock calls live data | import boundary + lint rule |
 | Scope creep | separate backlog; new features after Phase 7 |
-| Secret leaks | grep before merge; anon key only in web |
+| Secret leaks | grep before merge; service key only in server env |
 | Two UIs at once confuse users | route flag + "legacy/next" banner |
 
-**Decide before Phase 2**
-1. Same Supabase project for dev/prod, or separate
-2. Auth: email/password only, or magic link/OAuth
-3. Worker host: Render/Fly/VPS
+**Decided 2026-11-11**
+1. One Supabase project for dev/prod (split only if needed later)
+2. No end-user login for now; server-side service role
+3. Worker runs locally, Playwright sources only
 4. Vercel root directory: `apps/web`
-5. Keep GitHub Pages during migration, or move to Vercel immediately
+5. GitHub Pages is fallback until Vercel cutover, then retired
+
+**Still open**
+1. Search Now when the local worker is offline — show queued forever, or offer "run local collector" button?
+2. Should `server.py` expose a job trigger too (same `jobs` table), or stay manual?
 
 ---
 
 ## 11. Definition of Done (whole project)
 
 - `/` mock and `/live` live stay separate, deployed on Vercel
-- live login + RLS; full CRUD; Search Now through the worker
+- full CRUD; Search Now through jobs + local worker for Playwright sources
+- YouTube/GNews keep collecting through `server.py`
 - no service key in the browser
 - no Playwright in Vercel
 - parity checklist complete for every page
@@ -288,7 +305,7 @@ Order: Overview → All items → Sources → Archive → Ads → Terms/Ideas �
 |---|---|---|---|
 | 0 baseline | ☑ | `54bd389` + tag `pre-next-migration` | tag/backup/50 screenshots/inventory done 2026-11-11 |
 | 1 scaffold | ☑ | `Phase 1 commit` | npm workspaces; Next builds `/` + `/live` placeholders; worker tsc passes (2026-11-11) |
-| 2 auth/read | ☐ | | |
+| 2 read layer | ☑ | `Phase 2 commit` | server-only Supabase client; `/api/health` matches Python counts (2026-11-11) |
 | 3 live read | ☐ | | |
 | 4 CRUD | ☐ | | |
 | 5 worker/jobs | ☐ | | |

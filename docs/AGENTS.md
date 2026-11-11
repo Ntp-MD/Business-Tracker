@@ -35,7 +35,8 @@ Mockup and live are separate products: `/` = mock sample data, `/live` = real da
   GitHub Pages serves static `/` and a guarded `/live` until `api-base` is set.
 - **Search Now requires a real server**: Playwright cannot run on GitHub Pages/Vercel
   serverless. Static Pages shows a preview notice and disables Search.
-- **No service-role writes from browser**; web auth/CRUD must use Supabase Auth + RLS.
+- **No service-role access from the browser.** Web reads/writes go through server routes
+  (or the worker); RLS stays in the schema for future real auth.
 - **Do not delete user data** (`data/`, `archive`, `trash`, Supabase rows) without explicit
   owner instruction; destructive UI requires confirmation.
 
@@ -74,6 +75,7 @@ Run before claiming done:
 6. Supabase mode: rows land in Supabase (`items`, `profiles`, `keyword_stats`,
    `source_status`); service key never in browser
 7. Mobile 390 / desktop 1440 screenshots unchanged where expected
+8. Migration scaffold: `npm run build` passes; `/api/health` counts match `/api/status`
 
 ---
 

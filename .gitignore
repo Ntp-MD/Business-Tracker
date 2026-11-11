@@ -6,7 +6,7 @@ baseline-shots/
 # installed skills (machine-only, keep on disk)
 .agents/
 # runtime caches created by server.py (disposable, ARCHITECTURE §6)
-data/
+/data/
 assets/*.jpg
 sessions/
 __pycache__/
