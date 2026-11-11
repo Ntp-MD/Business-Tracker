@@ -1,0 +1,98 @@
+import Link from "next/link";
+
+export function FetchStrip() {
+  return (
+    <div className="fetch-strip">
+      <form className="fetch-main" action="/live" method="get">
+        <div className="field">
+          <label htmlFor="profileSel">โปรไฟล์</label>
+          <select id="profileSel" name="profile" defaultValue="">
+            <option value="">Keyword ใหม่</option>
+          </select>
+        </div>
+        <div className="field grow">
+          <label htmlFor="q">Keyword</label>
+          <input type="text" id="q" name="q" placeholder="Keyword…" />
+        </div>
+        <div className="field">
+          <span className="field-label">Sources</span>
+          <details className="src-pop">
+            <summary>
+              <span style={{ whiteSpace: "nowrap" }}>เลือกช่องทาง</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </summary>
+            <div className="src-picker" role="group" aria-label="fetch sources">
+              <label className="src-option">
+                <input type="checkbox" name="src" value="youtube" defaultChecked />
+                <span className="src-main">
+                  <span className="src-name">YouTube</span>
+                  <span className="src-detail">youtube.com/results · stdlib scrape</span>
+                </span>
+              </label>
+              <label className="src-option">
+                <input type="checkbox" name="src" value="gnews" />
+                <span className="src-main">
+                  <span className="src-name">ข่าว (GNews)</span>
+                  <span className="src-detail">news.google.com/rss · RSS</span>
+                </span>
+              </label>
+              <label className="src-option">
+                <input type="checkbox" name="src" value="tiktok" />
+                <span className="src-main">
+                  <span className="src-name">TikTok</span>
+                  <span className="src-detail">tiktok.com/search · Playwright</span>
+                </span>
+              </label>
+              <label className="src-option">
+                <input type="checkbox" name="src" value="fbads" />
+                <span className="src-main">
+                  <span className="src-name">FB Ads</span>
+                  <span className="src-detail">facebook.com/ads/library · Playwright</span>
+                </span>
+              </label>
+              <label className="src-option">
+                <input type="checkbox" name="src" value="ttads" />
+                <span className="src-main">
+                  <span className="src-name">TikTok Ads</span>
+                  <span className="src-detail">ads.tiktok.com/creativecenter · Playwright</span>
+                </span>
+              </label>
+            </div>
+          </details>
+        </div>
+        <div className="field">
+          <label htmlFor="fetchMode">Mode</label>
+          <select id="fetchMode" name="mode" defaultValue="public">
+            <option value="public">Public</option>
+            <option value="session">Login session</option>
+          </select>
+        </div>
+        <div className="field">
+          <label htmlFor="freshDays">Fresh</label>
+          <select id="freshDays" name="fresh" defaultValue="30">
+            <option value="1">1 วัน</option>
+            <option value="3">3 วัน</option>
+            <option value="7">7 วัน</option>
+            <option value="15">15 วัน</option>
+            <option value="30">30 วัน</option>
+            <option value="0">ทั้งหมด</option>
+          </select>
+        </div>
+        <button
+          className="btn btn-primary fetch-btn"
+          type="submit"
+          disabled
+          title="Search Now จะทำงานเมื่อ job queue + worker พร้อม (Phase 5)"
+        >
+          Search Now
+        </button>
+      </form>
+      <div className="status" role="status" aria-live="polite">
+        Read-only migration build · ข้อมูลจาก Supabase ·{" "}
+        <Link href="/live/settings">Settings</Link>
+      </div>
+    </div>
+  );
+}
