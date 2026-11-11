@@ -64,6 +64,16 @@
 
 **Exit gate 0:** tag, backup, screenshots, inventory all present
 
+**Baseline captured (2026-11-11)**
+- Tag: `pre-next-migration` (annotated, pushed) at commit `54bd389`
+- Backup: `export.zip` — 2,136,137 bytes, 139 entries (items + thumbnails), stored outside the repo
+  in `%TEMP%\opencode\st-baseline-20261111\`
+- Screenshots: 50 PNGs = 8 live pages + 8 mock pages × 1440×900 / 390×844; 0 console errors
+- Snapshot: 314 live items, 0 archived, 0 trashed, 5 sources; mock sample set separate (`index.html`)
+- Live pages in baseline: overview, sources, terms, ideas, items, archive, ads, settings
+  (locked: crm, competitors, calendar, tasks, reports, goals)
+- Capture script: `python scripts/capture_baseline.py [--base …] [--out baseline-shots]`
+
 ---
 
 ## 3. Target structure
@@ -273,7 +283,7 @@ Order: Overview → All items → Sources → Archive → Ads → Terms/Ideas �
 
 | Phase | Status | Commit | Notes |
 |---|---|---|---|
-| 0 baseline | ☐ | | |
+| 0 baseline | ☑ | `54bd389` + tag `pre-next-migration` | tag/backup/50 screenshots/inventory done 2026-11-11 |
 | 1 scaffold | ☐ | | |
 | 2 auth/read | ☐ | | |
 | 3 live read | ☐ | | |

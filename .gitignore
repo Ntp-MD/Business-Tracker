@@ -1,5 +1,6 @@
 # dev screenshots, not part of the site
 shots/
+baseline-shots/
 # tasteskill checker artifacts (browser profiles, audit logs)
 .taste-skill/
 # installed skills (machine-only, keep on disk)

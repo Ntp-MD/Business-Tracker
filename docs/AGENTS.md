@@ -115,6 +115,7 @@ Never claim done if a listed verification failed.
 | `pw_login.py` | One-time headed login for TikTok/FB sessions |
 | `supabase/migrations/` | Schema + RLS + storage bucket |
 | `scripts/import_to_supabase.py` | Import `data/*.json` + thumbnails |
+| `scripts/capture_baseline.py` | Parity screenshots (1440/390) of legacy `/` + `/live/` |
 | `tests/` | stdlib unittest; forced local adapter, never Supabase |
 | `Dockerfile`, `render.yaml`, `.dockerignore` | Render API deployment |
 | `docs/DEPLOY.md` | Pages + Render + `api-base` + CORS |
