@@ -1,5 +1,5 @@
 {
-  "name": "@social-tracker/shared",
+  "name": "@trendrail/shared",
   "private": true,
   "type": "module",
   "exports": {

@@ -4,10 +4,10 @@
 
 | URL | What |
 |---|---|
-| `https://social-tracker-pink.vercel.app` | Next.js app (`/` mock, `/live` live) |
-| `https://social-tracker-ntpsrms-projects.vercel.app` | project alias |
+| `https://trendrail.vercel.app` | Next.js app (`/` mock, `/live` live) — **primary** |
+| `https://trendrail.vercel.app` alias `social-tracker-pink.vercel.app` | old project alias (keep until renamed) |
 
-- Project `social-tracker`, root directory `apps/web`, framework Next.js.
+- Project `social-tracker` (Vercel name), root directory `apps/web`, framework Next.js.
 - Env (Production + Preview): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_USER_ID` (server-only).
 - Deployment protection (Vercel Authentication) is **off** so the app is public; the data API has no login by owner decision.
 - GitHub Pages still serves the legacy app until it is retired.

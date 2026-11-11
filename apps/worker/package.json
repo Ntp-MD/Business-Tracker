@@ -1,5 +1,5 @@
 {
-  "name": "@social-tracker/worker",
+  "name": "@trendrail/worker",
   "private": true,
   "type": "module",
   "main": "dist/index.js",

@@ -149,7 +149,7 @@ A = free sources (stdlib only) · B = Playwright (+pip) · C = Meta/TikTok keys 
 ### Working layout (rebuild same way)
 
 ```
-social-tracker/
+trendrail/
 ├── app/
 │   └── dashboard.html     # main view — mock kept as-is; goes live unchanged (endpoints preserved)
 ├── views/

@@ -1,5 +1,5 @@
 {
-  "name": "@social-tracker/web",
+  "name": "@trendrail/web",
   "private": true,
   "scripts": {
     "dev": "next dev",
