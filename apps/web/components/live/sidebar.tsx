@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { BrandLogo } from "@/components/brand-logo";
+
 const ITEMS = [
   { href: "/live", label: "Overview", icon: "M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" },
   { href: "/live/sources", label: "Sources", icon: "M4 7h16M4 7v13h16V7M4 7l2-4h12l2 4" },
@@ -26,26 +28,7 @@ export function Sidebar({ counts }: { counts: { items: number; sources: number; 
   return (
     <aside className="sidebar" aria-label="Primary">
       <div className="logo">
-        <div className="logo-img" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 10,
-              background: "#0f172a",
-              color: "#22c55e",
-              fontWeight: 800,
-              display: "grid",
-              placeItems: "center",
-            }}
-          >
-            IT
-          </span>
-          <span style={{ fontWeight: 800, letterSpacing: -0.5 }}>
-            ITOP<span style={{ color: "#22c55e" }}>PLUS</span>
-            <span style={{ display: "block", fontSize: 9, letterSpacing: 3, color: "#64748b" }}>DIGITAL MARKETING</span>
-          </span>
-        </div>
+        <BrandLogo />
       </div>
       <nav className="nav">
         {ITEMS.map((item) => (

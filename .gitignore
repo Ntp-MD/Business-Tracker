@@ -18,3 +18,5 @@ node_modules/
 apps/web/.next/
 apps/worker/dist/
 *.tsbuildinfo
+
+.vercel

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Social Tracker",
+  title: "TrendRail — Social Intelligence",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

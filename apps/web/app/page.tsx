@@ -1,7 +1,7 @@
 import Link from "next/link";
 
-import { ThemeToggle } from "@/components/live/theme-toggle";
-import { MOCK_ITEMS, MOCK_PROFILES, mockBand, mockSourceLabel, mockTerms } from "@/lib/mock/fixtures";
+import { BrandLogo } from "@/components/brand-logo";
+import { ThemeToggle } from "@/components/live/theme-toggle";import { MOCK_ITEMS, MOCK_PROFILES, mockBand, mockSourceLabel, mockTerms } from "@/lib/mock/fixtures";
 
 const VIEWS = [
   { key: "overview", label: "Overview" },
@@ -78,26 +78,7 @@ export default async function MockPage({
       <div className="app">
         <aside className="sidebar" aria-label="Primary">
           <div className="logo">
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 10,
-                  background: "#0f172a",
-                  color: "#22c55e",
-                  fontWeight: 800,
-                  display: "grid",
-                  placeItems: "center",
-                }}
-              >
-                IT
-              </span>
-              <span style={{ fontWeight: 800 }}>
-                ITOP<span style={{ color: "#22c55e" }}>PLUS</span>
-                <span style={{ display: "block", fontSize: 9, letterSpacing: 3, color: "#64748b" }}>DIGITAL MARKETING</span>
-              </span>
-            </div>
+            <BrandLogo />
           </div>
           <nav className="nav">
             {VIEWS.map((item) => (
