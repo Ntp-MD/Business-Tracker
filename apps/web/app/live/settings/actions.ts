@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { assertWritable } from "@/lib/variant";
 
 function userId(): string {
   const id = process.env.SUPABASE_USER_ID;
@@ -18,6 +19,7 @@ function list(value: FormDataEntryValue | null): string[] {
 }
 
 export async function createProfile(form: FormData): Promise<void> {
+  assertWritable();
   const name = String(form.get("name") ?? "").trim();
   if (!name) return;
   const { error } = await supabaseAdmin().from("profiles").upsert(
@@ -30,12 +32,15 @@ export async function createProfile(form: FormData): Promise<void> {
     { onConflict: "user_id,name" },
   );
   if (error) throw new Error(error.message);
+  revalidatePath("/live", "layout");
   revalidatePath("/live/settings");
 }
 
 export async function deleteProfile(id: string): Promise<void> {
+  assertWritable();
   const { error } = await supabaseAdmin().from("profiles").delete().eq("id", id).eq("user_id", userId());
   if (error) throw new Error(error.message);
+  revalidatePath("/live", "layout");
   revalidatePath("/live/settings");
 }
 
@@ -56,6 +61,7 @@ type ImportItem = {
 };
 
 export async function pruneOld(form: FormData): Promise<void> {
+  assertWritable();
   const days = Number(form.get("days") ?? 0);
   if (!Number.isFinite(days) || days <= 0) return;
   const cutoff = new Date(Date.now() - days * 86_400_000).toISOString();
@@ -72,6 +78,7 @@ export async function pruneOld(form: FormData): Promise<void> {
 }
 
 export async function importItems(form: FormData): Promise<void> {
+  assertWritable();
   const file = form.get("file");
   if (!(file instanceof File) || !file.size) return;
 

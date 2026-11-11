@@ -1,7 +1,7 @@
-"""Baseline/parity screenshots for the legacy UI (Phase 0, MIGRATION-NEXT.md).
+"""Baseline/parity screenshots for the legacy UI.
 
 Usage: python scripts/capture_baseline.py [--base http://127.0.0.1:8000] [--out baseline-shots]
-Requires the local server (`python server.py`) and Playwright chromium.
+Requires the local server (`python backend/server.py`) and Playwright chromium.
 """
 import argparse
 from pathlib import Path

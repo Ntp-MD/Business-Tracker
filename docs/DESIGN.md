@@ -1,16 +1,13 @@
 # Design System Inspired by Starbucks
 
-> **Live UI tokens (the real ones in `assets/css/variables.css`):** primary `#22c55e`
+> **Live UI tokens (the real ones in `legacy/assets/css/variables.css`):** primary `#22c55e`
 > (variable name `--blue`), borders `#e7ebf3`/`#2b3044`, text `#0f172a`/`#f1f5f9`,
 > card radius `16px`, fonts Inter + LINE Seed Sans TH (self-hosted, no CDN), button radius
 > `9px`, minimum height `42px`, light/dark switch variables via `data-theme`.
-> CSS layers: `assets/css/variables.css` (tokens) → `assets/css/base.css`
-> (global/tag defaults) → `assets/css/component.css` (reusable appearance) →
-> `assets/css/layout.css` / `layout-live.css` (layout, no inline `<style>` in HTML).
+> CSS layers: `legacy/assets/css/variables.css` (tokens) → `legacy/assets/css/base.css`
+> (global/tag defaults) → `legacy/assets/css/component.css` (reusable appearance) →
+> `legacy/assets/css/layout.css` (layout, no inline `<style>` in HTML).
 > The Starbucks material below is a mood reference only, not this app's tokens.
->
-> **This file:** `DESGIN.md` (original misspelling) — not renamed because links/scripts
-> may reference it.
 
 ## 1. Visual Theme & Atmosphere
 

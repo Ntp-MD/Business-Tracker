@@ -273,7 +273,23 @@
       .item-form {
         display: grid;
         grid-template-columns: 1fr 1fr;
+        align-items: start;
         gap: 10px;
+      }
+      .item-form > label {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--muted);
+      }
+      .item-form > .btn {
+        grid-column: 1 / -1;
+        justify-self: start;
+      }
+      .item-form > .row-actions {
+        justify-self: start;
       }
       .item-field {
         display: flex;
@@ -663,8 +679,36 @@
         align-items: center;
         margin-right: auto;
       }
+      .tbl-head .tbl-tabs {
+        flex: 1 1 0;
+        min-width: 0;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+      .tbl-head .tbl-tabs::-webkit-scrollbar {
+        display: none;
+      }
       .tbl-tabs .chip {
         padding: 3px 9px;
+      }
+      .tbl-tabs a {
+        padding: 4px 10px;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        background: var(--panel);
+        color: var(--muted);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      .tbl-tabs a:hover {
+        border-color: var(--link);
+        color: var(--link);
+      }
+      .tbl-tabs a.active {
+        border-color: var(--link);
+        background: var(--side-active-bg);
+        color: var(--link);
       }
       .card-head h3,
       .tbl-head h3 {
@@ -1190,6 +1234,31 @@
       .items-platform {
         margin: -2px 0 10px;
       }
+      .items-filters {
+        display: flex;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 12px;
+      }
+      .items-filters > label {
+        display: grid;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        color: var(--muted);
+      }
+      .items-filters > label:first-child {
+        flex: 1 1 220px;
+        min-width: 180px;
+      }
+      .items-filters > label:first-child input {
+        width: 100%;
+      }
+      .items-filters input[type="date"] {
+        min-width: 126px;
+      }
       .date-sep {
         font-size: 11px;
         color: var(--muted-2);
@@ -1209,8 +1278,19 @@
       .bulk-bar[hidden] {
         display: none;
       }
+      .bulk-bar-live {
+        display: none;
+      }
+      .card form:has(.tbl-scroll input[name="ids"]:checked) .bulk-bar-live {
+        display: flex;
+      }
       .bulk-bar b {
         font-size: 12px;
+      }
+      .bulk-bar input[name="to_keyword"] {
+        flex: 1 1 200px;
+        max-width: 280px;
+        margin-left: auto;
       }
       .bulk-actions {
         display: flex;
@@ -1433,6 +1513,11 @@
         font-size: 12px;
         color: var(--muted);
         flex-wrap: wrap;
+      }
+      .pager-btns {
+        display: flex;
+        gap: 6px;
+        margin-left: auto;
       }
       .pager[hidden] {
         display: none;
@@ -2064,3 +2149,173 @@
           overflow-x: clip;
         }
       }
+
+/* Mobile polish: 44px targets, all nav visible, bulk bar on selection only. */
+@media (max-width: 600px) {
+  .skip-link {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .theme-toggle {
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+  }
+  .mobile-nav {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    padding: 0 0 12px;
+    overflow: visible;
+  }
+  .mobile-nav a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 8px 6px;
+    font-size: 12px;
+    text-align: center;
+  }
+  .btn,
+  .mini-btn,
+  .add-item summary {
+    min-height: 44px;
+  }
+  .mini-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 10px;
+  }
+  input:where(:not([type="checkbox"], [type="radio"], [type="hidden"])),
+  select,
+  textarea {
+    min-height: 44px;
+  }
+  .field > select,
+  .field > input {
+    height: 44px;
+  }
+  .pager a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 10px;
+  }
+  .sel-cell {
+    width: 44px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .check-hit {
+    display: inline-grid;
+    place-items: center;
+    min-width: 44px;
+    min-height: 44px;
+    margin: -10px 0;
+    cursor: pointer;
+  }
+  .sel-cell input {
+    width: 20px;
+    height: 20px;
+  }
+  .card-head {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+}
+@media (max-width: 380px) {
+  .mobile-nav {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 0 0 12px;
+  }
+}
+
+/* Theme switch: keep the 48x26 look but a 44px touch target. */
+.switch {
+  position: relative;
+  height: 44px;
+  background: transparent;
+}
+.switch::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 9px;
+  height: 26px;
+  border-radius: 999px;
+  background: #cbd5e1;
+  transition: background 0.25s ease;
+}
+.switch:hover {
+  background: transparent;
+}
+.switch:hover::before {
+  background: #94a3b8;
+}
+[data-theme="dark"] .switch {
+  background: transparent;
+}
+[data-theme="dark"] .switch::before {
+  background: var(--blue);
+}
+[data-theme="dark"] .switch:hover {
+  background: transparent;
+}
+[data-theme="dark"] .switch:hover::before {
+  background: #4ade80;
+}
+.switch::after {
+  top: 12px;
+  left: 3px;
+}
+[data-theme="dark"] .switch::after {
+  top: 12px;
+  left: 25px;
+}
+
+@media (max-width: 600px) {
+  .src-pop > summary {
+    height: 44px;
+  }
+  .tbl-tabs a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 600px) {
+  .items-filters > label {
+    flex: 0 0 auto;
+  }
+  .bars {
+    justify-content: space-between;
+    gap: 8px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .bar-col {
+    flex: 1 1 0;
+    max-width: none;
+    min-width: 0;
+  }
+  .bar-track {
+    max-width: 100%;
+  }
+  .bar-val,
+  .bar-label {
+    font-size: 9.5px;
+  }
+}
+
+@media (max-width: 600px) {
+  .row-open {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}

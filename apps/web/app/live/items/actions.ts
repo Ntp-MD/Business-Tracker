@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { assertWritable } from "@/lib/variant";
 
 function userId(): string {
   const id = process.env.SUPABASE_USER_ID;
@@ -16,6 +17,7 @@ function text(form: FormData, key: string): string {
 }
 
 export async function createItem(form: FormData): Promise<void> {
+  assertWritable();
   const keyword = text(form, "keyword");
   const url = text(form, "url");
   const title = text(form, "title");
@@ -47,6 +49,7 @@ export async function createItem(form: FormData): Promise<void> {
 }
 
 export async function archiveItem(id: string): Promise<void> {
+  assertWritable();
   const { error } = await supabaseAdmin()
     .from("items")
     .update({ archived_at: new Date().toISOString(), deleted_at: null })
@@ -59,6 +62,7 @@ export async function archiveItem(id: string): Promise<void> {
 }
 
 export async function restoreItem(id: string): Promise<void> {
+  assertWritable();
   const { error } = await supabaseAdmin()
     .from("items")
     .update({ archived_at: null, deleted_at: null })
@@ -71,6 +75,7 @@ export async function restoreItem(id: string): Promise<void> {
 }
 
 export async function deleteItem(id: string): Promise<void> {
+  assertWritable();
   const { error } = await supabaseAdmin()
     .from("items")
     .update({ deleted_at: new Date().toISOString() })
@@ -84,12 +89,14 @@ export async function deleteItem(id: string): Promise<void> {
 }
 
 export async function purgeItem(id: string): Promise<void> {
+  assertWritable();
   const { error } = await supabaseAdmin().from("items").delete().eq("id", id).eq("user_id", userId());
   if (error) throw new Error(error.message);
   revalidatePath("/live/trash");
 }
 
 export async function updateItem(id: string, form: FormData): Promise<void> {
+  assertWritable();
   const { error } = await supabaseAdmin()
     .from("items")
     .update({
@@ -111,6 +118,7 @@ function ids(form: FormData): string[] {
 }
 
 export async function bulkArchive(form: FormData): Promise<void> {
+  assertWritable();
   const list = ids(form);
   if (!list.length) return;
   const { error } = await supabaseAdmin()
@@ -125,6 +133,7 @@ export async function bulkArchive(form: FormData): Promise<void> {
 }
 
 export async function bulkDelete(form: FormData): Promise<void> {
+  assertWritable();
   const list = ids(form);
   if (!list.length) return;
   const { error } = await supabaseAdmin()
@@ -139,6 +148,7 @@ export async function bulkDelete(form: FormData): Promise<void> {
 }
 
 export async function bulkMove(form: FormData): Promise<void> {
+  assertWritable();
   const list = ids(form);
   const keyword = text(form, "to_keyword");
   if (!list.length || !keyword) return;

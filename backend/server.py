@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""social-tracker localhost server (ARCHITECTURE.md §9.2-9.4).
+"""TrendRail collector API and legacy static server.
 
 Stdlib only. Binds 127.0.0.1:8000.
-  GET /  -> index.html (mockup)   GET /live/ -> live/index.html (real data)   /dashboard-live.html -> /live/
-  GET /fonts/*, /assets/* -> static files (assets/*.jpg are YT thumbnails)
+  GET /  -> legacy/index.html (mockup)   GET /live/ -> legacy/live/index.html (real data)   /dashboard-live.html -> /live/
+  GET /fonts/*, /assets/* -> static files (legacy/assets/*.jpg are YT thumbnails)
   GET /api/summary?q=      -> analyze(q) read-only
   GET /api/progress        -> fetch/refresh heartbeat (stage, elapsed, since_update)
   GET /api/status          -> disk usage, counts, last source result, sessions
@@ -45,11 +45,12 @@ import uuid
 
 import db
 
-ROOT = Path(__file__).resolve().parent
-APP = ROOT / "app"
-LIVE = ROOT / "live"
+ROOT = Path(__file__).resolve().parent.parent
+STATIC = ROOT / "legacy"
+APP = STATIC / "app"
+LIVE = STATIC / "live"
 DATA = ROOT / "data"
-ASSETS = ROOT / "assets"
+ASSETS = STATIC / "assets"
 ITEMS_FILE = DATA / "items.json"
 INDEX_FILE = DATA / "index.json"
 ANALYSIS_FILE = DATA / "analysis.json"
@@ -429,7 +430,7 @@ def _pw_context(playwright, kind: str):
     First run needs one headed login by the owner (stored in user_data_dir)."""
     if not (PW_SESSIONS / kind).exists():
         return None, (
-            f"{kind}: no login session — run `python pw_login.py {kind}`, "
+            f"{kind}: no login session — run `python backend/pw_login.py {kind}`, "
             "log in once in the opened browser, then fetch again"
         )
     browser = playwright.chromium.launch_persistent_context(
@@ -587,7 +588,7 @@ def collect_tiktok(
     hint = (
         "blocked or login wall"
         if mode != "session"
-        else "login expired or blocked — re-run pw_login.py"
+        else "login expired or blocked — re-run backend/pw_login.py"
     )
     return [], [f"{tag}: no videos{win} ({hint})"]
 
@@ -1483,11 +1484,18 @@ def refresh_stats(
     Never adds items. Facebook Ads / Google News have no public view metric.
     When `items` (array {keyword,url}) is given, only those items are updated."""
     cancel = cancel or threading.Event()
-    wanted = set(sources or ["youtube", "tiktok", "ttads"])
+    if q:
+        wanted = set(sources or ["youtube", "tiktok", "ttads"])
+    else:
+        wanted = {"youtube"}  # keyword-less refresh: YouTube per-video stats only
     all_items = load_json(ITEMS_FILE, [])
     if not isinstance(all_items, list):
         all_items = []
-    target = [i for i in all_items if isinstance(i, dict) and i.get("keyword") == q]
+    target = (
+        [i for i in all_items if isinstance(i, dict)]
+        if not q
+        else [i for i in all_items if isinstance(i, dict) and i.get("keyword") == q]
+    )
     if items:
         wanted_keys = _item_keys(items)
         target = [
@@ -2285,7 +2293,7 @@ class Handler(BaseHTTPRequestHandler):
         parsed = urllib.parse.urlparse(self.path)
         path = urllib.parse.unquote(parsed.path)
         if path in ("/", "/index.html"):
-            _send(self, ROOT / "index.html")
+            _send(self, STATIC / "index.html")
         elif path in ("/live", "/live/", "/live/index.html"):
             _send(self, LIVE / "index.html")
         elif path in ("/dashboard-live.html", "/dashboard.html"):
@@ -2355,7 +2363,7 @@ class Handler(BaseHTTPRequestHandler):
                 self, {"error": "not found"}, 404
             )
         else:
-            found = _resolve(ROOT, path.lstrip("/"))
+            found = _resolve(STATIC, path.lstrip("/"))
             if found is not None and found.is_file():
                 _send(self, found)
             else:
@@ -2397,9 +2405,6 @@ class Handler(BaseHTTPRequestHandler):
             progress_stage("cancel requested")
             _send_json(self, {"cancelled": True})
         elif parsed.path == "/api/refresh-stats":
-            if not q:
-                _send_json(self, {"error": "missing q"}, 400)
-                return
             raw_sources = body.get("sources")
             sources = (
                 [str(s).strip().lower() for s in raw_sources if str(s).strip()]
@@ -2409,7 +2414,7 @@ class Handler(BaseHTTPRequestHandler):
             cancel = new_fetch_cancel()
             progress_set(
                 active=True,
-                keyword=q,
+                keyword=q or "all",
                 source="",
                 stage="refresh stats",
                 done=0,
@@ -2419,7 +2424,7 @@ class Handler(BaseHTTPRequestHandler):
             )
             try:
                 out = refresh_stats(q, sources, cancel, body.get("items"))
-                out["keyword"] = q
+                out["keyword"] = q or "all"
                 _send_json(self, out)
             except Exception as e:  # noqa: BLE001
                 _send_json(self, {"error": f"refresh failed: {e}"}, 500)

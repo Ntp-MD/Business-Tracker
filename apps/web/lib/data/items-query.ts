@@ -36,7 +36,12 @@ export async function queryItems({
   else query = query.not("deleted_at", "is", null);
 
   if (source) query = query.eq("source", source);
-  if (q) query = query.or(`title.ilike.%${q.replace(/[,%]/g, " ")}%,body.ilike.%${q.replace(/[,%]/g, " ")}%`);
+  if (q) {
+    const term = q.replace(/[,%]/g, " ").trim();
+    if (term) {
+      query = query.or(`title.ilike.%${term}%,body.ilike.%${term}%,source.ilike.%${term}%,author.ilike.%${term}%`);
+    }
+  }
   if (from) query = query.gte("published", from);
   if (to) query = query.lte("published", `${to}T23:59:59`);
 
@@ -53,6 +58,32 @@ export async function queryItems({
     page,
     pages: Math.max(1, Math.ceil(total / pageSize)),
   };
+}
+
+export const KNOWN_SOURCES = ["youtube", "gnews", "tiktok", "facebook", "fbads", "ttads"] as const;
+
+export async function countArchived(): Promise<{ total: number; bySource: Record<string, number> }> {
+  const db = supabaseAdmin();
+  const archived = () =>
+    db
+      .from("items")
+      .select("id", { count: "exact", head: true })
+      .is("deleted_at", null)
+      .not("archived_at", "is", null);
+
+  const [total, ...counts] = await Promise.all([
+    archived(),
+    ...KNOWN_SOURCES.map((source) => archived().eq("source", source)),
+  ]);
+  const firstError = [total, ...counts].find((res) => res.error)?.error;
+  if (firstError) throw new Error(`archive: ${firstError.message}`);
+
+  const bySource: Record<string, number> = {};
+  KNOWN_SOURCES.forEach((source, index) => {
+    const count = counts[index].count ?? 0;
+    if (count > 0) bySource[source] = count;
+  });
+  return { total: total.count ?? 0, bySource };
 }
 
 export async function getItem(id: string): Promise<Item | null> {

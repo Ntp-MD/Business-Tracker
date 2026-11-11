@@ -2,8 +2,11 @@
 
 import pathlib
 import shutil
+import sys
 import tempfile
 import unittest
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "backend"))
 
 import server
 
@@ -340,6 +343,22 @@ class CoreTests(unittest.TestCase):
             items=[{"keyword": "kw", "url": "https://example.com/nope"}],
         )
         self.assertEqual(out["total"], 0)
+
+    def test_refresh_stats_all_without_keyword(self):
+        server.merge_items(
+            [self.item("https://www.youtube.com/watch?v=r3", "all", source="youtube", keyword="kw2")],
+            "kw2",
+            0,
+            fetch_thumbs=False,
+        )
+        original = server.youtube_video_stats
+        server.youtube_video_stats = lambda _vid: (321, None, None)
+        try:
+            out = server.refresh_stats("", ["youtube"])
+        finally:
+            server.youtube_video_stats = original
+        self.assertEqual(out["updated"], 1)
+        self.assertEqual(out["total"], 1)
 
 
 if __name__ == "__main__":

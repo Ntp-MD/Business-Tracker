@@ -1,5 +1,6 @@
 import { getSourceStatus } from "@/lib/data/items-query";
 import { getSummary, sourceLabel } from "@/lib/data/live";
+import { SourceIcon } from "@/components/live/source-icon";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,10 @@ export default async function SourcesPage() {
           return (
             <div className="card src-card" key={source}>
               <div className="card-head">
-                <h3>{sourceLabel(source)}</h3>
+                <h3>
+                  <SourceIcon source={source} size={20} />
+                  {sourceLabel(source)}
+                </h3>
                 <span className="badge-n">{count}</span>
               </div>
               <p className="src-detail">

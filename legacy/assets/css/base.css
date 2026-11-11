@@ -29,6 +29,43 @@ button{
   font-family:inherit;
   cursor:pointer;
 }
+select,
+option,
+optgroup,
+input,
+textarea,
+button{
+  font-family:inherit;
+  font-size:inherit;
+  color:inherit;
+}
+textarea{
+  resize:vertical;
+}
+select option,
+select optgroup{
+  background:var(--input-bg);
+  color:var(--text);
+}
+[data-theme="dark"] select{
+  color-scheme:dark;
+}
+select:disabled,
+input:disabled,
+textarea:disabled,
+button:disabled{
+  cursor:not-allowed;
+  opacity:.6;
+}
+fieldset{
+  min-width:0;
+  margin:0;
+  padding:0;
+  border:0;
+}
+legend{
+  padding:0;
+}
 :focus-visible{
   outline:2px solid var(--blue-dark);
   outline-offset:2px;

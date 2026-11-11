@@ -1,10 +1,14 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { FetchStrip } from "@/components/live/fetch-strip";
 import { Sidebar } from "@/components/live/sidebar";
 import { ThemeToggle } from "@/components/live/theme-toggle";
 import { getCounts } from "@/lib/data/counts";
+import { listProfiles } from "@/lib/data/live";
+import type { Profile } from "@/lib/types";
+import { appVariant, isWritable } from "@/lib/variant";
 
 export const dynamic = "force-dynamic";
 
@@ -20,11 +24,22 @@ const MOBILE = [
 ];
 
 export default async function LiveLayout({ children }: { children: ReactNode }) {
+  if (appVariant() === "mockup") redirect("/");
+  const writable = isWritable();
+
   let counts = { items: 0, sources: 0, archive: 0, ads: 0 };
+  let profiles: Profile[] = [];
   try {
     counts = await getCounts();
   } catch {
     // Supabase not configured yet: shell still renders.
+  }
+  if (writable) {
+    try {
+      profiles = await listProfiles();
+    } catch {
+      // Profiles table missing: keep the keyword-only fetch form.
+    }
   }
 
   return (
@@ -32,12 +47,12 @@ export default async function LiveLayout({ children }: { children: ReactNode }) 
       <link rel="stylesheet" href="/assets/css/variables.css" />
       <link rel="stylesheet" href="/assets/css/base.css" />
       <link rel="stylesheet" href="/assets/css/component.css" />
-      <link rel="stylesheet" href="/assets/css/layout-live.css" />
+      <link rel="stylesheet" href="/assets/css/layout.css" />
       <a className="skip-link" href="#live-content">
         Skip to content
       </a>
       <div className="app">
-        <Sidebar counts={counts} />
+        <Sidebar counts={counts} writable={writable} />
         <div className="main" id="top">
           <div className="topbar">
             <h1>Analytics</h1>
@@ -50,13 +65,13 @@ export default async function LiveLayout({ children }: { children: ReactNode }) 
             </div>
           </div>
           <nav className="mobile-nav" aria-label="Mobile">
-            {MOBILE.map((item) => (
+            {MOBILE.filter((item) => writable || item.href !== "/live/settings").map((item) => (
               <Link key={item.href} href={item.href}>
                 {item.label}
               </Link>
             ))}
           </nav>
-          <FetchStrip />
+          <FetchStrip profiles={profiles} enabled={writable} />
           <div id="live-content">{children}</div>
         </div>
       </div>

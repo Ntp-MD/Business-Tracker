@@ -1,6 +1,13 @@
 import { enqueueFetch } from "@/app/live/actions";
+import type { Profile } from "@/lib/types";
 
-export function FetchStrip() {
+import { SourceIcon } from "./source-icon";
+
+export function FetchStrip({ profiles = [], enabled = true }: { profiles?: Profile[]; enabled?: boolean }) {
+  if (!enabled) {
+    return <div className="status">Read-only live deployment — Search Now and edits are disabled.</div>;
+  }
+
   return (
     <div className="fetch-strip">
       <form className="fetch-main" action={enqueueFetch}>
@@ -8,6 +15,11 @@ export function FetchStrip() {
           <label htmlFor="profileSel">โปรไฟล์</label>
           <select id="profileSel" name="profile" defaultValue="">
             <option value="">Keyword ใหม่</option>
+            {profiles.map((profile) => (
+              <option key={profile.id ?? profile.name} value={profile.id}>
+                {profile.name}
+              </option>
+            ))}
           </select>
         </div>
         <div className="field grow">
@@ -26,6 +38,7 @@ export function FetchStrip() {
             <div className="src-picker" role="group" aria-label="fetch sources">
               <label className="src-option">
                 <input type="checkbox" name="src" value="youtube" defaultChecked />
+                <SourceIcon source="youtube" />
                 <span className="src-main">
                   <span className="src-name">YouTube</span>
                   <span className="src-detail">youtube.com/results · stdlib scrape</span>
@@ -33,6 +46,7 @@ export function FetchStrip() {
               </label>
               <label className="src-option">
                 <input type="checkbox" name="src" value="gnews" />
+                <SourceIcon source="gnews" />
                 <span className="src-main">
                   <span className="src-name">ข่าว (GNews)</span>
                   <span className="src-detail">news.google.com/rss · RSS</span>
@@ -40,6 +54,7 @@ export function FetchStrip() {
               </label>
               <label className="src-option">
                 <input type="checkbox" name="src" value="tiktok" />
+                <SourceIcon source="tiktok" />
                 <span className="src-main">
                   <span className="src-name">TikTok</span>
                   <span className="src-detail">tiktok.com/search · Playwright</span>
@@ -47,6 +62,7 @@ export function FetchStrip() {
               </label>
               <label className="src-option">
                 <input type="checkbox" name="src" value="fbads" />
+                <SourceIcon source="fbads" />
                 <span className="src-main">
                   <span className="src-name">FB Ads</span>
                   <span className="src-detail">facebook.com/ads/library · Playwright</span>
@@ -54,6 +70,7 @@ export function FetchStrip() {
               </label>
               <label className="src-option">
                 <input type="checkbox" name="src" value="ttads" />
+                <SourceIcon source="ttads" />
                 <span className="src-main">
                   <span className="src-name">TikTok Ads</span>
                   <span className="src-detail">ads.tiktok.com/creativecenter · Playwright</span>

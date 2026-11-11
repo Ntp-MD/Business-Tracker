@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """One-time headed login for TikTok / Facebook Playwright sessions.
 
-Usage: python pw_login.py tiktok | facebook
+Usage: python backend/pw_login.py tiktok | facebook
 A browser window opens — log in once, then close the window.
 Session persists under sessions/<platform>/ (gitignored, machine-local only).
 """

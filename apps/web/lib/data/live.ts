@@ -77,10 +77,16 @@ export async function getSummary(q = ""): Promise<Summary> {
     bySource,
     totalScore,
     avgScore: scoredCount ? Math.round(totalScore / scoredCount) : 0,
-    topTerms: topTerms(items.slice(0, 100)),
+    topTerms: topTerms(items),
     suggestions: q ? SUGGESTIONS.map((s) => s.replace("{q}", q)) : [],
     profiles: (profileRes.data ?? []) as Profile[],
   };
+}
+
+export async function listProfiles(): Promise<Profile[]> {
+  const { data, error } = await supabaseAdmin().from("profiles").select("id,name,keywords,sources").order("name");
+  if (error) throw new Error(`profiles: ${error.message}`);
+  return (data ?? []) as Profile[];
 }
 
 export const SOURCE_LABELS: Record<string, string> = {

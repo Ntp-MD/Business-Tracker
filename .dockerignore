@@ -13,5 +13,5 @@ docs/
 supabase/
 scripts/
 *.md
-assets/*.jpg
-live/_skelcheck.html
+legacy/assets/*.jpg
+legacy/live/_skelcheck.html

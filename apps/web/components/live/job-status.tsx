@@ -44,7 +44,7 @@ export function JobStatus({ jobId }: { jobId: number }) {
   const { job, worker } = state;
   const hint =
     job.status === "queued" && !worker.online
-      ? "Worker offline — job stays queued in Supabase. Start it on the owner's PC: python server.py + npm run worker (see docs/DEPLOY.md)."
+      ? "Worker offline — job stays queued in Supabase. Start it on the owner's PC: python backend/server.py + npm run worker (see docs/DEPLOY.md)."
       : job.status === "queued"
         ? "Worker online — waiting for it to claim the job."
         : "";

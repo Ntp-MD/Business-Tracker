@@ -3,6 +3,9 @@ import type { Item } from "@/lib/types";
 
 import { scoreBand, sourceLabel } from "@/lib/data/live";
 
+import { SourceIcon } from "./source-icon";
+import { SelectAll } from "./select-all";
+
 export function formatScore(item: Item): string {
   const score = Number(item.score) || 0;
   if (!score) return "—";
@@ -26,7 +29,11 @@ export function ItemRows({
       <caption className="visually-hidden">Items by score</caption>
       <thead>
         <tr>
-          {selectable && <th scope="col" className="sel-cell" />}
+          {selectable && (
+            <th scope="col" className="sel-cell">
+              <SelectAll />
+            </th>
+          )}
           <th scope="col">Source</th>
           <th scope="col">Title</th>
           <th scope="col">Metric</th>
@@ -42,11 +49,16 @@ export function ItemRows({
             <tr key={item.id ?? `${item.keyword}-${item.canonical_url || item.url}`}>
               {selectable && (
                 <td className="sel-cell">
-                  <input type="checkbox" name="ids" value={item.id} aria-label={`Select ${item.title}`} />
+                  <label className="check-hit">
+                    <input type="checkbox" name="ids" value={item.id} aria-label={`Select ${item.title}`} />
+                  </label>
                 </td>
               )}
               <td>
-                <span className="src-name">{sourceLabel(item.source)}</span>
+                <span className="src-cell">
+                  <SourceIcon source={item.source} />
+                  <span className="src-name">{sourceLabel(item.source)}</span>
+                </span>
               </td>
               <td title={item.title}>
                 <a className="row-title" href={item.url} target="_blank" rel="noopener noreferrer">
@@ -67,7 +79,7 @@ export function ItemRows({
                 </td>
               )}
               <td>
-                <a href={item.url} target="_blank" rel="noopener noreferrer" style={{ whiteSpace: "nowrap" }}>
+                <a className="row-open" href={item.url} target="_blank" rel="noopener noreferrer" style={{ whiteSpace: "nowrap" }}>
                   Open →
                 </a>
               </td>

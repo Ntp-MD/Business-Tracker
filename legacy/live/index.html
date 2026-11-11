@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="../assets/css/variables.css" />
     <link rel="stylesheet" href="../assets/css/base.css" />
     <link rel="stylesheet" href="../assets/css/component.css" />
-    <link rel="stylesheet" href="../assets/css/layout-live.css" />
+    <link rel="stylesheet" href="../assets/css/layout.css" />
       <script>
       (() => {
         const base = (document.querySelector('meta[name="api-base"]')?.content || "").replace(/\/$/, "");
@@ -221,7 +221,7 @@
 
         <div class="static-notice" id="staticNotice" hidden>
           <b>Static preview</b> — GitHub Pages ไม่มี API จริง. ข้อมูลจะไม่โหลด/ค้นหาไม่ได้
-          จนกว่าจะรัน <code>python server.py</code> หรือตั้ง
+          จนกว่าจะรัน <code>python backend/server.py</code> หรือตั้ง
           <code>&lt;meta name="api-base" content="https://..."&gt;</code> แล้วกำหนด CORS
         </div>
 
@@ -1190,7 +1190,7 @@
                 <div id="srcToggles"></div>
                 <!-- 2.9 real session status (sessions/tiktok, sessions/facebook) -->
                 <div id="srcSessions" class="set-row" style="display: none"></div>
-                <p class="hint" style="margin: 10px 2px 0; line-height: 1.5">TikTok public อาจเจอ login wall — เลือก Mode: Login session แล้วรัน <code>python pw_login.py tiktok</code> ครั้งเดียว</p>
+                <p class="hint" style="margin: 10px 2px 0; line-height: 1.5">TikTok public อาจเจอ login wall — เลือก Mode: Login session แล้วรัน <code>python backend/pw_login.py tiktok</code> ครั้งเดียว</p>
               </div>
               <div class="card">
                 <div class="card-head"><h3>Data</h3></div>
@@ -3042,7 +3042,7 @@
         /* 2.9 session status warning — ไม่บล็อก fetch (ผู้ใช้อาจเพิ่ง login) */
         const missingSess = sessionNotReady(mode, pid ? (profileCache.find((p) => p.id === pid) || {}).sources : sources);
         if (missingSess) {
-          toast(`ยังไม่ได้ login session: ${missingSess.map((s) => SRC_LABELS[s] || s).join(", ")} — รัน python pw_login.py`, { error: true });
+          toast(`ยังไม่ได้ login session: ${missingSess.map((s) => SRC_LABELS[s] || s).join(", ")} — รัน python backend/pw_login.py`, { error: true });
         }
         setBusy(true);
         showLoading("กำลังดึงข้อมูล…", `${sources.length ? sources.map((s) => SRC_LABELS[s] || s).join(", ") : "profile"} · ${fresh > 0 ? fresh + " วัน" : "ทั้งหมด"}`);

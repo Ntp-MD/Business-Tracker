@@ -7,7 +7,7 @@ baseline-shots/
 .agents/
 # runtime caches created by server.py (disposable, ARCHITECTURE §6)
 /data/
-assets/*.jpg
+legacy/assets/*.jpg
 sessions/
 __pycache__/
 # Supabase secrets (service role key, owner uuid)

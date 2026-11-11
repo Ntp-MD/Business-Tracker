@@ -1,8 +1,12 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { BrandLogo } from "@/components/brand-logo";
 import { PatchNotes } from "@/components/live/patch-notes";
-import { ThemeToggle } from "@/components/live/theme-toggle";import { MOCK_ITEMS, MOCK_PROFILES, mockBand, mockSourceLabel, mockTerms } from "@/lib/mock/fixtures";
+import { SourceIcon } from "@/components/live/source-icon";
+import { ThemeToggle } from "@/components/live/theme-toggle";
+import { MOCK_ITEMS, MOCK_PROFILES, mockBand, mockSourceLabel, mockTerms } from "@/lib/mock/fixtures";
+import { appVariant } from "@/lib/variant";
 
 const VIEWS = [
   { key: "overview", label: "Overview" },
@@ -24,6 +28,7 @@ function score(value: number): string {
 function Table({ rows }: { rows: typeof MOCK_ITEMS }) {
   return (
     <table>
+      <caption className="visually-hidden">Top items by score</caption>
       <thead>
         <tr>
           <th scope="col">Source</th>
@@ -37,7 +42,10 @@ function Table({ rows }: { rows: typeof MOCK_ITEMS }) {
         {rows.map((item) => (
           <tr key={item.id}>
             <td>
-              <span className="src-name">{mockSourceLabel(item.source)}</span>
+              <span className="src-cell">
+                <SourceIcon source={item.source} />
+                <span className="src-name">{mockSourceLabel(item.source)}</span>
+              </span>
             </td>
             <td>
               <span className="row-title">{item.title}</span>
@@ -51,7 +59,7 @@ function Table({ rows }: { rows: typeof MOCK_ITEMS }) {
             <td>
               <span className={`pill ${mockBand(Number(item.score)).toLowerCase()}`}>{mockBand(Number(item.score))}</span>
             </td>
-            <td>Open →</td>
+            <td style={{ whiteSpace: "nowrap" }}>Open →</td>
           </tr>
         ))}
       </tbody>
@@ -65,6 +73,7 @@ export default async function MockPage({
   searchParams: Promise<{ view?: string }>;
 }) {
   const { view = "overview" } = await searchParams;
+  if (appVariant() === "live") redirect("/live");
   const items = MOCK_ITEMS;
   const sources = [...new Set(items.map((item) => item.source))];
   const totalScore = items.reduce((sum, item) => sum + Number(item.score), 0);
@@ -101,7 +110,8 @@ export default async function MockPage({
           </div>
         </aside>
 
-        <div className="main">
+        <h2 className="visually-hidden">Overview</h2>
+      <div className="main">
           <div className="topbar">
             <h1>Analytics</h1>
             <div className="top-actions">
@@ -125,8 +135,8 @@ export default async function MockPage({
           <div className="fetch-strip">
             <div className="fetch-main">
               <div className="field">
-                <label>โปรไฟล์</label>
-                <select defaultValue="0">
+                <label htmlFor="mockProfile">โปรไฟล์</label>
+                <select id="mockProfile" defaultValue="0">
                   <option value="0">Keyword ใหม่</option>
                   {MOCK_PROFILES.map((profile) => (
                     <option key={profile.name}>{profile.name}</option>
@@ -134,20 +144,20 @@ export default async function MockPage({
                 </select>
               </div>
               <div className="field grow">
-                <label>Keyword</label>
-                <input type="text" placeholder="Keyword…" defaultValue="Digital Marketing" />
+                <label htmlFor="mockKeyword">Keyword</label>
+                <input id="mockKeyword" type="text" placeholder="Keyword…" defaultValue="Digital Marketing" />
               </div>
               <div className="field">
-                <label>Sources</label>
-                <select defaultValue="YouTube">
+                <label htmlFor="mockSources">Sources</label>
+                <select id="mockSources" defaultValue="YouTube">
                   <option>YouTube</option>
                   <option>Facebook</option>
                   <option>TikTok</option>
                 </select>
               </div>
               <div className="field">
-                <label>Fresh</label>
-                <select defaultValue="30">
+                <label htmlFor="mockFresh">Fresh</label>
+                <select id="mockFresh" defaultValue="30">
                   <option value="30">30 วัน</option>
                   <option value="7">7 วัน</option>
                   <option value="0">ทั้งหมด</option>
@@ -263,7 +273,10 @@ export default async function MockPage({
                 {sources.map((source) => (
                   <div className="card src-card" key={source}>
                     <div className="card-head">
-                      <h3>{mockSourceLabel(source)}</h3>
+                      <h3>
+                        <SourceIcon source={source} size={20} />
+                        {mockSourceLabel(source)}
+                      </h3>
                       <span className="badge-n">{items.filter((item) => item.source === source).length}</span>
                     </div>
                     <p className="src-detail">Sample rows only — live data is on /live</p>

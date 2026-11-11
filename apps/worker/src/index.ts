@@ -1,6 +1,6 @@
 /**
  * Local Playwright worker — polls Supabase `jobs` and drives the local collector
- * (`python server.py` on 127.0.0.1:8000). Results are written by server.py to Supabase.
+ * (`python backend/server.py` on 127.0.0.1:8000). Results are written by server.py to Supabase.
  *
  * Run: node --env-file=../../.env.local dist/index.js
  * Requires: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_USER_ID, LOCAL_API.

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 export function PatchNotes() {
   const [open, setOpen] = useState(false);
@@ -21,7 +22,7 @@ export function PatchNotes() {
       <button className="btn btn-ghost ver-btn" type="button" aria-haspopup="dialog" onClick={() => setOpen(true)}>
         Patch notes
       </button>
-      {open && (
+      {open && createPortal(
         <div className="loading-overlay" role="presentation" onClick={() => setOpen(false)}>
           <div
             className="loading-card notes-card"
@@ -75,7 +76,8 @@ export function PatchNotes() {
               </li>
             </ol>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

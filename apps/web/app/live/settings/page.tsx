@@ -52,9 +52,18 @@ export default async function SettingsPage() {
         )}
 
         <form action={createProfile} className="item-form" style={{ marginTop: 12 }}>
-          <input name="name" placeholder="Profile name" required aria-label="Profile name" />
-          <input name="keywords" placeholder="keywords คั่นด้วย ," aria-label="Keywords" />
-          <input name="sources" placeholder="youtube, gnews, tiktok" aria-label="Sources" />
+          <label>
+            Profile name
+            <input name="name" placeholder="เช่น ITOPPLUS" required />
+          </label>
+          <label>
+            Keywords
+            <input name="keywords" placeholder="คั่นด้วย ," />
+          </label>
+          <label>
+            Sources
+            <input name="sources" placeholder="youtube, gnews, tiktok" />
+          </label>
           <button className="btn btn-primary" type="submit">
             Save profile
           </button>
@@ -100,7 +109,10 @@ export default async function SettingsPage() {
           </a>
         </div>
         <form action={importItems} className="item-form">
-          <input type="file" name="file" accept="application/json,.json" required aria-label="Import JSON" />
+          <label>
+            JSON backup file
+            <input type="file" name="file" accept="application/json,.json" required />
+          </label>
           <button className="btn btn-primary" type="submit">
             Import JSON
           </button>
@@ -113,7 +125,7 @@ export default async function SettingsPage() {
           <span className="chart-note">Local only</span>
         </div>
         <p className="src-detail">
-          TikTok / FB Ads / TikTok Ads ต้อง login session บนเครื่อง owner: <code>python pw_login.py</code> แล้วรัน worker.
+          TikTok / FB Ads / TikTok Ads ต้อง login session บนเครื่อง owner: <code>python backend/pw_login.py</code> แล้วรัน worker.
           Production ดูสถานะ session ไม่ได้ (ไม่มี service key ฝั่ง browser).
         </p>
       </div>
@@ -124,7 +136,10 @@ export default async function SettingsPage() {
           <span className="chart-note">Organic sources only</span>
         </div>
         <form action={pruneOld} className="item-form">
-          <input name="days" type="number" min="1" step="1" placeholder="Older than N days" required aria-label="Days" />
+          <label>
+            Older than (days)
+            <input name="days" type="number" min="1" step="1" placeholder="เช่น 30" required />
+          </label>
           <button className="btn btn-ghost" type="submit">
             Prune
           </button>

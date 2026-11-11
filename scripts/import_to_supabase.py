@@ -19,12 +19,12 @@ import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "backend"))
 
 import db  # noqa: E402  (loads .env.local on import)
 
 DATA = ROOT / "data"
-ASSETS = ROOT / "assets"
+ASSETS = ROOT / "legacy" / "assets"
 STORAGE_BUCKET = "thumbnails"
 
 
