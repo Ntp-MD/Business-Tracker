@@ -16,9 +16,9 @@
 
 | Path | Page | Source |
 |---|---|---|
-| `/Business-Tracker/` | mockup | `index.html` |
-| `/Business-Tracker/live/` | real dashboard | `live/index.html` |
-| `/Business-Tracker/assets/` | CSS / icons / fonts / thumbnails | `assets/` |
+| `/TrendRail/` | mockup | `index.html` |
+| `/TrendRail/live/` | real dashboard | `live/index.html` |
+| `/TrendRail/assets/` | CSS / icons / fonts / thumbnails | `assets/` |
 
 Locally `python server.py` serves the same layout:
 
