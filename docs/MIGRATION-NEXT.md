@@ -312,8 +312,8 @@ Order: Overview → All items → Sources → Archive → Ads → Terms/Ideas �
 | 0 baseline | ☑ | `54bd389` + tag `pre-next-migration` | tag/backup/50 screenshots/inventory done 2026-11-11 |
 | 1 scaffold | ☑ | `Phase 1 commit` | npm workspaces; Next builds `/` + `/live` placeholders; worker tsc passes (2026-11-11) |
 | 2 read layer | ☑ | `Phase 2 commit` | server-only Supabase client; `/api/health` matches Python counts (2026-11-11) |
-| 3 live read | ☐ | | |
-| 4 CRUD | ☐ | | |
-| 5 worker/jobs | ☐ | | |
+| 3 live read | ◐ | `Phase 3 commit` | all 8 live pages render from Supabase; filters/parity gaps remain |
+| 4 CRUD | ◐ | `Phase 4 commit` | add/edit/delete/archive/restore/purge via server actions; bulk + import/export pending |
+| 5 worker/jobs | ◐ | `Phase 5 commit` | jobs schema + Next API + local TS worker; **migration not applied yet** |
 | 6 mock | ☐ | | |
 | 7 cutover | ☐ | | |

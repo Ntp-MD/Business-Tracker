@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { Bars, Donut, LineChart } from "@/components/live/charts";
 import { ItemRows, formatScore } from "@/components/live/item-rows";
+import { JobStatus } from "@/components/live/job-status";
 import { getSummary, sourceLabel } from "@/lib/data/live";
 
 export const dynamic = "force-dynamic";
@@ -9,9 +10,9 @@ export const dynamic = "force-dynamic";
 export default async function OverviewPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; platform?: string }>;
+  searchParams: Promise<{ q?: string; platform?: string; job?: string; error?: string }>;
 }) {
-  const { q = "", platform = "all" } = await searchParams;
+  const { q = "", platform = "all", job, error } = await searchParams;
   const data = await getSummary(q);
 
   const sources = Object.entries(data.bySource).sort((a, b) => b[1] - a[1]);
@@ -43,6 +44,9 @@ export default async function OverviewPage({
   return (
     <section className="page active" id="page-overview">
       <h2 className="visually-hidden">Overview</h2>
+      {job ? <JobStatus jobId={Number(job)} /> : null}
+      {error === "keyword" ? <div className="status err">Type a keyword before Search Now.</div> : null}
+      {error === "jobs_table" ? <div className="status err">Jobs table missing — run supabase/migrations/20261111000000_jobs.sql.</div> : null}
       <div className="kpis">
         <div className="card kpi">
           <div className="label">

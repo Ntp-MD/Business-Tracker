@@ -49,6 +49,12 @@ export async function queryItems({
   };
 }
 
+export async function getItem(id: string): Promise<Item | null> {
+  const { data, error } = await supabaseAdmin().from("items").select("*").eq("id", id).maybeSingle();
+  if (error) throw new Error(`item: ${error.message}`);
+  return (data as Item) ?? null;
+}
+
 export async function getSourceStatus(): Promise<Record<string, { ok: boolean; message: string; at: string }>> {
   const { data, error } = await supabaseAdmin().from("source_status").select("source,ok,message,updated_at");
   if (error) return {};

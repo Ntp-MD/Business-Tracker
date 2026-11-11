@@ -1,5 +1,6 @@
 import { ItemRows } from "@/components/live/item-rows";
 import { queryItems } from "@/lib/data/items-query";
+import { deleteItem, restoreItem } from "@/app/live/items/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,23 @@ export default async function ArchivePage() {
         </div>
         <div className="tbl-scroll">
           {data.items.length ? (
-            <ItemRows items={data.items} />
+            <ItemRows
+              items={data.items}
+              actions={(item) => (
+                <div className="row-actions">
+                  <form action={restoreItem.bind(null, item.id!)}>
+                    <button className="mini-btn" type="submit">
+                      Restore
+                    </button>
+                  </form>
+                  <form action={deleteItem.bind(null, item.id!)}>
+                    <button className="mini-btn danger" type="submit">
+                      Delete
+                    </button>
+                  </form>
+                </div>
+              )}
+            />
           ) : (
             <div className="empty">Archive ว่าง — เลือกรายการใน All items แล้วกด Archive</div>
           )}

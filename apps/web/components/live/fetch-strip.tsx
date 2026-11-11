@@ -1,9 +1,9 @@
-import Link from "next/link";
+import { enqueueFetch } from "@/app/live/actions";
 
 export function FetchStrip() {
   return (
     <div className="fetch-strip">
-      <form className="fetch-main" action="/live" method="get">
+      <form className="fetch-main" action={enqueueFetch}>
         <div className="field">
           <label htmlFor="profileSel">โปรไฟล์</label>
           <select id="profileSel" name="profile" defaultValue="">
@@ -80,18 +80,12 @@ export function FetchStrip() {
             <option value="0">ทั้งหมด</option>
           </select>
         </div>
-        <button
-          className="btn btn-primary fetch-btn"
-          type="submit"
-          disabled
-          title="Search Now จะทำงานเมื่อ job queue + worker พร้อม (Phase 5)"
-        >
+        <button className="btn btn-primary fetch-btn" type="submit">
           Search Now
         </button>
       </form>
       <div className="status" role="status" aria-live="polite">
-        Read-only migration build · ข้อมูลจาก Supabase ·{" "}
-        <Link href="/live/settings">Settings</Link>
+        Queued jobs run on the local worker · data in Supabase
       </div>
     </div>
   );

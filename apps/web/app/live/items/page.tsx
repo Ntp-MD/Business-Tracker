@@ -1,8 +1,10 @@
 import Link from "next/link";
 
 import { ItemRows } from "@/components/live/item-rows";
-import { queryItems, type SortKey, type ItemState } from "@/lib/data/items-query";
+import { queryItems, type SortKey } from "@/lib/data/items-query";
 import { getSummary, sourceLabel } from "@/lib/data/live";
+
+import { archiveItem, createItem, deleteItem } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -82,8 +84,54 @@ export default async function ItemsPage({
           </Link>
         </form>
 
+        <details className="add-item">
+          <summary className="btn btn-ghost" style={{ display: "inline-block", marginBottom: 12 }}>
+            + Add item
+          </summary>
+          <form action={createItem} className="item-form">
+            <input name="keyword" placeholder="Keyword" required aria-label="Keyword" />
+            <select name="source" defaultValue="youtube" aria-label="Source">
+              {sources.map((item) => (
+                <option key={item} value={item}>
+                  {sourceLabel(item)}
+                </option>
+              ))}
+            </select>
+            <input name="url" type="url" placeholder="https://…" required aria-label="URL" />
+            <input name="title" placeholder="Title" required aria-label="Title" />
+            <input name="author" placeholder="Channel / page" aria-label="Channel" />
+            <input name="score" type="number" min="0" step="1" placeholder="Score" aria-label="Score" />
+            <button className="btn btn-primary" type="submit">
+              Save item
+            </button>
+          </form>
+        </details>
+
         <div className="tbl-scroll">
-          {data.items.length ? <ItemRows items={data.items} /> : <div className="empty">No items match this view.</div>}
+          {data.items.length ? (
+            <ItemRows
+              items={data.items}
+              actions={(item) => (
+                <div className="row-actions">
+                  <Link className="mini-btn" href={`/live/items/${item.id}/edit`}>
+                    Edit
+                  </Link>
+                  <form action={archiveItem.bind(null, item.id!)}>
+                    <button className="mini-btn" type="submit">
+                      Archive
+                    </button>
+                  </form>
+                  <form action={deleteItem.bind(null, item.id!)}>
+                    <button className="mini-btn danger" type="submit">
+                      Delete
+                    </button>
+                  </form>
+                </div>
+              )}
+            />
+          ) : (
+            <div className="empty">No items match this view.</div>
+          )}
         </div>
 
         <div className="pager">

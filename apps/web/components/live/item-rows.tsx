@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { Item } from "@social-tracker/shared";
 
 import { scoreBand, sourceLabel } from "@/lib/data/live";
@@ -9,7 +10,15 @@ export function formatScore(item: Item): string {
   return score.toLocaleString("en-US") + unit;
 }
 
-export function ItemRows({ items, withSignal = true }: { items: Item[]; withSignal?: boolean }) {
+export function ItemRows({
+  items,
+  withSignal = true,
+  actions,
+}: {
+  items: Item[];
+  withSignal?: boolean;
+  actions?: (item: Item) => ReactNode;
+}) {
   return (
     <table>
       <caption className="visually-hidden">Items by score</caption>
@@ -19,13 +28,15 @@ export function ItemRows({ items, withSignal = true }: { items: Item[]; withSign
           <th scope="col">Title</th>
           <th scope="col">Metric</th>
           {withSignal && <th scope="col">Signal</th>}
-          <th scope="col">Link</th>        </tr>
+          <th scope="col">Link</th>
+          {actions && <th scope="col">Actions</th>}
+        </tr>
       </thead>
       <tbody>
         {items.map((item) => {
           const band = scoreBand(Number(item.score) || 0);
           return (
-            <tr key={`${item.keyword}-${item.canonical_url || item.url}`}>
+            <tr key={item.id ?? `${item.keyword}-${item.canonical_url || item.url}`}>
               <td>
                 <span className="src-name">{sourceLabel(item.source)}</span>
               </td>
@@ -52,6 +63,7 @@ export function ItemRows({ items, withSignal = true }: { items: Item[]; withSign
                   Open →
                 </a>
               </td>
+              {actions && <td>{actions(item)}</td>}
             </tr>
           );
         })}

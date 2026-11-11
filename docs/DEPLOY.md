@@ -52,6 +52,17 @@ Free Render services sleep after idle and may take ~30–60s on the first reques
 
 Host `server.py` on Fly.io / a VPS / a tunnel, expose HTTPS, set the same env vars, then point `api-base` at it. The Python process must be able to run Chromium for TikTok / FB Ads / TikTok Ads; YouTube + GNews only need stdlib HTTP.
 
+## Local worker (Search Now)
+
+Vercel can't run Playwright. Search Now writes a `jobs` row; a local worker claims it and drives the collector.
+
+1. Apply `supabase/migrations/20261111000000_jobs.sql` in the Supabase SQL editor (once).
+2. `python server.py` — collectors + API on `127.0.0.1:8000`.
+3. `npm run build -w apps/worker`
+4. `node --env-file=.env.local apps/worker/dist/index.js` — polls Supabase every 3 s, writes a heartbeat.
+
+If the worker is offline, jobs stay `queued` and the UI says so. TikTok / FB Ads / TikTok Ads also need a logged-in session (`python pw_login.py`).
+
 ## Mockup
 
 `index.html` is static sample data and needs no backend. The live page keeps its own copy only through `live/index.html`; both load CSS from `assets/css/`.
