@@ -16,6 +16,7 @@ the remaining plan, post-cutover checks, and notes.
 
 | Plan | Status |
 |---|---|
+| [plans/2026-11-12-task-backlog.md](plans/2026-11-12-task-backlog.md) | **Active backlog.** P0: CI, source-status fix, prod auth, live read-only |
 | [plans/COLLECTOR-INTEGRATION-PLAN.md](plans/COLLECTOR-INTEGRATION-PLAN.md) | **Proposed, not started.** No collectors enabled, no schema change applied. Includes a pre-write quality gate (reject trash before DB) |
 
 ## Post-cutover
@@ -53,7 +54,7 @@ docs/
   DB.md
   DEPLOY.md
   DESIGN.md
-  plans/       COLLECTOR-INTEGRATION-PLAN.md
+  plans/       2026-11-12-task-backlog.md, COLLECTOR-INTEGRATION-PLAN.md
   reference/   public_data_collector_agent_integration_guide.md
   notes/       note-idea.md
 ```

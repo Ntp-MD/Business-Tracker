@@ -60,5 +60,6 @@ The same codebase runs all three; `APP_VARIANT` selects behavior. See
 Start at [docs/README.md](docs/README.md). Working rules are in [AGENTS.md](AGENTS.md).
 Migration closed 2026-11-11: redirects live, Pages disabled; monitoring through 2026-11-18 and
 Render API shutdown are tracked in [docs/README.md](docs/README.md).
+Active backlog: [docs/plans/2026-11-12-task-backlog.md](docs/plans/2026-11-12-task-backlog.md).
 Remaining plan: [docs/plans/COLLECTOR-INTEGRATION-PLAN.md](docs/plans/COLLECTOR-INTEGRATION-PLAN.md).
 Notes and ideas are in `docs/notes/`.
