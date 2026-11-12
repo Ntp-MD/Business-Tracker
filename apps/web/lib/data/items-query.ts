@@ -1,6 +1,7 @@
 import "server-only";
 import type { Item } from "@/lib/types";
 
+import { itemsTable, sourceStatusTable } from "@/lib/data/read-tables";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 export type ItemState = "active" | "archived" | "trash";
@@ -29,7 +30,7 @@ export async function queryItems({
   from = "",
   to = "",
 }: ItemQuery): Promise<{ items: Item[]; total: number; page: number; pages: number }> {
-  let query = supabaseAdmin().from("items").select("*", { count: "exact" });
+  let query = supabaseAdmin().from(itemsTable()).select("*", { count: "exact" });
 
   if (state === "active") query = query.is("deleted_at", null).is("archived_at", null);
   else if (state === "archived") query = query.is("deleted_at", null).not("archived_at", "is", null);
@@ -66,7 +67,7 @@ export async function countArchived(): Promise<{ total: number; bySource: Record
   const db = supabaseAdmin();
   const archived = () =>
     db
-      .from("items")
+      .from(itemsTable())
       .select("id", { count: "exact", head: true })
       .is("deleted_at", null)
       .not("archived_at", "is", null);
@@ -87,14 +88,14 @@ export async function countArchived(): Promise<{ total: number; bySource: Record
 }
 
 export async function getItem(id: string): Promise<Item | null> {
-  const { data, error } = await supabaseAdmin().from("items").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await supabaseAdmin().from(itemsTable()).select("*").eq("id", id).maybeSingle();
   if (error) throw new Error(`item: ${error.message}`);
   return (data as Item) ?? null;
 }
 
 export async function getSourceStatus(): Promise<Record<string, { ok: boolean; message: string; at: string }>> {
   const { data, error } = await supabaseAdmin()
-    .from("source_status")
+    .from(sourceStatusTable())
     .select("source,ok,error,checked_at");
   if (error) throw new Error(`source_status: ${error.message}`);
   return Object.fromEntries(

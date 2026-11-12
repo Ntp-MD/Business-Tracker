@@ -26,6 +26,22 @@ vercel deploy --project trendrail --prod
 vercel deploy --project trendrail-live --prod
 ```
 
+## Live read-only views
+
+The `live` deployment does not use the service role key.
+
+1. Apply `supabase/migrations/20261112000000_live_read_views.sql` in the Supabase SQL editor.
+2. On the `trendrail-live` Vercel project set:
+   - `APP_VARIANT=live`
+   - `LIVE_READ_ANON=1`
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - Remove `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `SUPABASE_USER_ID`
+3. Redeploy `trendrail-live`.
+
+`live_items` exposes active + archived content without `user_id` or trash; `live_source_status`
+exposes source health. Both are select-only for `anon`, so a code bypass still cannot write.
+
 ## Prod auth
 
 Only the `prod` variant requires login. `mockup` and `live` stay public; `live` remains read-only.

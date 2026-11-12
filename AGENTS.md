@@ -54,6 +54,8 @@ python backend/pw_login.py facebook
   and blocks non-GET; only `prod` may write. Never copy the service key into `mockup`.
 - **Prod auth:** only `prod` requires a Supabase Auth magic-link session. Do not add a bypass
   to `/live` or `/api`; `mockup` and `live` stay public.
+- **Live DB reads:** `live` uses `LIVE_READ_ANON=1` with the `live_items` /
+  `live_source_status` views and the publishable key. Never add the service role key to `live`.
 - **Service role key stays server/worker side.** Never expose it to the browser, never prefix
   with `NEXT_PUBLIC_`, never commit `.env.local`.
 - **No Playwright in serverless.** Vercel cannot run collectors; the worker runs locally.

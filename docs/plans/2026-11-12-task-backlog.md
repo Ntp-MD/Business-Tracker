@@ -50,12 +50,14 @@ tpsrm.md@gmail.com
 Password fallback is available at /login.
 
 ### 4. Live read-only hardening
-- [ ] Choose: read-only DB role/JWT, anon key + RLS views, or keep app guards + rate limit
-- [ ] Prove writes are rejected with live credentials, not only by UI/proxy
-- [ ] Document the residual risk
+- [x] Choose anon key + public read views (single Supabase project)
+- [x] Add live_items / live_source_status migration and read switch
+- [ ] Apply migration in Supabase SQL editor
+- [ ] Set LIVE_READ_ANON=1 on live, remove service-role env, redeploy
+- [ ] Prove anon insert/update is denied
 
-**Done when:** a direct write attempt from the live deployment/DB credential fails.
-**Decision needed:** level of DB isolation.
+**Done when:** live reads through the anon key and a direct write is rejected by the DB.
+**Blocked by:** SQL migration apply.
 
 ---
 

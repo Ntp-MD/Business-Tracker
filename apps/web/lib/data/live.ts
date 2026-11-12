@@ -1,7 +1,9 @@
 import "server-only";
 import type { Item, Profile } from "@/lib/types";
 
+import { itemsTable } from "@/lib/data/read-tables";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { appVariant } from "@/lib/variant";
 
 /** Words ignored by the legacy top-terms counter (server.py EN_STOP). */
 const EN_STOP = new Set(
@@ -44,7 +46,7 @@ export function topTerms(items: Item[], limit = 12): [string, number][] {
 export async function getSummary(q = ""): Promise<Summary> {
   const db = supabaseAdmin();
   let query = db
-    .from("items")
+    .from(itemsTable())
     .select("*")
     .is("deleted_at", null)
     .is("archived_at", null)
@@ -52,10 +54,12 @@ export async function getSummary(q = ""): Promise<Summary> {
     .limit(3000);
   if (q) query = query.eq("keyword", q);
 
-  const [{ data, error }, profileRes] = await Promise.all([
-    query,
-    db.from("profiles").select("id,name,keywords,sources").order("name"),
-  ]);
+  const profilePromise =
+    appVariant() === "live"
+      ? Promise.resolve({ data: [] as Profile[], error: null })
+      : db.from("profiles").select("id,name,keywords,sources").order("name");
+
+  const [{ data, error }, profileRes] = await Promise.all([query, profilePromise]);
   if (error) throw new Error(`items: ${error.message}`);
   if (profileRes.error) throw new Error(`profiles: ${profileRes.error.message}`);
 
