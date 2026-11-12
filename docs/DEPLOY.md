@@ -13,8 +13,19 @@ All three projects use root directory `apps/web`, framework Next.js, and deploym
 - `APP_VARIANT` selects behavior: `mockup` → `/` only, `/live` + `/api` redirect to `/`; `live` → `/` redirects to `/live`, `/live/settings`, `/live/trash`, edit routes redirect, non-GET requests return 403; `prod` → full app (default when unset).
 - **mockup** has only `APP_VARIANT=mockup`; it must not receive Supabase keys.
 - **prod** has `APP_VARIANT=prod` for Production and `APP_VARIANT=live` for Preview, so preview deployments are read-only. Supabase env is available to Production + Preview.
-- **live** has `APP_VARIANT=live` plus the same Supabase keys. Writes are blocked by `apps/web/proxy.ts` and `assertWritable()` in server actions. Caveat: live still runs with the service role key because reads need it; a code bug could bypass the guard.
-- Vercel cannot run Playwright or the Python collectors; Search Now uses the local worker (prod only).
+- **live** has `APP_VARIANT=live`, `LIVE_READ_ANON=1`, `NEXT_PUBLIC_SUPABASE_URL`, and
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY`. It has no service role key; reads go through the public
+  `live_items` / `live_source_status` views, so DB writes are denied even if the proxy is bypassed.
+
+### Project env
+
+| Project | `APP_VARIANT` | Supabase env |
+|---|---|---|
+| `trendrail-mockup` | `mockup` | none |
+| `trendrail` | `prod` (Production), `live` (Preview) | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_USER_ID`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL` |
+| `trendrail-live` | `live` | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `LIVE_READ_ANON=1` |
+
+Vercel cannot run Playwright or the Python collectors; Search Now uses the local worker (prod only).
 - Legacy redirects: `/dashboard-live.html`, `/dashboard.html`, `/app/dashboard.html` → 307 `/live`.
 - GitHub Pages is disabled. The old static app stays under `legacy/` for the Python server.
 
@@ -105,6 +116,17 @@ Search Now writes a `jobs` row; a local worker claims it and calls the Python AP
 
 If the worker is offline, jobs stay `queued` and the UI says so. TikTok / FB Ads / TikTok Ads
 also need a logged-in session: `python backend/pw_login.py <platform>`.
+
+## Backups and retention
+
+- Supabase is the source of truth. Check Dashboard → Database → Backups for the plan's
+  retention window, and take a manual export before schema changes.
+- Exports: `GET /api/export` on the Python API, or All Items → Export CSV in prod.
+- Active and archived items are kept until deleted. Trash auto-purges after 7 days
+  (`TRASH_RETENTION_DAYS`); "Delete forever" is immediate and unrecoverable.
+- `jobs` rows stay for audit until manually cleaned; `source_status` keeps one row per source.
+- Restore drill quarterly: restore a backup into a scratch project, then run
+  `scripts/check_health.py` and the read-only E2E tests against it.
 
 ## Mock
 

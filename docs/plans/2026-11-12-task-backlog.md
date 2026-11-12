@@ -111,13 +111,16 @@ on failure.
 ## P2 — debt
 
 ### 9. Ops config cleanup
-- [ ] `render.yaml`: remove the retired GitHub Pages `ALLOW_ORIGIN`
-- [ ] `.env.example`: remove unused `NEXT_PUBLIC_SUPABASE_*`
-- [ ] Document Vercel project/env settings
-- [ ] Define backup/retention policy
+- [x] `render.yaml`: remove the retired GitHub Pages `ALLOW_ORIGIN`
+- [x] `.env.example`: drop the unused `WORKER_SUPABASE_SERVICE_ROLE_KEY`; keep
+      `NEXT_PUBLIC_SUPABASE_*` (prod auth + live reads need them)
+- [x] Document Vercel project/env settings
+- [x] Define backup/retention policy
 
 **Done when:** configs match the active 3-variant setup.
-**Decision needed:** backup retention.
+**Done:** 2026-11-12. `docs/DEPLOY.md` has the project/env table and backups/retention;
+trash 7 days, items indefinite, Supabase plan backups + manual export before schema changes.
+**Decision:** backup retention follows the Supabase plan; restore drill quarterly.
 
 ### 10. Data correctness
 - [ ] Replace `getSummary()` 3,000-row cap with count aggregates for totals
