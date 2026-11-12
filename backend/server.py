@@ -2227,8 +2227,25 @@ def _resolve(base: Path, rel: str) -> Path | None:
 
 
 class Handler(BaseHTTPRequestHandler):
-    def log_message(self, *a):  # silenced per spec
-        pass
+    request_id = "-"
+
+    def handle_one_request(self) -> None:
+        self.request_id = uuid.uuid4().hex[:12]
+        super().handle_one_request()
+
+    def log_message(self, fmt: str, *args) -> None:
+        print(
+            json.dumps(
+                {
+                    "level": "info",
+                    "event": "http",
+                    "request_id": self.request_id,
+                    "client": self.client_address[0],
+                    "message": fmt % args,
+                }
+            ),
+            flush=True,
+        )
 
     def do_OPTIONS(self):  # noqa: N802
         self.send_response(204)

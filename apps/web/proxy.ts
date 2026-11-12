@@ -14,6 +14,39 @@ function needsAuth(pathname: string): boolean {
 }
 
 export async function proxy(request: NextRequest) {
+  const requestId = request.headers.get("x-request-id") ?? crypto.randomUUID();
+  const started = Date.now();
+  try {
+    const response = await handleRequest(request, requestId);
+    response.headers.set("x-request-id", requestId);
+    console.log(
+      JSON.stringify({
+        level: response.status >= 500 ? "error" : "info",
+        event: "request",
+        request_id: requestId,
+        method: request.method,
+        path: request.nextUrl.pathname,
+        status: response.status,
+        duration_ms: Date.now() - started,
+      }),
+    );
+    return response;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "unknown error";
+    console.error(
+      JSON.stringify({
+        level: "error",
+        event: "proxy_failed",
+        request_id: requestId,
+        path: request.nextUrl.pathname,
+        error: message,
+      }),
+    );
+    throw err;
+  }
+}
+
+async function handleRequest(request: NextRequest, requestId: string) {
   const { pathname } = request.nextUrl;
   const app = variant();
 
@@ -46,7 +79,14 @@ export async function proxy(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) {
-    console.error("Auth proxy missing NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY");
+    console.error(
+      JSON.stringify({
+        level: "error",
+        event: "auth_config_missing",
+        request_id: requestId,
+        error: "NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY missing",
+      }),
+    );
     return new NextResponse("Authentication is not configured", { status: 503 });
   }
 
@@ -71,7 +111,14 @@ export async function proxy(request: NextRequest) {
   const sessionMissing =
     error?.name === "AuthSessionMissingError" || error?.message === "Auth session missing!";
   if (error && !sessionMissing) {
-    console.error("Auth check failed:", error.message);
+    console.error(
+      JSON.stringify({
+        level: "error",
+        event: "auth_check_failed",
+        request_id: requestId,
+        error: error.message,
+      }),
+    );
     return new NextResponse("Authentication is unavailable", { status: 503 });
   }
 

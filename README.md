@@ -70,6 +70,14 @@ E2E_PROD_EMAIL=owner@example.com E2E_PROD_PASSWORD=... npm run test:e2e
 URLs default to the Vercel deployments; override with `E2E_MOCKUP_URL`, `E2E_LIVE_URL`,
 `E2E_PROD_URL`.
 
+## Observability
+
+- `GET /api/health` reports item counts and the worker heartbeat (`stale` after 5 minutes).
+- The Next proxy and the Python API emit JSON logs with a `request_id` per request.
+- `.github/workflows/health.yml` runs every 30 minutes against prod + live, opens or updates
+  a `Health check failing` issue on failure, and closes it after recovery.
+- To test the alert path: `gh workflow run health.yml -f simulate_failure=true`.
+
 Copy `.env.example` to `.env.local` for the Python side. The Next app reads its env from
 `apps/web/.env.local` or the host's environment.
 

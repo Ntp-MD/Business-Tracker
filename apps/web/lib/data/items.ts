@@ -1,5 +1,6 @@
 import "server-only";
 
+import { itemsTable } from "@/lib/data/read-tables";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import type { Item, Profile } from "@/lib/types";
 
@@ -7,7 +8,7 @@ export type ItemState = "active" | "archived" | "trash";
 
 /** Apply the archive/trash filters used by the legacy app (docs/DB.md). */
 function scoped(state: ItemState) {
-  const table = supabaseAdmin().from("items");
+  const table = supabaseAdmin().from(itemsTable());
   if (state === "active") return table.select("*").is("deleted_at", null).is("archived_at", null);
   if (state === "archived")
     return table.select("*").is("deleted_at", null).not("archived_at", "is", null);
@@ -28,7 +29,7 @@ export async function listItems(
 }
 
 export async function countItems(state: ItemState = "active"): Promise<number> {
-  let query = supabaseAdmin().from("items").select("id", { count: "exact", head: true });
+  let query = supabaseAdmin().from(itemsTable()).select("id", { count: "exact", head: true });
   if (state === "active") query = query.is("deleted_at", null).is("archived_at", null);
   else if (state === "archived")
     query = query.is("deleted_at", null).not("archived_at", "is", null);
