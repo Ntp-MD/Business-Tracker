@@ -39,7 +39,14 @@ npm run start -w apps/worker
 
 # Tests
 python -m unittest discover -s tests
+
+# Playwright collectors only (TikTok / FB Ads / TikTok Ads)
+pip install -r requirements.txt
 ```
+
+Node 22 (`.nvmrc`, `engines.node`) and Python 3.12 (`.python-version`) are the pinned
+versions. Backend code is stdlib-only and runs on Python 3.10+; Playwright is pinned in
+`requirements.txt` to match `Dockerfile`.
 
 Copy `.env.example` to `.env.local` for the Python side. The Next app reads its env from
 `apps/web/.env.local` or the host's environment.

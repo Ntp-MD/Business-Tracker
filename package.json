@@ -10,5 +10,8 @@
     "build:web": "npm run build -w apps/web",
     "build:worker": "npm run build -w apps/worker",
     "typecheck": "npm run typecheck -w apps/worker"
+  },
+  "engines": {
+    "node": "22.x"
   }
 }

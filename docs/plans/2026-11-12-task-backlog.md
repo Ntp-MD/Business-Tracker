@@ -64,13 +64,14 @@ Password fallback is available at /login.
 ## P1 — after P0
 
 ### 5. Pin runtime and Python dependencies
-- [ ] Add `requirements.txt` with the Playwright version
-- [ ] Add `.nvmrc` and `engines.node`
-- [ ] State the supported Python version
-- [ ] Verify clean install + tests + build
+- [x] Add `requirements.txt` with the Playwright version
+- [x] Add `.nvmrc` and `engines.node`
+- [x] State the supported Python version
+- [x] Verify clean install + tests + build
 
 **Done when:** a fresh machine/CI installs the same versions.
-**Decision needed:** supported Node/Python versions.
+**Done:** 2026-11-12. Node 22.x, Python 3.12, Playwright 1.64.1; fresh-venv tests and
+`npm ci` + typecheck + build pass.
 
 ### 6. Lint and format
 - [ ] Choose web tooling: ESLint + Prettier or Biome

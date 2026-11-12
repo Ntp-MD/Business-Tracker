@@ -1,0 +1,4 @@
+# Python collector dependencies.
+# Playwright is only needed for TikTok / Facebook Ads / TikTok Ads collectors
+# and backend/pw_login.py; the API and tests run without it.
+playwright==1.64.1
