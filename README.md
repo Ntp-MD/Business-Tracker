@@ -70,29 +70,16 @@ E2E_PROD_EMAIL=owner@example.com E2E_PROD_PASSWORD=... npm run test:e2e
 URLs default to the Vercel deployments; override with `E2E_MOCKUP_URL`, `E2E_LIVE_URL`,
 `E2E_PROD_URL`.
 
-## Collector dry run
+## Collector framework
 
-New adapters live in `backend/collectors/`. The first connector is Hacker News in dry-run
-mode: it fetches metadata, runs the quality gate, and writes only a local report with URL
-hashes/reason codes — no Postgres writes.
+`backend/collectors/` keeps the registry, quality gate, dry-run report and targeted
+persistence for future approved sources. **No adapter is enabled** — Hacker News was removed
+by owner decision on 2026-11-12, so there is no collector CLI command until a new adapter is
+added and approved.
 
-```bash
-python -m backend.collectors.dry_run --connector hn_search --keyword Thailand --limit 50
-# add --show-sample 5 to print accepted titles for review (not persisted)
-```
-
-Reports land in `data/reports/` (gitignored). Phase 1b schema is applied; accepted records
-can be persisted with `--write` only when `COLLECTOR_WRITE_ENABLED=1`. Writes stay off by
-default and are not required for dry-run use.
-
-```bash
-# persist accepted records (reviewed rollout only)
-COLLECTOR_WRITE_ENABLED=1 python -m backend.collectors.dry_run \
-  --connector hn_search --keyword Thailand --limit 50 --item-keyword thailand --write
-```
-
-Records/items/links/state are upserted by stable keys; rejected records are never written.
-Re-running updates metrics without duplicating rows.
+The collector schema remains in `supabase/migrations/20261112010000_collectors.sql`;
+`20261112020000_remove_hackernews.sql` narrows the source/metric checks back. Writes stay off
+unless `COLLECTOR_WRITE_ENABLED=1` is set intentionally for a future adapter.
 
 ## Observability
 

@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any
 
-from .registry import get_connector
+from .registry import Connector, get_connector
 from .store import writes_enabled
 
 ALLOWED_FIELDS = {
@@ -18,7 +19,9 @@ ALLOWED_FIELDS = {
 ALLOWED_MODES = {"manual", "scheduled"}
 
 
-def validate_collect_payload(payload: Any) -> dict:
+def validate_collect_payload(
+    payload: Any, connector_lookup: Callable[[str], Connector] = get_connector
+) -> dict:
     if not isinstance(payload, dict):
         raise ValueError("payload must be an object")
     unknown = set(payload) - ALLOWED_FIELDS
@@ -26,7 +29,7 @@ def validate_collect_payload(payload: Any) -> dict:
         raise ValueError(f"unknown payload fields: {', '.join(sorted(unknown))}")
 
     connector_id = str(payload.get("connector_id") or "").strip()
-    connector = get_connector(connector_id)
+    connector = connector_lookup(connector_id)
     if not connector.enabled:
         raise ValueError(f"connector disabled: {connector_id}")
     if connector.scope != "keyword":

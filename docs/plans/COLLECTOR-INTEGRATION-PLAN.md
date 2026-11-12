@@ -1,5 +1,9 @@
 # Public data collectors: TrendRail integration plan
 
+> **Owner decision 2026-11-12:** Hacker News was removed from TrendRail. HN-specific
+> sections below are historical. No collector adapter is currently enabled; use the
+> framework in `backend/collectors/` for a future approved source.
+
 Reviewed: 2026-11-11. Status: proposed implementation plan; no collectors enabled or production data changed.
 
 Input: [Public Data Collector Integration Guide v1.0.0](../reference/public_data_collector_agent_integration_guide.md).

@@ -1,7 +1,7 @@
 """Connector allowlist. Only enabled connectors may be collected.
 
-New sources stay disabled until their access, rights and quality rules are
-approved. The first release is Hacker News in dry-run mode.
+No adapter is enabled right now: Hacker News was removed on 2026-11-12. Future
+adapters stay disabled until access, rights and quality rules are approved.
 """
 
 from __future__ import annotations
@@ -23,15 +23,6 @@ class Connector:
 
 
 CONNECTORS: dict[str, Connector] = {
-    "hn_search": Connector(
-        connector_id="hn_search",
-        source="hackernews",
-        scope="keyword",
-        record_kind="content",
-        enabled=True,
-        dry_run=True,
-        rights="metadata_only",
-    ),
     "google_trends_th": Connector(
         connector_id="google_trends_th",
         source="google_trends",

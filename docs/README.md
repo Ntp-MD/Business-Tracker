@@ -31,8 +31,9 @@ Migration completed 2026-11-11:
   in the Render dashboard (no credentials in this repo)
 - Rollback: git tag `pre-next-migration` and the previous Vercel deployment
 
-Collector plan phases: freeze scope → normalization/persistence → first adapters (HN, then
-GDELT/Bluesky if access checks pass) → Thailand Trends/channel feeds → recurring collection.
+Collector plan phases: freeze scope → normalization/persistence → future adapters (GDELT/
+Bluesky if access checks pass) → Thailand Trends/channel feeds → recurring collection.
+Hacker News was removed on 2026-11-12.
 
 ## Reference input
 

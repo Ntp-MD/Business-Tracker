@@ -136,16 +136,16 @@ views / plays / likes. Verified with 3,500 disposable rows (`__e2e_count__`, del
 summary view would be needed for very large datasets.
 
 ### 11. Collector ingestion quality gate
-- [x] Follow `docs/plans/COLLECTOR-INTEGRATION-PLAN.md` (Phase 0 audit + Phase 1a dry-run)
-- [x] Owner approved HN-only dry-run on 2026-11-12; no Postgres writes
-- [x] First release: HN only, dry-run sample, no rejected records in Postgres
+- [x] Build collector framework: registry, HTTP helper, quality gate, dry-run report, persistence
+- [x] Verify HN dry-run and writes with disposable data (2026-11-12)
+- [x] Remove Hacker News at owner request (code, tests, UI types, registry, checks)
 
 **Done when:** the plan's Phase 0 gate is approved and Phase 1a passes.
-**Done:** 2026-11-12. Migration `20261112010000_collectors.sql` applied; HN dry-run produced
-20 accepted / 80 `out_of_window` / 0 quarantined from 100 records. Write test: 8 records →
-7 items (URL dedup) + 8 links; repeat run updated 5/0 duplicates. Test rows deleted; writes
-remain off by default (`COLLECTOR_WRITE_ENABLED=0`).
-**Note:** recurring scheduling/leases (Phase 4) are out of scope for this item.
+**Done:** 2026-11-12. HN was implemented and verified (20 accepted / 80 `out_of_window`
+from 100 dry-run records; 8 records → 7 items + 8 links on write, repeat updated 5/0),
+then removed by owner decision. No adapter is enabled now; the framework remains for a
+future approved source. Cleanup migration `20261112020000_remove_hackernews.sql` is prepared
+but not applied; writes stay off (`COLLECTOR_WRITE_ENABLED=0`).
 
 ### 12. Repo governance
 - [x] Decide LICENSE (private / all rights reserved)
@@ -165,4 +165,4 @@ checks and contribution rules in `CONTRIBUTING.md`.
 4. Lint/format: Biome + Ruff.
 5. Observability: GitHub-native health workflow + issues.
 6. License: private / all rights reserved.
-7. Collector: HN-only dry-run approved; DDL/persistence still needs approval.
+7. Collector: Hacker News removed; framework idle with no enabled adapter.

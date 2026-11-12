@@ -166,7 +166,6 @@ export const SOURCE_LABELS: Record<string, string> = {
   facebook: "Facebook",
   fbads: "FB Ads",
   ttads: "TikTok Ads",
-  hackernews: "Hacker News",
 };
 
 export function sourceLabel(source: string): string {

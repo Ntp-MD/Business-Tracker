@@ -15,27 +15,35 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "backend"))
 from collectors import store
 from collectors.contract import RawRecord
 from collectors.dry_run import write_report
-from collectors.hn import parse_hits
 from collectors.job import validate_collect_payload
 from collectors.quality import canonicalize_url, gate
-from collectors.registry import get_connector
+from collectors.registry import Connector
 
 NOW = datetime(2026, 11, 12, 12, 0, tzinfo=timezone.utc)
+TEST_CONNECTOR = Connector(
+    connector_id="test_search",
+    source="example",
+    scope="keyword",
+    record_kind="content",
+    enabled=True,
+    dry_run=True,
+    rights="test",
+)
 
 
 def raw(**overrides):
     values = {
-        "source": "hackernews",
-        "connector_id": "hn_search",
+        "source": "example",
+        "connector_id": "test_search",
         "source_item_id": "1001",
         "url": "https://example.com/story",
         "title": "Thailand startup ecosystem update",
         "author_id": "pg",
         "author_display": "pg",
         "published_at": "2026-11-11T00:00:00Z",
-        "engagement": {"points": 10, "comments": 2},
+        "engagement": {"views": 10, "comments": 2},
         "numeric_signal": 10,
-        "signal_unit": "points",
+        "signal_unit": "views",
     }
     values.update(overrides)
     return RawRecord(**values)
@@ -43,12 +51,12 @@ def raw(**overrides):
 
 class QualityTests(unittest.TestCase):
     def setUp(self):
-        self.connector = get_connector("hn_search")
+        self.connector = TEST_CONNECTOR
 
     def gate_one(self, record):
         return gate([record], self.connector, now=NOW)
 
-    def test_accepts_valid_hn_story(self):
+    def test_accepts_valid_record(self):
         outcome = self.gate_one(raw())
         self.assertEqual(len(outcome.accepted), 1)
         self.assertEqual(outcome.rejected, [])
@@ -99,35 +107,6 @@ class QualityTests(unittest.TestCase):
         self.assertEqual(outcome.accepted, [])
         self.assertEqual(len(outcome.quarantined), 1)
 
-
-class HackerNewsTests(unittest.TestCase):
-    def test_parse_hits_keeps_metadata_only(self):
-        connector = get_connector("hn_search")
-        payload = {
-            "hits": [
-                {
-                    "objectID": "42",
-                    "title": "Thailand startup ecosystem update",
-                    "url": "https://example.com/story?utm_medium=hn",
-                    "author": "pg",
-                    "points": 12,
-                    "num_comments": 3,
-                    "created_at": "2026-11-11T00:00:00Z",
-                }
-            ]
-        }
-        records = parse_hits(payload, connector)
-        self.assertEqual(len(records), 1)
-        self.assertEqual(records[0].source_item_id, "42")
-        self.assertEqual(records[0].signal_unit, "points")
-        self.assertNotIn("title", records[0].raw_source_ref)
-
-    def test_parse_hits_rejects_bad_payload(self):
-        from collectors.http import TransportError
-
-        with self.assertRaises(TransportError):
-            parse_hits({"hits": "nope"}, get_connector("hn_search"))
-
     def test_canonicalize_rejects_private_host(self):
         with self.assertRaises(ValueError):
             canonicalize_url("http://127.0.0.1/private")
@@ -135,7 +114,7 @@ class HackerNewsTests(unittest.TestCase):
 
 class ReportTests(unittest.TestCase):
     def test_report_contains_hashes_not_titles(self):
-        connector = get_connector("hn_search")
+        connector = TEST_CONNECTOR
         outcome = gate([raw(title="Secret title that should not be stored")], connector, now=NOW)
         with tempfile.TemporaryDirectory() as tmp:
             path = pathlib.Path(tmp) / "report.jsonl"
@@ -150,10 +129,13 @@ class ReportTests(unittest.TestCase):
 
 
 class JobPayloadTests(unittest.TestCase):
+    def validate(self, payload):
+        return validate_collect_payload(payload, lambda _: TEST_CONNECTOR)
+
     def test_valid_payload(self):
-        payload = validate_collect_payload(
+        payload = self.validate(
             {
-                "connector_id": "hn_search",
+                "connector_id": "test_search",
                 "scope": {"keyword": "Thailand"},
                 "mode": "manual",
                 "dry_run": True,
@@ -165,9 +147,7 @@ class JobPayloadTests(unittest.TestCase):
 
     def test_rejects_unknown_fields(self):
         with self.assertRaises(ValueError):
-            validate_collect_payload(
-                {"connector_id": "hn_search", "scope": {"keyword": "x"}, "surprise": 1}
-            )
+            self.validate({"connector_id": "test_search", "scope": {"keyword": "x"}, "surprise": 1})
 
     def test_rejects_disabled_connector(self):
         with self.assertRaises(ValueError):
@@ -177,26 +157,26 @@ class JobPayloadTests(unittest.TestCase):
 
     def test_rejects_writes(self):
         with self.assertRaises(ValueError):
-            validate_collect_payload(
-                {"connector_id": "hn_search", "scope": {"keyword": "x"}, "dry_run": False}
+            self.validate(
+                {"connector_id": "test_search", "scope": {"keyword": "x"}, "dry_run": False}
             )
 
     def test_allows_writes_when_enabled(self):
         with patch.dict(os.environ, {"COLLECTOR_WRITE_ENABLED": "1"}):
-            payload = validate_collect_payload(
-                {"connector_id": "hn_search", "scope": {"keyword": "x"}, "dry_run": False}
+            payload = self.validate(
+                {"connector_id": "test_search", "scope": {"keyword": "x"}, "dry_run": False}
             )
         self.assertFalse(payload["dry_run"])
 
     def test_rejects_bad_limits_and_modes(self):
         for payload in (
-            {"connector_id": "hn_search", "scope": {"keyword": "x"}, "max_records": 0},
-            {"connector_id": "hn_search", "scope": {"keyword": "x"}, "max_records": 101},
-            {"connector_id": "hn_search", "scope": {"keyword": "x"}, "mode": "cron"},
-            {"connector_id": "hn_search", "scope": {}},
+            {"connector_id": "test_search", "scope": {"keyword": "x"}, "max_records": 0},
+            {"connector_id": "test_search", "scope": {"keyword": "x"}, "max_records": 101},
+            {"connector_id": "test_search", "scope": {"keyword": "x"}, "mode": "cron"},
+            {"connector_id": "test_search", "scope": {}},
         ):
             with self.assertRaises(ValueError):
-                validate_collect_payload(payload)
+                self.validate(payload)
 
 
 class StoreTests(unittest.TestCase):
@@ -237,14 +217,14 @@ class StoreTests(unittest.TestCase):
     def test_writes_disabled_by_default(self):
         os.environ.pop(store.WRITE_ENV, None)
         with self.assertRaises(RuntimeError):
-            store.save_accepted(get_connector("hn_search"), "Thailand", [], {})
+            store.save_accepted(TEST_CONNECTOR, "Thailand", [], {})
 
     def test_save_upserts_records_items_links_state(self):
         os.environ[store.WRITE_ENV] = "1"
         store.db.configured = lambda: True
         store.db.user_id = lambda: "user-1"
         store.db._request = self.fake_request
-        connector = get_connector("hn_search")
+        connector = TEST_CONNECTOR
         outcome = gate([raw()], connector, now=NOW)
         counters = outcome.counters(1)
 
@@ -260,7 +240,7 @@ class StoreTests(unittest.TestCase):
         item_call = next(
             call for call in self.calls if call[0] == "POST" and call[1].startswith("items?")
         )
-        self.assertEqual(item_call[2][0]["metric"], "points")
+        self.assertEqual(item_call[2][0]["metric"], "views")
         self.assertEqual(item_call[2][0]["body"], "")
         self.assertEqual(item_call[2][0]["score"], 10)
         self.assertEqual(result["written"], 1)

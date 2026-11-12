@@ -119,10 +119,11 @@ also need a logged-in session: `python backend/pw_login.py <platform>`.
 
 ## Collector persistence
 
-Apply `supabase/migrations/20261112010000_collectors.sql` once. The Python collector keeps
-writes disabled by default; set `COLLECTOR_WRITE_ENABLED=1` on the local API/worker host only
-when intentionally enabling persistence. Records, keyword items, links and state upsert by
-stable keys; rejected records are never stored. See `backend/collectors/`.
+The collector framework and schema are installed, but **no adapter is enabled**: Hacker News
+was removed on 2026-11-12. Apply `20261112020000_remove_hackernews.sql` after the code removal
+to narrow the source/metric checks. `COLLECTOR_WRITE_ENABLED` stays 0; set it to 1 only for a
+future approved adapter. Records, keyword items, links and state upsert by stable keys;
+rejected records are never stored. See `backend/collectors/`.
 
 ## Backups and retention
 

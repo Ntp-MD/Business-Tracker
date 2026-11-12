@@ -64,15 +64,7 @@ export async function queryItems({
   };
 }
 
-export const KNOWN_SOURCES = [
-  "youtube",
-  "gnews",
-  "tiktok",
-  "facebook",
-  "fbads",
-  "ttads",
-  "hackernews",
-] as const;
+export const KNOWN_SOURCES = ["youtube", "gnews", "tiktok", "facebook", "fbads", "ttads"] as const;
 
 export async function countArchived(): Promise<{
   total: number;

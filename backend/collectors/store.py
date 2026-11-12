@@ -110,7 +110,7 @@ def _record_row(record: CollectorRecord, user_id: str, keyword: str) -> dict:
 
 
 def _item_row(record: CollectorRecord, user_id: str, keyword: str) -> dict:
-    metric = "points" if record.signal_unit == "points" else None
+    metric = record.signal_unit if record.signal_unit in {"views", "plays", "likes"} else None
     return {
         "user_id": user_id,
         "keyword": keyword,

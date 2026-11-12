@@ -906,12 +906,11 @@ def save_thumbnail(vid: str) -> bool:
         return False
 
 
-DATED_SOURCES = {"youtube", "gnews", "tiktok", "hackernews"}  # ads are current by definition
+DATED_SOURCES = {"youtube", "gnews", "tiktok"}  # ads are current by definition
 ORGANIC_SOURCES = {
     "youtube",
     "gnews",
     "tiktok",
-    "hackernews",
 }  # same title = same content; ads may reuse copy
 TRACKING_KEYS = (
     "utm_",

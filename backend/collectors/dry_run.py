@@ -9,13 +9,16 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from . import hn
 from .contract import QUALITY_RULES_VERSION, utc_now
 from .quality import gate
 from .registry import get_connector
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_REPORT_DIR = ROOT / "data" / "reports"
+
+# No adapters after the Hacker News removal. A future adapter registers here only
+# after its access/rights/quality review.
+ADAPTERS: dict[str, object] = {}
 
 
 def _url_hash(url: str) -> str:
@@ -72,6 +75,9 @@ def run(
     connector = get_connector(connector_id)
     if not connector.enabled:
         raise SystemExit(f"connector disabled: {connector_id}")
+    adapter = ADAPTERS.get(connector.connector_id)
+    if adapter is None:
+        raise SystemExit(f"no adapter for connector: {connector_id}")
     if not connector.dry_run:
         raise SystemExit(f"connector is not in dry-run mode: {connector_id}")
 
@@ -84,7 +90,7 @@ def run(
             raise SystemExit("collector writes disabled (set COLLECTOR_WRITE_ENABLED=1)")
         save_accepted = save
 
-    fetched = hn.fetch(keyword, limit, connector)
+    fetched = adapter.fetch(keyword, limit, connector)
     outcome = gate(fetched, connector)
     counters = outcome.counters(len(fetched))
     projection_keyword = item_keyword or keyword
@@ -116,7 +122,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Run one collector; dry-run by default, --write persists accepted records."
     )
-    parser.add_argument("--connector", default="hn_search")
+    parser.add_argument("--connector", required=True)
     parser.add_argument("--keyword", required=True)
     parser.add_argument("--item-keyword", help="items.keyword projection (defaults to --keyword)")
     parser.add_argument("--limit", type=int, default=50)
