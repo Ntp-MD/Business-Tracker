@@ -52,12 +52,12 @@ Password fallback is available at /login.
 ### 4. Live read-only hardening
 - [x] Choose anon key + public read views (single Supabase project)
 - [x] Add live_items / live_source_status migration and read switch
-- [ ] Apply migration in Supabase SQL editor
-- [ ] Set LIVE_READ_ANON=1 on live, remove service-role env, redeploy
-- [ ] Prove anon insert/update is denied
+- [x] Apply migration in Supabase SQL editor
+- [x] Set LIVE_READ_ANON=1, remove service-role env, redeploy live
+- [x] Prove anon insert is denied (401 RLS)
 
 **Done when:** live reads through the anon key and a direct write is rejected by the DB.
-**Blocked by:** SQL migration apply.
+**Done:** 2026-11-12. Live uses live_items/live_source_status; anon insert returns 401.
 
 ---
 
