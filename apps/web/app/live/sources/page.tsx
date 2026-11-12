@@ -26,7 +26,7 @@ export default async function SourcesPage() {
               <p className="src-detail">
                 {last ? (
                   last.ok ? (
-                    <>Last run OK · {new Date(last.at).toLocaleString("th-TH")}</>
+                    <>Last run OK · {new Date(last.at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}</>
                   ) : (
                     <>Last error · {last.message || "Unknown error"}</>
                   )
