@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 import { BrandLogo } from "@/components/brand-logo";
 import { PatchNotes } from "@/components/live/patch-notes";
+import { signOut } from "@/app/auth/actions";
 
 const ITEMS = [
   { href: "/live", label: "Overview", icon: "M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" },
@@ -83,6 +84,13 @@ export function Sidebar({
         </div>
         <div className="ver-date">11 พ.ย. 2026</div>
         <PatchNotes />
+        {writable ? (
+          <form action={signOut}>
+            <button className="btn btn-ghost" type="submit" style={{ width: "100%", marginTop: 8 }}>
+              Sign out
+            </button>
+          </form>
+        ) : null}
       </div>
     </aside>
   );

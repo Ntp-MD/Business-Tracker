@@ -1,3 +1,4 @@
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 type Variant = "prod" | "mockup" | "live";
@@ -7,7 +8,12 @@ function variant(): Variant {
   return value === "mockup" || value === "live" ? value : "prod";
 }
 
-export function proxy(request: NextRequest) {
+function needsAuth(pathname: string): boolean {
+  if (pathname === "/api/health") return false;
+  return pathname === "/live" || pathname.startsWith("/live/") || pathname.startsWith("/api/");
+}
+
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const app = variant();
 
@@ -29,9 +35,52 @@ export function proxy(request: NextRequest) {
     if (request.method !== "GET" && request.method !== "HEAD") {
       return new NextResponse("Read-only live deployment", { status: 403 });
     }
+    return NextResponse.next();
   }
 
-  return NextResponse.next();
+  if (!needsAuth(pathname)) return NextResponse.next();
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    console.error("Auth proxy missing NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY");
+    return new NextResponse("Authentication is not configured", { status: 503 });
+  }
+
+  let response = NextResponse.next({ request });
+  const supabase = createServerClient(url, key, {
+    cookies: {
+      getAll: () => request.cookies.getAll(),
+      setAll: (cookiesToSet) => {
+        for (const { name, value } of cookiesToSet) request.cookies.set(name, value);
+        response = NextResponse.next({ request });
+        for (const { name, value, options } of cookiesToSet) response.cookies.set(name, value, options);
+      },
+    },
+  });
+
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  const sessionMissing =
+    error?.name === "AuthSessionMissingError" || error?.message === "Auth session missing!";
+  if (error && !sessionMissing) {
+    console.error("Auth check failed:", error.message);
+    return new NextResponse("Authentication is unavailable", { status: 503 });
+  }
+
+  if (!user) {
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+    const login = new URL("/login", request.url);
+    login.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
+    return NextResponse.redirect(login);
+  }
+
+  return response;
 }
 
 export const config = {

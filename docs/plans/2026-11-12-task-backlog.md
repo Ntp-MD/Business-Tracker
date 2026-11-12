@@ -36,13 +36,16 @@ changes + docs updated. Never claim done with a failing check.
 **Done:** 2026-11-12
 
 ### 3. Auth for prod
-- [ ] Choose: Supabase Auth magic link (recommended) or owner password + signed cookie
-- [ ] Protect prod writes: server actions, `/live/settings`, edit/trash routes, write APIs
-- [ ] Keep `mockup` and `live` public; `live` remains read-only
-- [ ] Add login/logout UI and rate limiting on login
+- [x] Choose Supabase Auth magic link
+- [x] Update owner email to 
+tpsrm.md@gmail.com
+- [x] Add login/callback/logout and prod auth guard
+- [ ] Set Supabase Site URL + redirect URL (owner, dashboard)
+- [ ] Set Vercel public env and deploy
+- [ ] Verify unauthenticated prod POST is rejected; owner can log in and CRUD
 
-**Done when:** unauthenticated prod POST is rejected; logged-in owner can CRUD.
-**Decision needed:** auth method.
+**Done when:** magic-link login works on production and unauth writes are blocked.
+**Blocked by:** Supabase Dashboard -> Authentication -> URL Configuration.
 
 ### 4. Live read-only hardening
 - [ ] Choose: read-only DB role/JWT, anon key + RLS views, or keep app guards + rate limit

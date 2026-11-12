@@ -26,6 +26,22 @@ vercel deploy --project trendrail --prod
 vercel deploy --project trendrail-live --prod
 ```
 
+## Prod auth
+
+Only the `prod` variant requires login. `mockup` and `live` stay public; `live` remains read-only.
+
+- Provider: Supabase Auth magic link (PKCE, `@supabase/ssr`).
+- Owner: `ntpsrm.md@gmail.com`.
+- Routes: `/login` (send link), `/auth/callback` (exchange code), `/auth/logout`.
+- Guard: `apps/web/proxy.ts` redirects unauthenticated `/live` + `/api` to `/login`;
+  non-GET returns 401. `/api/health` stays public.
+- Prod env: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (publishable),
+  `NEXT_PUBLIC_SITE_URL=https://trendrail.vercel.app`.
+- Supabase Dashboard → Authentication → URL Configuration:
+  - Site URL `https://trendrail.vercel.app`
+  - Redirect URLs `https://trendrail.vercel.app/auth/callback` and
+    `http://localhost:3000/auth/callback`
+
 ## Local Python API + legacy UI
 
 ```bash

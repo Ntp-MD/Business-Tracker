@@ -52,6 +52,8 @@ python backend/pw_login.py facebook
   `/live` is real data. Never merge them.
 - **Vercel variants:** `mockup` has no Supabase env and serves `/` only; `live` is read-only
   and blocks non-GET; only `prod` may write. Never copy the service key into `mockup`.
+- **Prod auth:** only `prod` requires a Supabase Auth magic-link session. Do not add a bypass
+  to `/live` or `/api`; `mockup` and `live` stay public.
 - **Service role key stays server/worker side.** Never expose it to the browser, never prefix
   with `NEXT_PUBLIC_`, never commit `.env.local`.
 - **No Playwright in serverless.** Vercel cannot run collectors; the worker runs locally.
