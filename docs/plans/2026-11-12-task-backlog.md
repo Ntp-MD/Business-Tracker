@@ -37,17 +37,18 @@ changes + docs updated. Never claim done with a failing check.
 
 ### 3. Auth for prod
 - [x] Choose Supabase Auth magic link
-- [x] Update owner email to 
-tpsrm.md@gmail.com
+- [x] Update owner email to `ntpsrm.md@gmail.com`
 - [x] Add login/callback/logout, password fallback and prod auth guard
 - [x] Set Supabase Site URL + redirect URLs
 - [x] Set Vercel public env and deploy
 - [x] Verify unauthenticated prod access is blocked; password login + logout work
-- [ ] Verify magic-link delivery/login (blocked by Supabase email rate limit)
+- [x] Verify magic-link delivery/login end-to-end
 
 **Done when:** magic-link login works on production and unauth writes are blocked.
-**Blocked by:** Supabase default email quota; configure custom SMTP for reliable magic links.
-Password fallback is available at /login.
+**Done:** 2026-11-12. Temp Supabase user + Guerrilla Mail: email link hit `/auth/callback`,
+set the session cookie, and landed on `/live`. The earlier failure was the transient default
+email quota; custom SMTP is still recommended for reliability. Password fallback stays at
+`/login`.
 
 ### 4. Live read-only hardening
 - [x] Choose anon key + public read views (single Supabase project)
