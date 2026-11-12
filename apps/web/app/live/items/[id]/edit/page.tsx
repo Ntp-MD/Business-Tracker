@@ -39,7 +39,13 @@ export default async function EditItemPage({ params }: { params: Promise<{ id: s
           </label>
           <label>
             Score
-            <input name="score" type="number" min="0" step="1" defaultValue={Number(item.score) || 0} />
+            <input
+              name="score"
+              type="number"
+              min="0"
+              step="1"
+              defaultValue={Number(item.score) || 0}
+            />
           </label>
           <div className="row-actions">
             <button className="btn btn-primary" type="submit">

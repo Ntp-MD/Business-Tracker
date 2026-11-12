@@ -28,7 +28,9 @@ ASSETS = ROOT / "legacy" / "assets"
 STORAGE_BUCKET = "thumbnails"
 
 
-def api(method: str, path: str, payload=None, raw: bytes | None = None, headers: dict | None = None):
+def api(
+    method: str, path: str, payload=None, raw: bytes | None = None, headers: dict | None = None
+):
     url = db.base_url() + path
     h = {
         "apikey": db.service_key(),
@@ -91,7 +93,9 @@ def upload_thumbnail(user_id: str, asset: str, dry: bool) -> bool:
     if dry:
         return True
     headers = {"Content-Type": "image/jpeg", "x-upsert": "true"}
-    api("POST", f"/storage/v1/object/{STORAGE_BUCKET}/{key}", raw=path.read_bytes(), headers=headers)
+    api(
+        "POST", f"/storage/v1/object/{STORAGE_BUCKET}/{key}", raw=path.read_bytes(), headers=headers
+    )
     return True
 
 

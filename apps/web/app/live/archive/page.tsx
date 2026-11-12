@@ -1,8 +1,7 @@
 import Link from "next/link";
-
+import { deleteItem, restoreItem } from "@/app/live/items/actions";
 import { ItemRows } from "@/components/live/item-rows";
 import { countArchived, queryItems } from "@/lib/data/items-query";
-import { deleteItem, restoreItem } from "@/app/live/items/actions";
 import { sourceLabel } from "@/lib/data/live";
 import { isWritable } from "@/lib/variant";
 
@@ -61,8 +60,18 @@ export default async function ArchivePage({
             Reset
           </Link>
         </form>
-        <div className="tbl-tabs" role="tablist" aria-label="Archive by platform" style={{ marginBottom: 10 }}>
-          <Link href={href({ source: "", page: 1 })} className={source ? "" : "active"} role="tab" aria-selected={!source}>
+        <div
+          className="tbl-tabs"
+          role="tablist"
+          aria-label="Archive by platform"
+          style={{ marginBottom: 10 }}
+        >
+          <Link
+            href={href({ source: "", page: 1 })}
+            className={source ? "" : "active"}
+            role="tab"
+            aria-selected={!source}
+          >
             All {counts.total}
           </Link>
           {tabs.map(([item, count]) => (
@@ -81,20 +90,24 @@ export default async function ArchivePage({
           {data.items.length ? (
             <ItemRows
               items={data.items}
-              actions={writable ? (item) => (
-                <div className="row-actions">
-                  <form action={restoreItem.bind(null, item.id!)}>
-                    <button className="mini-btn" type="submit">
-                      Restore
-                    </button>
-                  </form>
-                  <form action={deleteItem.bind(null, item.id!)}>
-                    <button className="mini-btn danger" type="submit">
-                      Delete
-                    </button>
-                  </form>
-                </div>
-              ) : undefined}
+              actions={
+                writable
+                  ? (item) => (
+                      <div className="row-actions">
+                        <form action={restoreItem.bind(null, item.id!)}>
+                          <button className="mini-btn" type="submit">
+                            Restore
+                          </button>
+                        </form>
+                        <form action={deleteItem.bind(null, item.id!)}>
+                          <button className="mini-btn danger" type="submit">
+                            Delete
+                          </button>
+                        </form>
+                      </div>
+                    )
+                  : undefined
+              }
             />
           ) : (
             <div className="empty">

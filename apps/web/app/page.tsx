@@ -5,7 +5,13 @@ import { BrandLogo } from "@/components/brand-logo";
 import { PatchNotes } from "@/components/live/patch-notes";
 import { SourceIcon } from "@/components/live/source-icon";
 import { ThemeToggle } from "@/components/live/theme-toggle";
-import { MOCK_ITEMS, MOCK_PROFILES, mockBand, mockSourceLabel, mockTerms } from "@/lib/mock/fixtures";
+import {
+  MOCK_ITEMS,
+  MOCK_PROFILES,
+  mockBand,
+  mockSourceLabel,
+  mockTerms,
+} from "@/lib/mock/fixtures";
 import { appVariant } from "@/lib/variant";
 
 const VIEWS = [
@@ -19,7 +25,14 @@ const VIEWS = [
   { key: "settings", label: "Settings" },
 ];
 
-const LOCKED = ["CRM / Leads", "Competitors", "Content Calendar", "Tasks", "Reports", "Goal Tracker"];
+const LOCKED = [
+  "CRM / Leads",
+  "Competitors",
+  "Content Calendar",
+  "Tasks",
+  "Reports",
+  "Goal Tracker",
+];
 
 function score(value: number): string {
   return value.toLocaleString("en-US");
@@ -57,7 +70,9 @@ function Table({ rows }: { rows: typeof MOCK_ITEMS }) {
               <b>{score(Number(item.score))}</b> <span className="metric-unit">{item.metric}</span>
             </td>
             <td>
-              <span className={`pill ${mockBand(Number(item.score)).toLowerCase()}`}>{mockBand(Number(item.score))}</span>
+              <span className={`pill ${mockBand(Number(item.score)).toLowerCase()}`}>
+                {mockBand(Number(item.score))}
+              </span>
             </td>
             <td style={{ whiteSpace: "nowrap" }}>Open →</td>
           </tr>
@@ -92,16 +107,20 @@ export default async function MockPage({
           </div>
           <nav className="nav">
             {VIEWS.map((item) => (
-              <Link key={item.key} href={`/?view=${item.key}`} className={view === item.key ? "active" : ""}>
+              <Link
+                key={item.key}
+                href={`/?view=${item.key}`}
+                className={view === item.key ? "active" : ""}
+              >
                 {item.label}
                 {item.key === "items" && <span className="badge-n">{items.length}</span>}
                 {item.key === "sources" && <span className="badge-n">{sources.length}</span>}
               </Link>
             ))}
             {LOCKED.map((label) => (
-              <a key={label} className="locked" aria-disabled="true" tabIndex={-1} title="not compatible">
+              <span key={label} className="locked" aria-disabled="true" title="not compatible">
                 {label}
-              </a>
+              </span>
             ))}
           </nav>
           <div className="help-card">
@@ -111,7 +130,7 @@ export default async function MockPage({
         </aside>
 
         <h2 className="visually-hidden">Overview</h2>
-      <div className="main">
+        <div className="main">
           <div className="topbar">
             <h1>Analytics</h1>
             <div className="top-actions">
@@ -145,7 +164,12 @@ export default async function MockPage({
               </div>
               <div className="field grow">
                 <label htmlFor="mockKeyword">Keyword</label>
-                <input id="mockKeyword" type="text" placeholder="Keyword…" defaultValue="Digital Marketing" />
+                <input
+                  id="mockKeyword"
+                  type="text"
+                  placeholder="Keyword…"
+                  defaultValue="Digital Marketing"
+                />
               </div>
               <div className="field">
                 <label htmlFor="mockSources">Sources</label>
@@ -216,7 +240,11 @@ export default async function MockPage({
                 <div className="card">
                   <div className="tbl-head">
                     <h3>Top items (8)</h3>
-                    <Link className="btn btn-ghost" href="/?view=items" style={{ padding: "6px 12px", fontSize: 12 }}>
+                    <Link
+                      className="btn btn-ghost"
+                      href="/?view=items"
+                      style={{ padding: "6px 12px", fontSize: 12 }}
+                    >
                       View all →
                     </Link>
                   </div>
@@ -243,9 +271,18 @@ export default async function MockPage({
                       <h3>Content ideas (summary)</h3>
                     </div>
                     <ul className="suggest">
-                      <li>30-sec clip: open on the pain behind Digital Marketing, demo the fix, close with one LINE CTA.</li>
-                      <li>SEO post: answer &quot;Digital Marketing&quot; in one clear headline + hashtags + a single CTA.</li>
-                      <li>3-part FAQ: three shorts answering the most-asked questions about Digital Marketing.</li>
+                      <li>
+                        30-sec clip: open on the pain behind Digital Marketing, demo the fix, close
+                        with one LINE CTA.
+                      </li>
+                      <li>
+                        SEO post: answer &quot;Digital Marketing&quot; in one clear headline +
+                        hashtags + a single CTA.
+                      </li>
+                      <li>
+                        3-part FAQ: three shorts answering the most-asked questions about Digital
+                        Marketing.
+                      </li>
                     </ul>
                   </div>
                 </div>
@@ -277,7 +314,9 @@ export default async function MockPage({
                         <SourceIcon source={source} size={20} />
                         {mockSourceLabel(source)}
                       </h3>
-                      <span className="badge-n">{items.filter((item) => item.source === source).length}</span>
+                      <span className="badge-n">
+                        {items.filter((item) => item.source === source).length}
+                      </span>
                     </div>
                     <p className="src-detail">Sample rows only — live data is on /live</p>
                   </div>
@@ -314,7 +353,10 @@ export default async function MockPage({
                   </div>
                   <ul className="suggest">
                     {profile.keywords.map((keyword) => (
-                      <li key={keyword}>SEO post: answer &quot;{keyword}&quot; in one clear headline + hashtags + a single CTA.</li>
+                      <li key={keyword}>
+                        SEO post: answer &quot;{keyword}&quot; in one clear headline + hashtags + a
+                        single CTA.
+                      </li>
                     ))}
                   </ul>
                 </div>

@@ -10,7 +10,13 @@ export function BrandLogo({ compact = false }: { compact?: boolean }) {
       <rect x="2" y="14" width="64" height="64" rx="16" fill="#0f172a" />
       {/* rail tracks */}
       <path d="M20 64 L34 32" stroke="#22c55e" strokeWidth="5" strokeLinecap="round" />
-      <path d="M36 64 L50 32" stroke="#22c55e" strokeWidth="5" strokeLinecap="round" opacity="0.65" />
+      <path
+        d="M36 64 L50 32"
+        stroke="#22c55e"
+        strokeWidth="5"
+        strokeLinecap="round"
+        opacity="0.65"
+      />
       <path d="M22 56 H48" stroke="#e2e8f0" strokeWidth="3" strokeLinecap="round" opacity="0.5" />
       <path d="M26 47 H51" stroke="#e2e8f0" strokeWidth="3" strokeLinecap="round" opacity="0.35" />
       <path d="M17 22 L27 22" stroke="#22c55e" strokeWidth="4" strokeLinecap="round" />

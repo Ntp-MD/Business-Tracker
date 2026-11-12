@@ -34,7 +34,11 @@ async function createJob(kind: "fetch" | "refresh_views", payload: FetchPayload)
 export async function getJob(id: number) {
   const db = supabaseAdmin();
   const [{ data, error }, worker] = await Promise.all([
-    db.from("jobs").select("id,status,progress,total,error,created_at,started_at,finished_at").eq("id", id).maybeSingle(),
+    db
+      .from("jobs")
+      .select("id,status,progress,total,error,created_at,started_at,finished_at")
+      .eq("id", id)
+      .maybeSingle(),
     db.from("worker_status").select("last_seen").eq("id", 1).maybeSingle(),
   ]);
   if (error) throw new Error(error.message);

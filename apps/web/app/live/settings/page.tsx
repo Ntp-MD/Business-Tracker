@@ -125,8 +125,9 @@ export default async function SettingsPage() {
           <span className="chart-note">Local only</span>
         </div>
         <p className="src-detail">
-          TikTok / FB Ads / TikTok Ads ต้อง login session บนเครื่อง owner: <code>python backend/pw_login.py</code> แล้วรัน worker.
-          Production ดูสถานะ session ไม่ได้ (ไม่มี service key ฝั่ง browser).
+          TikTok / FB Ads / TikTok Ads ต้อง login session บนเครื่อง owner:{" "}
+          <code>python backend/pw_login.py</code> แล้วรัน worker. Production ดูสถานะ session ไม่ได้ (ไม่มี
+          service key ฝั่ง browser).
         </p>
       </div>
 

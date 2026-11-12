@@ -90,7 +90,11 @@ export async function deleteItem(id: string): Promise<void> {
 
 export async function purgeItem(id: string): Promise<void> {
   assertWritable();
-  const { error } = await supabaseAdmin().from("items").delete().eq("id", id).eq("user_id", userId());
+  const { error } = await supabaseAdmin()
+    .from("items")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId());
   if (error) throw new Error(error.message);
   revalidatePath("/live/trash");
 }

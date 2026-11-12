@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { Bars, Donut, LineChart } from "@/components/live/charts";
-import { ItemRows, formatScore } from "@/components/live/item-rows";
+import { formatScore, ItemRows } from "@/components/live/item-rows";
 import { JobStatus } from "@/components/live/job-status";
 import { getSummary, sourceLabel } from "@/lib/data/live";
 
@@ -28,7 +28,10 @@ export default async function OverviewPage({
     .sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0))
     .slice(0, 8);
 
-  const scores = data.items.map((item) => Number(item.score) || 0).filter((score) => score > 0).sort((a, b) => b - a);
+  const scores = data.items
+    .map((item) => Number(item.score) || 0)
+    .filter((score) => score > 0)
+    .sort((a, b) => b - a);
   const high = scores[0] ?? 0;
   const low = scores[scores.length - 1] ?? 0;
   const topItem = data.items[0];
@@ -45,8 +48,14 @@ export default async function OverviewPage({
     <section className="page active" id="page-overview">
       <h2 className="visually-hidden">Overview</h2>
       {job ? <JobStatus jobId={Number(job)} /> : null}
-      {error === "keyword" ? <div className="status err">Type a keyword before Search Now.</div> : null}
-      {error === "jobs_table" ? <div className="status err">Jobs table missing — run supabase/migrations/20261111000000_jobs.sql.</div> : null}
+      {error === "keyword" ? (
+        <div className="status err">Type a keyword before Search Now.</div>
+      ) : null}
+      {error === "jobs_table" ? (
+        <div className="status err">
+          Jobs table missing — run supabase/migrations/20261111000000_jobs.sql.
+        </div>
+      ) : null}
       <div className="kpis">
         <div className="card kpi">
           <div className="label">
@@ -63,7 +72,14 @@ export default async function OverviewPage({
           </div>
           <div className="big">{sources.length}</div>
           <div className="delta">
-            <small>{sources.length ? sources.slice(0, 3).map(([source]) => sourceLabel(source)).join(" · ") : "No sources"}</small>
+            <small>
+              {sources.length
+                ? sources
+                    .slice(0, 3)
+                    .map(([source]) => sourceLabel(source))
+                    .join(" · ")
+                : "No sources"}
+            </small>
           </div>
         </div>
         <div className="card kpi kpi-donut">
@@ -89,7 +105,12 @@ export default async function OverviewPage({
           <div className="tbl-head">
             <h3>Top items ({top.length})</h3>
             <div className="tbl-tabs" role="tablist" aria-label="Top items by platform">
-              <Link href={href("all")} className={platform === "all" ? "active" : ""} role="tab" aria-selected={platform === "all"}>
+              <Link
+                href={href("all")}
+                className={platform === "all" ? "active" : ""}
+                role="tab"
+                aria-selected={platform === "all"}
+              >
                 All
               </Link>
               {sources.map(([source]) => (
@@ -104,7 +125,11 @@ export default async function OverviewPage({
                 </Link>
               ))}
             </div>
-            <Link className="btn btn-ghost" href={`/live/items${q ? `?q=${encodeURIComponent(q)}` : ""}`} style={{ padding: "6px 12px", fontSize: 12 }}>
+            <Link
+              className="btn btn-ghost"
+              href={`/live/items${q ? `?q=${encodeURIComponent(q)}` : ""}`}
+              style={{ padding: "6px 12px", fontSize: 12 }}
+            >
               View all →
             </Link>
           </div>
@@ -120,7 +145,11 @@ export default async function OverviewPage({
           <div className="card">
             <div className="card-head">
               <h3>Top terms (summary)</h3>
-              <Link className="btn btn-ghost" href="/live/terms" style={{ padding: "6px 12px", fontSize: 12 }}>
+              <Link
+                className="btn btn-ghost"
+                href="/live/terms"
+                style={{ padding: "6px 12px", fontSize: 12 }}
+              >
                 Details →
               </Link>
             </div>
@@ -140,7 +169,11 @@ export default async function OverviewPage({
           <div className="card">
             <div className="card-head">
               <h3>Content ideas (summary)</h3>
-              <Link className="btn btn-ghost" href="/live/ideas" style={{ padding: "6px 12px", fontSize: 12 }}>
+              <Link
+                className="btn btn-ghost"
+                href="/live/ideas"
+                style={{ padding: "6px 12px", fontSize: 12 }}
+              >
                 All ideas →
               </Link>
             </div>
@@ -186,7 +219,9 @@ export default async function OverviewPage({
           <div className="card-head">
             <h3>Score distribution</h3>
             <span className="chart-note">
-              {scores.length ? `${scores.length}/${data.total} scored · ${low.toLocaleString("en-US")}–${high.toLocaleString("en-US")}` : "No scored items"}
+              {scores.length
+                ? `${scores.length}/${data.total} scored · ${low.toLocaleString("en-US")}–${high.toLocaleString("en-US")}`
+                : "No scored items"}
             </span>
           </div>
           <div className="line-box">

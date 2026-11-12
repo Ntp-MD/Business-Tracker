@@ -1,8 +1,8 @@
 import "server-only";
-import type { Item } from "@/lib/types";
 
 import { itemsTable, sourceStatusTable } from "@/lib/data/read-tables";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import type { Item } from "@/lib/types";
 
 export type ItemState = "active" | "archived" | "trash";
 export type SortKey = "score" | "published" | "created_at" | "source" | "title";
@@ -33,14 +33,17 @@ export async function queryItems({
   let query = supabaseAdmin().from(itemsTable()).select("*", { count: "exact" });
 
   if (state === "active") query = query.is("deleted_at", null).is("archived_at", null);
-  else if (state === "archived") query = query.is("deleted_at", null).not("archived_at", "is", null);
+  else if (state === "archived")
+    query = query.is("deleted_at", null).not("archived_at", "is", null);
   else query = query.not("deleted_at", "is", null);
 
   if (source) query = query.eq("source", source);
   if (q) {
     const term = q.replace(/[,%]/g, " ").trim();
     if (term) {
-      query = query.or(`title.ilike.%${term}%,body.ilike.%${term}%,source.ilike.%${term}%,author.ilike.%${term}%`);
+      query = query.or(
+        `title.ilike.%${term}%,body.ilike.%${term}%,source.ilike.%${term}%,author.ilike.%${term}%`,
+      );
     }
   }
   if (from) query = query.gte("published", from);
@@ -63,7 +66,10 @@ export async function queryItems({
 
 export const KNOWN_SOURCES = ["youtube", "gnews", "tiktok", "facebook", "fbads", "ttads"] as const;
 
-export async function countArchived(): Promise<{ total: number; bySource: Record<string, number> }> {
+export async function countArchived(): Promise<{
+  total: number;
+  bySource: Record<string, number>;
+}> {
   const db = supabaseAdmin();
   const archived = () =>
     db
@@ -88,20 +94,28 @@ export async function countArchived(): Promise<{ total: number; bySource: Record
 }
 
 export async function getItem(id: string): Promise<Item | null> {
-  const { data, error } = await supabaseAdmin().from(itemsTable()).select("*").eq("id", id).maybeSingle();
+  const { data, error } = await supabaseAdmin()
+    .from(itemsTable())
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
   if (error) throw new Error(`item: ${error.message}`);
   return (data as Item) ?? null;
 }
 
-export async function getSourceStatus(): Promise<Record<string, { ok: boolean; message: string; at: string }>> {
+export async function getSourceStatus(): Promise<
+  Record<string, { ok: boolean; message: string; at: string }>
+> {
   const { data, error } = await supabaseAdmin()
     .from(sourceStatusTable())
     .select("source,ok,error,checked_at");
   if (error) throw new Error(`source_status: ${error.message}`);
   return Object.fromEntries(
-    (data ?? []).map((row: { source: string; ok: boolean; error: string | null; checked_at: string }) => [
-      row.source,
-      { ok: row.ok, message: row.error ?? "", at: row.checked_at },
-    ]),
+    (data ?? []).map(
+      (row: { source: string; ok: boolean; error: string | null; checked_at: string }) => [
+        row.source,
+        { ok: row.ok, message: row.error ?? "", at: row.checked_at },
+      ],
+    ),
   );
 }

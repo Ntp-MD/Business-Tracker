@@ -1,6 +1,6 @@
+import { SourceIcon } from "@/components/live/source-icon";
 import { getSourceStatus } from "@/lib/data/items-query";
 import { getSummary, sourceLabel } from "@/lib/data/live";
-import { SourceIcon } from "@/components/live/source-icon";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +26,10 @@ export default async function SourcesPage() {
               <p className="src-detail">
                 {last ? (
                   last.ok ? (
-                    <>Last run OK · {new Date(last.at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}</>
+                    <>
+                      Last run OK ·{" "}
+                      {new Date(last.at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}
+                    </>
                   ) : (
                     <>Last error · {last.message || "Unknown error"}</>
                   )

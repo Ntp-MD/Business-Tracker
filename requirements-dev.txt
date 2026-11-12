@@ -1,0 +1,2 @@
+# Dev-only tooling (not needed by the API or worker).
+ruff==0.17.4

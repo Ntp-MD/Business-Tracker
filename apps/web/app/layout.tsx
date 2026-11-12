@@ -2,13 +2,11 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "TrendRail — Social Intelligence",
-  description:
-    "แดชบอร์ดเทรนด์โซเชียล: YouTube, Google News, TikTok, FB Ads และ TikTok Ads ในที่เดียว",
+  description: "แดชบอร์ดเทรนด์โซเชียล: YouTube, Google News, TikTok, FB Ads และ TikTok Ads ในที่เดียว",
   applicationName: "TrendRail",
   openGraph: {
     title: "TrendRail — Social Intelligence",
-    description:
-      "แดชบอร์ดเทรนด์โซเชียล: YouTube, Google News, TikTok, FB Ads และ TikTok Ads ในที่เดียว",
+    description: "แดชบอร์ดเทรนด์โซเชียล: YouTube, Google News, TikTok, FB Ads และ TikTok Ads ในที่เดียว",
     type: "website",
   },
   twitter: { card: "summary" },

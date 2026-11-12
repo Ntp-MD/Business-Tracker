@@ -16,10 +16,16 @@ export default async function AdsPage() {
       <div className="card">
         <div className="card-head">
           <h3>Collected ads ({total.toLocaleString("en-US")})</h3>
-          <span className="chart-note">FB Ads {fb.total} · TikTok Ads {tt.total}</span>
+          <span className="chart-note">
+            FB Ads {fb.total} · TikTok Ads {tt.total}
+          </span>
         </div>
         <div className="tbl-scroll">
-          {total ? <ItemRows items={[...fb.items, ...tt.items]} /> : <div className="empty">No ads collected yet.</div>}
+          {total ? (
+            <ItemRows items={[...fb.items, ...tt.items]} />
+          ) : (
+            <div className="empty">No ads collected yet.</div>
+          )}
         </div>
       </div>
     </section>

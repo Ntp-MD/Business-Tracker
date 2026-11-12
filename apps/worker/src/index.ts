@@ -14,7 +14,13 @@ const POLL_MS = Number(process.env.WORKER_POLL_MS ?? 3000);
 type Job = {
   id: number;
   kind: string;
-  payload: { q?: string; sources?: string[]; mode?: string; max_age_days?: number; profile_id?: string };
+  payload: {
+    q?: string;
+    sources?: string[];
+    mode?: string;
+    max_age_days?: number;
+    profile_id?: string;
+  };
 };
 
 function headers(extra: Record<string, string> = {}) {
@@ -30,14 +36,21 @@ async function heartbeat(): Promise<void> {
   await fetch(`${SUPABASE_URL}/rest/v1/worker_status`, {
     method: "POST",
     headers: headers({ Prefer: "resolution=merge-duplicates" }),
-    body: JSON.stringify({ id: 1, last_seen: new Date().toISOString(), note: `pid ${process.pid}` }),
+    body: JSON.stringify({
+      id: 1,
+      last_seen: new Date().toISOString(),
+      note: `pid ${process.pid}`,
+    }),
   });
 }
 
 async function claim(): Promise<Job | null> {
-  const list = await fetch(`${SUPABASE_URL}/rest/v1/jobs?status=eq.queued&order=created_at&limit=1&select=id,kind,payload`, {
-    headers: headers(),
-  });
+  const list = await fetch(
+    `${SUPABASE_URL}/rest/v1/jobs?status=eq.queued&order=created_at&limit=1&select=id,kind,payload`,
+    {
+      headers: headers(),
+    },
+  );
   const rows = (await list.json()) as Job[];
   const job = rows[0];
   if (!job) return null;
@@ -45,7 +58,11 @@ async function claim(): Promise<Job | null> {
   const claimed = await fetch(`${SUPABASE_URL}/rest/v1/jobs?id=eq.${job.id}&status=eq.queued`, {
     method: "PATCH",
     headers: headers({ Prefer: "return=representation" }),
-    body: JSON.stringify({ status: "running", started_at: new Date().toISOString(), user_id: USER_ID }),
+    body: JSON.stringify({
+      status: "running",
+      started_at: new Date().toISOString(),
+      user_id: USER_ID,
+    }),
   });
   const updated = (await claimed.json()) as Job[];
   return updated[0] ?? null;
@@ -91,7 +108,10 @@ async function tick(): Promise<void> {
   const job = await claim();
   if (!job) return;
 
-  const check = await fetch(`${SUPABASE_URL}/rest/v1/jobs?id=eq.${job.id}&select=cancel_requested`, { headers: headers() });
+  const check = await fetch(
+    `${SUPABASE_URL}/rest/v1/jobs?id=eq.${job.id}&select=cancel_requested`,
+    { headers: headers() },
+  );
   const [row] = (await check.json()) as { cancel_requested: boolean }[];
   if (row?.cancel_requested) {
     await patch(job.id, { status: "cancelled", finished_at: new Date().toISOString() });

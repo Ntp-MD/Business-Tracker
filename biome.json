@@ -1,0 +1,33 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "files": {
+    "includes": [
+      "apps/**",
+      "!apps/web/.next/**",
+      "!apps/web/.vercel/**",
+      "!apps/web/public/**",
+      "!apps/web/next-env.d.ts",
+      "!apps/web/app/icon.svg",
+      "!apps/worker/dist/**"
+    ]
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double"
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "style": {
+        "noNonNullAssertion": "off"
+      }
+    }
+  }
+}

@@ -22,15 +22,17 @@ export async function createProfile(form: FormData): Promise<void> {
   assertWritable();
   const name = String(form.get("name") ?? "").trim();
   if (!name) return;
-  const { error } = await supabaseAdmin().from("profiles").upsert(
-    {
-      user_id: userId(),
-      name,
-      keywords: list(form.get("keywords")),
-      sources: list(form.get("sources"))
-    },
-    { onConflict: "user_id,name" },
-  );
+  const { error } = await supabaseAdmin()
+    .from("profiles")
+    .upsert(
+      {
+        user_id: userId(),
+        name,
+        keywords: list(form.get("keywords")),
+        sources: list(form.get("sources")),
+      },
+      { onConflict: "user_id,name" },
+    );
   if (error) throw new Error(error.message);
   revalidatePath("/live", "layout");
   revalidatePath("/live/settings");
@@ -38,7 +40,11 @@ export async function createProfile(form: FormData): Promise<void> {
 
 export async function deleteProfile(id: string): Promise<void> {
   assertWritable();
-  const { error } = await supabaseAdmin().from("profiles").delete().eq("id", id).eq("user_id", userId());
+  const { error } = await supabaseAdmin()
+    .from("profiles")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId());
   if (error) throw new Error(error.message);
   revalidatePath("/live", "layout");
   revalidatePath("/live/settings");
@@ -83,7 +89,8 @@ export async function importItems(form: FormData): Promise<void> {
   if (!(file instanceof File) || !file.size) return;
 
   const parsed = JSON.parse(await file.text()) as { format?: string; items?: ImportItem[] };
-  if (parsed.format && parsed.format !== "social-tracker.items") throw new Error("unsupported format");
+  if (parsed.format && parsed.format !== "social-tracker.items")
+    throw new Error("unsupported format");
   const incoming = Array.isArray(parsed.items) ? parsed.items : [];
   const rows = incoming
     .filter((item) => item.keyword && item.url && item.title)
@@ -105,7 +112,9 @@ export async function importItems(form: FormData): Promise<void> {
     }));
 
   if (!rows.length) return;
-  const { error } = await supabaseAdmin().from("items").upsert(rows, { onConflict: "user_id,keyword,canonical_url" });
+  const { error } = await supabaseAdmin()
+    .from("items")
+    .upsert(rows, { onConflict: "user_id,keyword,canonical_url" });
   if (error) throw new Error(error.message);
   revalidatePath("/live");
   revalidatePath("/live/items");

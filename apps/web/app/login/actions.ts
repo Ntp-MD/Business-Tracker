@@ -21,11 +21,15 @@ function safeNext(value: FormDataEntryValue | null): string {
 }
 
 export async function signInWithEmail(form: FormData): Promise<void> {
-  const email = String(form.get("email") ?? "").trim().toLowerCase();
+  const email = String(form.get("email") ?? "")
+    .trim()
+    .toLowerCase();
   const next = safeNext(form.get("next"));
 
-  if (!email || !email.includes("@")) {
-    redirect(`/login?error=${encodeURIComponent("Enter a valid email address.")}&next=${encodeURIComponent(next)}`);
+  if (!email.includes("@")) {
+    redirect(
+      `/login?error=${encodeURIComponent("Enter a valid email address.")}&next=${encodeURIComponent(next)}`,
+    );
   }
 
   const requestHeaders = await headers();
@@ -40,19 +44,25 @@ export async function signInWithEmail(form: FormData): Promise<void> {
 
   if (error) {
     console.error("signInWithOtp failed:", error.message);
-    redirect(`/login?error=${encodeURIComponent("Could not send the magic link. Try again.")}&next=${encodeURIComponent(next)}`);
+    redirect(
+      `/login?error=${encodeURIComponent("Could not send the magic link. Try again.")}&next=${encodeURIComponent(next)}`,
+    );
   }
 
   redirect(`/login?sent=1&next=${encodeURIComponent(next)}`);
 }
 
 export async function signInWithPassword(form: FormData): Promise<void> {
-  const email = String(form.get("email") ?? "").trim().toLowerCase();
+  const email = String(form.get("email") ?? "")
+    .trim()
+    .toLowerCase();
   const password = String(form.get("password") ?? "");
   const next = safeNext(form.get("next"));
 
   if (!email || !password) {
-    redirect(`/login?error=${encodeURIComponent("Enter email and password.")}&password=1&next=${encodeURIComponent(next)}`);
+    redirect(
+      `/login?error=${encodeURIComponent("Enter email and password.")}&password=1&next=${encodeURIComponent(next)}`,
+    );
   }
 
   const supabase = await createSupabaseServerClient();
@@ -60,7 +70,9 @@ export async function signInWithPassword(form: FormData): Promise<void> {
 
   if (error) {
     console.error("signInWithPassword failed:", error.message);
-    redirect(`/login?error=${encodeURIComponent("Invalid email or password.")}&password=1&next=${encodeURIComponent(next)}`);
+    redirect(
+      `/login?error=${encodeURIComponent("Invalid email or password.")}&password=1&next=${encodeURIComponent(next)}`,
+    );
   }
 
   redirect(next);

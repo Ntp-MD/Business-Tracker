@@ -74,13 +74,14 @@ Password fallback is available at /login.
 `npm ci` + typecheck + build pass.
 
 ### 6. Lint and format
-- [ ] Choose web tooling: ESLint + Prettier or Biome
-- [ ] Add Ruff for Python
-- [ ] Root scripts: `lint`, `format`, `format:check`, `test`
-- [ ] Run lint in CI
+- [x] Choose web tooling: Biome (lint + format) and Ruff for Python
+- [x] Add Ruff for Python
+- [x] Root scripts: `lint`, `format`, `format:check`, `test`
+- [x] Run lint in CI
 
 **Done when:** lint passes and CI enforces it.
-**Decision needed:** dependency approval for the chosen tools.
+**Done:** 2026-11-12. `biome.json`, `pyproject.toml`, `@biomejs/biome` + `ruff==0.17.4`
+(`requirements-dev.txt`); one-time format applied; lint + format check pass.
 
 ### 7. E2E smoke for 3 variants
 - [ ] Playwright suite: mockup `/` and `/live` redirect

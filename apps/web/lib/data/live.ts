@@ -1,14 +1,15 @@
 import "server-only";
-import type { Item, Profile } from "@/lib/types";
 
 import { itemsTable } from "@/lib/data/read-tables";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import type { Item, Profile } from "@/lib/types";
 import { appVariant } from "@/lib/variant";
 
 /** Words ignored by the legacy top-terms counter (server.py EN_STOP). */
 const EN_STOP = new Set(
-  `the and for with from this that these those have what when your you our into more than then them they about which their there`
-    .split(" "),
+  `the and for with from this that these those have what when your you our into more than then them they about which their there`.split(
+    " ",
+  ),
 );
 
 export type Summary = {
@@ -88,7 +89,10 @@ export async function getSummary(q = ""): Promise<Summary> {
 }
 
 export async function listProfiles(): Promise<Profile[]> {
-  const { data, error } = await supabaseAdmin().from("profiles").select("id,name,keywords,sources").order("name");
+  const { data, error } = await supabaseAdmin()
+    .from("profiles")
+    .select("id,name,keywords,sources")
+    .order("name");
   if (error) throw new Error(`profiles: ${error.message}`);
   return (data ?? []) as Profile[];
 }

@@ -3,6 +3,7 @@
 Usage: python scripts/capture_baseline.py [--base http://127.0.0.1:8000] [--out baseline-shots]
 Requires the local server (`python backend/server.py`) and Playwright chromium.
 """
+
 import argparse
 from pathlib import Path
 
@@ -45,7 +46,10 @@ def main():
         for w, h in VIEWPORTS:
             ctx = browser.new_context(viewport={"width": w, "height": h})
             page = ctx.new_page()
-            page.on("console", lambda m: errors.append(f"{w}: {m.text[:120]}") if m.type == "error" else None)
+            page.on(
+                "console",
+                lambda m: errors.append(f"{w}: {m.text[:120]}") if m.type == "error" else None,
+            )
             capture(page, args.base + "/", f"mock-{w}", out, errors)
             capture(page, args.base + "/live/", f"live-{w}", out, errors)
             ctx.close()

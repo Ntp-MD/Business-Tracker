@@ -3,9 +3,17 @@ import type { Profile } from "@/lib/types";
 
 import { SourceIcon } from "./source-icon";
 
-export function FetchStrip({ profiles = [], enabled = true }: { profiles?: Profile[]; enabled?: boolean }) {
+export function FetchStrip({
+  profiles = [],
+  enabled = true,
+}: {
+  profiles?: Profile[];
+  enabled?: boolean;
+}) {
   if (!enabled) {
-    return <div className="status">Read-only live deployment — Search Now and edits are disabled.</div>;
+    return (
+      <div className="status">Read-only live deployment — Search Now and edits are disabled.</div>
+    );
   }
 
   return (
@@ -31,10 +39,17 @@ export function FetchStrip({ profiles = [], enabled = true }: { profiles?: Profi
           <details className="src-pop">
             <summary>
               <span style={{ whiteSpace: "nowrap" }}>เลือกช่องทาง</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden="true"
+              >
                 <path d="M6 9l6 6 6-6" />
               </svg>
             </summary>
+            {/* biome-ignore lint/a11y/useSemanticElements: styled grouping div; fieldset would change layout */}
             <div className="src-picker" role="group" aria-label="fetch sources">
               <label className="src-option">
                 <input type="checkbox" name="src" value="youtube" defaultChecked />

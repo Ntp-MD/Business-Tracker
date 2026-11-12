@@ -1,10 +1,8 @@
 import type { ReactNode } from "react";
-import type { Item } from "@/lib/types";
-
 import { scoreBand, sourceLabel } from "@/lib/data/live";
-
-import { SourceIcon } from "./source-icon";
+import type { Item } from "@/lib/types";
 import { SelectAll } from "./select-all";
+import { SourceIcon } from "./source-icon";
 
 export function formatScore(item: Item): string {
   const score = Number(item.score) || 0;
@@ -50,7 +48,12 @@ export function ItemRows({
               {selectable && (
                 <td className="sel-cell">
                   <label className="check-hit">
-                    <input type="checkbox" name="ids" value={item.id} aria-label={`Select ${item.title}`} />
+                    <input
+                      type="checkbox"
+                      name="ids"
+                      value={item.id}
+                      aria-label={`Select ${item.title}`}
+                    />
                   </label>
                 </td>
               )}
@@ -79,7 +82,13 @@ export function ItemRows({
                 </td>
               )}
               <td>
-                <a className="row-open" href={item.url} target="_blank" rel="noopener noreferrer" style={{ whiteSpace: "nowrap" }}>
+                <a
+                  className="row-open"
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ whiteSpace: "nowrap" }}
+                >
                   Open →
                 </a>
               </td>

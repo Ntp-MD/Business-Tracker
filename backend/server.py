@@ -33,6 +33,7 @@ import time
 import unicodedata
 import urllib.parse
 import urllib.request
+import uuid
 import xml.etree.ElementTree as ElementTree
 import zipfile
 from collections import Counter
@@ -41,7 +42,6 @@ from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-import uuid
 
 import db
 
@@ -61,9 +61,7 @@ TRASH_FILE = DATA / "trash.json"
 APP_VERSION = "0.1V"
 EXPORT_FORMAT = "social-tracker.items"
 EXPORT_VERSION = 1
-TRASH_RETENTION_DAYS = (
-    7  # 2.5 auto-purge: trash older than this is dropped at start + after delete
-)
+TRASH_RETENTION_DAYS = 7  # 2.5 auto-purge: trash older than this is dropped at start + after delete
 CANCEL_LOCK = threading.Lock()
 CANCEL_EVENT = threading.Event()  # event of the fetch currently running
 
@@ -325,9 +323,7 @@ def collect_gnews(q: str, max_age_days: int = 0) -> tuple[list, list[str]]:
             continue
         source_el = item.find("source")
         channel_name = (source_el.text or "").strip() if source_el is not None else ""
-        channel_url = (
-            (source_el.get("url") or "").strip() if source_el is not None else ""
-        )
+        channel_url = (source_el.get("url") or "").strip() if source_el is not None else ""
         items.append(
             {
                 "url": link,
@@ -454,9 +450,7 @@ def _pw_public_context(playwright, kind: str):
             args=["--no-sandbox", "--disable-blink-features=AutomationControlled"],
             timeout=PW_TIMEOUT_MS,
         )
-        ctx = browser.new_context(
-            user_agent=UA, locale="en-US", timezone_id="Asia/Bangkok"
-        )
+        ctx = browser.new_context(user_agent=UA, locale="en-US", timezone_id="Asia/Bangkok")
         return _PwPublicCtx(browser, ctx), None
     except Exception as e:  # noqa: BLE001
         return None, f"{kind}: public browser failed: {e}"
@@ -505,9 +499,7 @@ def _tiktok_items(captured: list, q: str, max_age_days: int) -> list:
             ts = item.get("createTime")
             if ts:
                 try:
-                    published = datetime.fromtimestamp(
-                        int(ts), timezone.utc
-                    ).isoformat()
+                    published = datetime.fromtimestamp(int(ts), timezone.utc).isoformat()
                 except (TypeError, ValueError, OverflowError, OSError):
                     published = ""
             if older_than(published, cutoff):
@@ -528,9 +520,7 @@ def _tiktok_items(captured: list, q: str, max_age_days: int) -> list:
                     "source": "tiktok",
                     "keyword": q,
                     "author": author,
-                    "channel_url": f"https://www.tiktok.com/@{author}"
-                    if author
-                    else "",
+                    "channel_url": f"https://www.tiktok.com/@{author}" if author else "",
                     "score": score,
                     "views": score,
                     "metric": "plays",
@@ -545,9 +535,7 @@ def _tiktok_items(captured: list, q: str, max_age_days: int) -> list:
     return items
 
 
-def collect_tiktok(
-    q: str, mode: str = "public", max_age_days: int = 0
-) -> tuple[list, list[str]]:
+def collect_tiktok(q: str, mode: str = "public", max_age_days: int = 0) -> tuple[list, list[str]]:
     """TikTok search via Playwright (real browser, no API key). mode=public|session.
     Public mode reads the search page's own JSON and filters by createTime. Fail-soft; never raises."""
     sync_playwright, err = _playwright()
@@ -843,9 +831,7 @@ def collect_youtube(q: str, max_age_days: int = 0) -> tuple[list, list[str]]:
         channel_url = ""
         runs = owner.get("runs") or []
         if runs:
-            browse = (runs[0].get("navigationEndpoint") or {}).get(
-                "browseEndpoint"
-            ) or {}
+            browse = (runs[0].get("navigationEndpoint") or {}).get("browseEndpoint") or {}
             base = browse.get("canonicalBaseUrl") or ""
             cid = browse.get("browseId") or ""
             channel_url = (
@@ -970,9 +956,7 @@ def backfill_item(item: dict) -> bool:
     if "channel_url" not in item:
         author = str(item.get("author") or "")
         item["channel_url"] = (
-            f"https://www.tiktok.com/@{author}"
-            if item.get("source") == "tiktok" and author
-            else ""
+            f"https://www.tiktok.com/@{author}" if item.get("source") == "tiktok" and author else ""
         )
         changed = True
     return changed
@@ -1029,9 +1013,7 @@ def canonical_url(url: str) -> str:
         if m:
             return f"https://www.tiktok.com/video/{m.group(1)}"
     clean_query = urllib.parse.urlencode(sorted(query))
-    return urllib.parse.urlunsplit(
-        ("https", host or parts.netloc.lower(), path, clean_query, "")
-    )
+    return urllib.parse.urlunsplit(("https", host or parts.netloc.lower(), path, clean_query, ""))
 
 
 def norm_title(title: str) -> str:
@@ -1047,9 +1029,7 @@ def title_trigrams(norm: str) -> set[str]:
     return {flat[i : i + 3] for i in range(len(flat) - 2)} if len(flat) >= 3 else {flat}
 
 
-def near_dup(
-    norm: str, pool: list[set[str]], threshold: float = NEAR_DUP_THRESHOLD
-) -> bool:
+def near_dup(norm: str, pool: list[set[str]], threshold: float = NEAR_DUP_THRESHOLD) -> bool:
     if len(norm) < 20:
         return False
     grams = title_trigrams(norm)
@@ -1109,11 +1089,7 @@ def merge_items(
     added_items, skipped = [], 0
     for it in new_items:
         url_key = canonical_url(it.get("url") or "")
-        norm = (
-            norm_title(it.get("title") or "")
-            if it.get("source") in ORGANIC_SOURCES
-            else ""
-        )
+        norm = norm_title(it.get("title") or "") if it.get("source") in ORGANIC_SOURCES else ""
         if not url_key or url_key in known_urls:
             skipped += 1
             continue
@@ -1164,9 +1140,7 @@ def analyze(q: str, write: bool = False) -> dict:
     if q:
         items = [i for i in all_items if isinstance(i, dict) and i.get("keyword") == q]
     else:
-        items = [
-            i for i in all_items if isinstance(i, dict)
-        ]  # empty q = whole local store
+        items = [i for i in all_items if isinstance(i, dict)]  # empty q = whole local store
     items.sort(key=lambda i: +i.get("score") or 0, reverse=True)
     by_source = dict(Counter(i.get("source") or "" for i in items))
     hot = items[0].get("title", "") if items else ""
@@ -1183,9 +1157,7 @@ def analyze(q: str, write: bool = False) -> dict:
         prev = load_json(ANALYSIS_FILE, {})
         if not isinstance(prev, dict):
             prev = {}
-        prev[q] = {
-            k: v for k, v in out.items() if k != "items"
-        }  # items already live in items.json
+        prev[q] = {k: v for k, v in out.items() if k != "items"}  # items already live in items.json
         atomic_write(ANALYSIS_FILE, prev)
     return out
 
@@ -1221,9 +1193,7 @@ def export_payload(q: str = "") -> dict:
     for item in items + archive + trash:
         if item.get("url") and not item.get("canonical_url"):
             item["canonical_url"] = canonical_url(item["url"])
-    keywords = sorted(
-        {i.get("keyword") for i in items + archive + trash if i.get("keyword")}
-    )
+    keywords = sorted({i.get("keyword") for i in items + archive + trash if i.get("keyword")})
     return {
         "format": EXPORT_FORMAT,
         "version": EXPORT_VERSION,
@@ -1434,9 +1404,7 @@ def prune_old(days: int) -> dict:
             analysis = {}
         for kw in affected:
             if kw and any(isinstance(i, dict) and i.get("keyword") == kw for i in kept):
-                analysis[kw] = {
-                    k: v for k, v in analyze(kw, write=False).items() if k != "items"
-                }
+                analysis[kw] = {k: v for k, v in analyze(kw, write=False).items() if k != "items"}
             else:
                 analysis.pop(kw, None)
         atomic_write(ANALYSIS_FILE, analysis)
@@ -1571,11 +1539,7 @@ def refresh_stats(
             item["score"] = score
             item["views"] = score if src == "tiktok" else None
             item["metric"] = "plays" if src == "tiktok" else "likes"
-            if (
-                src == "tiktok"
-                and not item.get("channel_url")
-                and fresh_item.get("author")
-            ):
+            if src == "tiktok" and not item.get("channel_url") and fresh_item.get("author"):
                 item["channel_url"] = f"https://www.tiktok.com/@{fresh_item['author']}"
             updated += 1
             touched.add(item.get("keyword"))
@@ -1690,9 +1654,7 @@ def _analysis_sync(keywords: set[str]) -> None:
         if not kw:
             continue
         if any(isinstance(i, dict) and i.get("keyword") == kw for i in items):
-            analysis[kw] = {
-                k: v for k, v in analyze(kw, write=False).items() if k != "items"
-            }
+            analysis[kw] = {k: v for k, v in analyze(kw, write=False).items() if k != "items"}
         else:
             analysis.pop(kw, None)
     atomic_write(ANALYSIS_FILE, analysis)
@@ -1801,8 +1763,7 @@ def delete_archived(raw_items) -> dict:
         for a in archive
         if not (
             isinstance(a, dict)
-            and (str(a.get("keyword") or ""), canonical_url(str(a.get("url") or "")))
-            in keys
+            and (str(a.get("keyword") or ""), canonical_url(str(a.get("url") or ""))) in keys
         )
     ]
     removed = len(archive) - len(kept)
@@ -1904,9 +1865,7 @@ def restore_trash(raw_items) -> dict:
 
 def purge_trash() -> int:
     """Drop trash older than TRASH_RETENTION_DAYS. Returns number removed."""
-    cutoff = (
-        datetime.now(timezone.utc) - timedelta(days=TRASH_RETENTION_DAYS)
-    ).isoformat()
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=TRASH_RETENTION_DAYS)).isoformat()
     trash = load_trash()
     kept, removed = [], 0
     for t in trash:
@@ -1920,9 +1879,7 @@ def purge_trash() -> int:
     if removed:
         atomic_write(TRASH_FILE, kept)
         cleanup_orphan_assets()
-        print(
-            f"trash: auto-purged {removed} item(s) older than {TRASH_RETENTION_DAYS}d"
-        )
+        print(f"trash: auto-purged {removed} item(s) older than {TRASH_RETENTION_DAYS}d")
     return removed
 
 
@@ -2045,9 +2002,7 @@ def status_payload() -> dict:
     if not isinstance(items, list):
         items = []
     data_bytes = (
-        sum(p.stat().st_size for p in DATA.glob("*.json") if p.is_file())
-        if DATA.is_dir()
-        else 0
+        sum(p.stat().st_size for p in DATA.glob("*.json") if p.is_file()) if DATA.is_dir() else 0
     )
     assets = list(ASSETS.glob("*.jpg")) if ASSETS.is_dir() else []
     return {
@@ -2056,20 +2011,14 @@ def status_payload() -> dict:
         "items": len(items),
         "archived": len(load_archive()),
         "keywords": len(
-            {
-                i.get("keyword")
-                for i in items
-                if isinstance(i, dict) and i.get("keyword")
-            }
+            {i.get("keyword") for i in items if isinstance(i, dict) and i.get("keyword")}
         ),
         "data_bytes": data_bytes,
         "assets": len(assets),
         "assets_bytes": sum(p.stat().st_size for p in assets),
         "trash_count": len(load_trash()),
         "sources": load_json(SOURCE_LOG_FILE, {}),
-        "sessions": {
-            k: (ROOT / "sessions" / k).is_dir() for k in ("tiktok", "facebook")
-        },
+        "sessions": {k: (ROOT / "sessions" / k).is_dir() for k in ("tiktok", "facebook")},
     }
 
 
@@ -2136,9 +2085,7 @@ def fetch_profile(
         if cancel.is_set():
             cancelled = True
             break
-        progress_set(
-            keyword=kw, done=i, total=len(kws), source="", stage="next keyword"
-        )
+        progress_set(keyword=kw, done=i, total=len(kws), source="", stage="next keyword")
         kw_new, kw_errors = [], []
         for src in prof["sources"]:
             if cancel.is_set():
@@ -2208,7 +2155,8 @@ def _write(handler, data: bytes) -> None:
         pass  # client cancelled/closed the tab
 
 
-ALLOW_ORIGIN = lambda: (os.environ.get("ALLOW_ORIGIN") or "").strip()
+def ALLOW_ORIGIN() -> str:
+    return (os.environ.get("ALLOW_ORIGIN") or "").strip()
 
 
 def _cors(handler) -> None:
@@ -2322,9 +2270,7 @@ class Handler(BaseHTTPRequestHandler):
             stamp = datetime.now().strftime("%Y%m%d")
             if path.endswith(".zip"):
                 data = export_zip(payload)
-                _send_download(
-                    self, data, "application/zip", f"social-tracker-{stamp}.zip"
-                )
+                _send_download(self, data, "application/zip", f"social-tracker-{stamp}.zip")
             else:
                 data = json.dumps(payload, ensure_ascii=False, indent=1).encode("utf-8")
                 _send_download(
@@ -2336,9 +2282,7 @@ class Handler(BaseHTTPRequestHandler):
         elif path.startswith("/fonts/"):
             rel = path[len("/fonts/") :]
             found = _resolve(ASSETS / "fonts", rel)
-            _send(self, found) if found else _send_json(
-                self, {"error": "not found"}, 404
-            )
+            _send(self, found) if found else _send_json(self, {"error": "not found"}, 404)
         elif path.startswith("/assets/"):
             rel = path[len("/assets/") :]
             name = Path(rel).name
@@ -2355,14 +2299,10 @@ class Handler(BaseHTTPRequestHandler):
                     _send_json(self, {"error": "not found"}, 404)
                     return
             found = _resolve(ASSETS, rel)
-            _send(self, found) if found else _send_json(
-                self, {"error": "not found"}, 404
-            )
+            _send(self, found) if found else _send_json(self, {"error": "not found"}, 404)
         elif path.startswith("/app/"):
             found = _resolve(APP, path[len("/app/") :])
-            _send(self, found) if found else _send_json(
-                self, {"error": "not found"}, 404
-            )
+            _send(self, found) if found else _send_json(self, {"error": "not found"}, 404)
         else:
             found = _resolve(STATIC, path.lstrip("/"))
             if found is not None and found.is_file():
@@ -2390,9 +2330,7 @@ class Handler(BaseHTTPRequestHandler):
         if parsed.path == "/api/import":
             try:
                 result, err = (
-                    import_zip(raw_body)
-                    if raw_body[:2] == b"PK"
-                    else import_payload(body)
+                    import_zip(raw_body) if raw_body[:2] == b"PK" else import_payload(body)
                 )
             except Exception as e:  # noqa: BLE001 - always answer the client
                 _send_json(self, {"error": f"import failed: {e}"}, 500)
@@ -2450,9 +2388,7 @@ class Handler(BaseHTTPRequestHandler):
             if action not in ("delete", "move"):
                 _send_json(self, {"error": "bad action"}, 400)
                 return
-            result, err = bulk_items(
-                action, body.get("items"), str(body.get("to_keyword") or "")
-            )
+            result, err = bulk_items(action, body.get("items"), str(body.get("to_keyword") or ""))
             if err:
                 _send_json(self, {"error": err}, 400)
                 return
@@ -2542,9 +2478,7 @@ class Handler(BaseHTTPRequestHandler):
             if raw_sources is None:
                 sources = ["youtube"]
             else:
-                sources = [
-                    str(s).strip().lower() for s in raw_sources if str(s).strip()
-                ]
+                sources = [str(s).strip().lower() for s in raw_sources if str(s).strip()]
             if not sources:
                 _send_json(self, {"error": "no source selected"}, 400)
                 return
@@ -2574,9 +2508,7 @@ class Handler(BaseHTTPRequestHandler):
                     if fn is None:
                         errors.append(f"{src}: not implemented yet")
                         continue
-                    progress_set(
-                        source=src, stage="starting", done=i, total=len(sources)
-                    )
+                    progress_set(source=src, stage="starting", done=i, total=len(sources))
                     if src == "tiktok":
                         items, errs = fn(q, mode, max_age_days)
                     else:
@@ -2607,9 +2539,7 @@ class Handler(BaseHTTPRequestHandler):
             if not q:
                 _send_json(self, {"error": "missing q"}, 400)
                 return
-            _send_json(
-                self, {"analysis": analyze(q, write=True), "fetched_at": now_iso()}
-            )
+            _send_json(self, {"analysis": analyze(q, write=True), "fetched_at": now_iso()})
         else:
             _send_json(self, {"error": "not found"}, 404)
 
@@ -2668,9 +2598,7 @@ class Handler(BaseHTTPRequestHandler):
         except Exception:
             body = {}
         if parsed.path == "/api/items":
-            result, err = delete_item(
-                str(body.get("keyword") or ""), str(body.get("url") or "")
-            )
+            result, err = delete_item(str(body.get("keyword") or ""), str(body.get("url") or ""))
             if err:
                 _send_json(self, {"error": err}, 404 if "not found" in err else 400)
                 return
@@ -2705,9 +2633,7 @@ def main() -> None:
     migrate_items()
     purge_trash()  # 2.5 auto-purge expired trash on server start
     server = ThreadingHTTPServer((HOST, PORT), Handler)
-    print(
-        f"social-tracker on http://{HOST}:{PORT}  (mock: /, live: /live/)"
-    )
+    print(f"social-tracker on http://{HOST}:{PORT}  (mock: /, live: /live/)")
     server.serve_forever()
 
 

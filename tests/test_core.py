@@ -73,15 +73,11 @@ class CoreTests(unittest.TestCase):
         ):
             self.assertEqual(server.canonical_url(url), want)
         self.assertEqual(
-            server.canonical_url(
-                "https://www.facebook.com/ads/library/?active=1&id=99&fbclid=x"
-            ),
+            server.canonical_url("https://www.facebook.com/ads/library/?active=1&id=99&fbclid=x"),
             "https://www.facebook.com/ads/library/?id=99",
         )
         self.assertEqual(
-            server.canonical_url(
-                "https://www.tiktok.com/@u/video/7123?is_from_webapp=1"
-            ),
+            server.canonical_url("https://www.tiktok.com/@u/video/7123?is_from_webapp=1"),
             "https://www.tiktok.com/video/7123",
         )
 
@@ -147,9 +143,7 @@ class CoreTests(unittest.TestCase):
         self.assertTrue(err)
 
     def test_clear_keyword(self):
-        server.merge_items(
-            [self.item("https://example.com/c1", "ลบ")], "kw", 0, fetch_thumbs=False
-        )
+        server.merge_items([self.item("https://example.com/c1", "ลบ")], "kw", 0, fetch_thumbs=False)
         server.merge_items(
             [self.item("https://example.com/c2", "เก็บ", keyword="keep")],
             "keep",
@@ -250,9 +244,7 @@ class CoreTests(unittest.TestCase):
             0,
             fetch_thumbs=False,
         )
-        out, err = server.bulk_items(
-            "delete", [{"keyword": "kw", "url": "https://example.com/t1"}]
-        )
+        out, err = server.bulk_items("delete", [{"keyword": "kw", "url": "https://example.com/t1"}])
         self.assertIsNone(err)
         self.assertEqual(out["trashed"], 1)
         self.assertEqual(len(server.load_json(server.ITEMS_FILE, [])), 1)
@@ -267,9 +259,7 @@ class CoreTests(unittest.TestCase):
         server.merge_items(
             [self.item("https://example.com/dup", "ซ้ำ")], "kw", 0, fetch_thumbs=False
         )
-        server.bulk_items(
-            "delete", [{"keyword": "kw", "url": "https://example.com/dup"}]
-        )
+        server.bulk_items("delete", [{"keyword": "kw", "url": "https://example.com/dup"}])
         server.merge_items(
             [self.item("https://example.com/dup", "ซ้ำใหม่")], "kw", 0, fetch_thumbs=False
         )
@@ -282,9 +272,7 @@ class CoreTests(unittest.TestCase):
         server.merge_items(
             [self.item("https://example.com/old", "เก่า")], "kw", 0, fetch_thumbs=False
         )
-        server.bulk_items(
-            "delete", [{"keyword": "kw", "url": "https://example.com/old"}]
-        )
+        server.bulk_items("delete", [{"keyword": "kw", "url": "https://example.com/old"}])
         trash = server.load_trash()
         trash[0]["deleted_at"] = (
             server.datetime.now(server.timezone.utc)
@@ -298,9 +286,7 @@ class CoreTests(unittest.TestCase):
         server.merge_items(
             [self.item("https://example.com/ex2", "ส่งออก")], "kw", 0, fetch_thumbs=False
         )
-        server.bulk_items(
-            "delete", [{"keyword": "kw", "url": "https://example.com/ex2"}]
-        )
+        server.bulk_items("delete", [{"keyword": "kw", "url": "https://example.com/ex2"}])
         payload = server.export_payload()
         self.assertEqual(len(payload["trash"]), 1)
         result, err = server.import_payload(payload)
@@ -330,12 +316,8 @@ class CoreTests(unittest.TestCase):
     def test_refresh_stats_selected_filter(self):
         server.merge_items(
             [
-                self.item(
-                    "https://example.com/r1", "หนึ่ง", source="youtube", keyword="kw"
-                ),
-                self.item(
-                    "https://example.com/r2", "สอง", source="youtube", keyword="kw"
-                ),
+                self.item("https://example.com/r1", "หนึ่ง", source="youtube", keyword="kw"),
+                self.item("https://example.com/r2", "สอง", source="youtube", keyword="kw"),
             ],
             "kw",
             0,
@@ -350,7 +332,11 @@ class CoreTests(unittest.TestCase):
 
     def test_refresh_stats_all_without_keyword(self):
         server.merge_items(
-            [self.item("https://www.youtube.com/watch?v=r3", "all", source="youtube", keyword="kw2")],
+            [
+                self.item(
+                    "https://www.youtube.com/watch?v=r3", "all", source="youtube", keyword="kw2"
+                )
+            ],
             "kw2",
             0,
             fetch_thumbs=False,

@@ -2,8 +2,22 @@ import type { Item } from "@/lib/types";
 
 /** Fixtures for the `/` mock route. No network, no Supabase. */
 const BASE: [string, string, string, string, number, number][] = [
-  ["Digital Marketing", "facebook", "How we get local clients in 30 days", "ITOPPLUS Case", 891, 12000],
-  ["Digital Marketing", "tiktok", "Facebook Ads vs TikTok Ads: where to start", "ads.withbeam", 642, 8400],
+  [
+    "Digital Marketing",
+    "facebook",
+    "How we get local clients in 30 days",
+    "ITOPPLUS Case",
+    891,
+    12000,
+  ],
+  [
+    "Digital Marketing",
+    "tiktok",
+    "Facebook Ads vs TikTok Ads: where to start",
+    "ads.withbeam",
+    642,
+    8400,
+  ],
   ["Digital Marketing", "facebook", "Content strategy ที่ยิงแล้วได้ลูกค้าจริง", "ITOPPLUS", 534, 6100],
   ["SEO", "youtube", "SEO สำหรับธุรกิจไทย 2026", "Nack Siwakorn", 478, 5200],
   ["SEO", "facebook", "Local SEO ทำอย่างไรให้ร้านถูกเจอ", "Local Heroes", 412, 4300],
@@ -42,7 +56,11 @@ export const MOCK_ITEMS: Item[] = Array.from({ length: 67 }, (_, index) => {
 });
 
 export const MOCK_PROFILES = [
-  { name: "Profile 1 — ITOPPLUS", keywords: ["Digital Marketing", "SEO", "เว็บขายของ"], sources: ["facebook", "tiktok"] },
+  {
+    name: "Profile 1 — ITOPPLUS",
+    keywords: ["Digital Marketing", "SEO", "เว็บขายของ"],
+    sources: ["facebook", "tiktok"],
+  },
   { name: "Local business", keywords: ["ระบบจอง", "ธีมเว็บ"], sources: ["youtube", "facebook"] },
 ];
 

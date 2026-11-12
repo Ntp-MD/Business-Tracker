@@ -9,7 +9,7 @@ import { signInWithEmail, signInWithPassword } from "./actions";
 export const dynamic = "force-dynamic";
 
 function safeNext(value: string | undefined): string {
-  return value && value.startsWith("/") && !value.startsWith("//") ? value : "/live";
+  return value?.startsWith("/") && !value.startsWith("//") ? value : "/live";
 }
 
 export default async function LoginPage({
@@ -48,7 +48,13 @@ export default async function LoginPage({
             <input type="hidden" name="next" value={target} />
             <label>
               Email
-              <input name="email" type="email" autoComplete="email" placeholder="owner@example.com" required />
+              <input
+                name="email"
+                type="email"
+                autoComplete="email"
+                placeholder="owner@example.com"
+                required
+              />
             </label>
             <button className="btn btn-primary" type="submit">
               Send magic link
@@ -70,7 +76,11 @@ export default async function LoginPage({
                   Sign in with password
                 </button>
               </form>
-              <Link className="btn btn-ghost" href={`/login?next=${encodeURIComponent(target)}`} style={{ marginTop: 8 }}>
+              <Link
+                className="btn btn-ghost"
+                href={`/login?next=${encodeURIComponent(target)}`}
+                style={{ marginTop: 8 }}
+              >
                 Use magic link instead
               </Link>
             </>

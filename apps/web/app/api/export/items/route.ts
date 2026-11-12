@@ -20,12 +20,32 @@ export async function GET(request: Request) {
 
   const items: Item[] = [];
   for (let page = 1; ; page += 1) {
-    const chunk = await queryItems({ state: "active", q, source, from, to, sort, dir, page, pageSize: 1000 });
+    const chunk = await queryItems({
+      state: "active",
+      q,
+      source,
+      from,
+      to,
+      sort,
+      dir,
+      page,
+      pageSize: 1000,
+    });
     items.push(...chunk.items);
     if (!chunk.items.length || items.length >= chunk.total) break;
   }
 
-  const header = ["keyword", "source", "title", "author", "url", "score", "metric", "published", "created_at"];
+  const header = [
+    "keyword",
+    "source",
+    "title",
+    "author",
+    "url",
+    "score",
+    "metric",
+    "published",
+    "created_at",
+  ];
   const rows = items.map((item) =>
     [
       item.keyword,
@@ -41,7 +61,7 @@ export async function GET(request: Request) {
       .map(cell)
       .join(","),
   );
-  const csv = "\uFEFF" + [header.join(","), ...rows].join("\r\n");
+  const csv = `\uFEFF${[header.join(","), ...rows].join("\r\n")}`;
   return new Response(csv, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",

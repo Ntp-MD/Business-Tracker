@@ -105,7 +105,9 @@ export default async function ItemsPage({
       <div className="card">
         <div className="card-head">
           <h3>All items ({data.total.toLocaleString("en-US")})</h3>
-          <span className="chart-note">Click a title to open the source · {dir === "desc" ? "high → low" : "low → high"}</span>
+          <span className="chart-note">
+            Click a title to open the source · {dir === "desc" ? "high → low" : "low → high"}
+          </span>
         </div>
 
         <form className="items-filters" action="/live/items" method="get">
@@ -167,6 +169,7 @@ export default async function ItemsPage({
           </Link>
         </form>
 
+        {/* biome-ignore lint/a11y/useSemanticElements: styled grouping div; fieldset would change layout */}
         <div className="quick-dates" role="group" aria-label="Quick date range">
           {quickRanges.map((range) => (
             <Link
@@ -181,46 +184,49 @@ export default async function ItemsPage({
         </div>
 
         {writable ? (
-        <details className="add-item">
-          <summary className="btn btn-ghost" style={{ display: "inline-block", marginBottom: 12 }}>
-            + Add item
-          </summary>
-          <form action={createItem} className="item-form">
-            <label>
-              Keyword
-              <input name="keyword" placeholder="เช่น AI agent" required />
-            </label>
-            <label>
-              Source
-              <select name="source" defaultValue="youtube">
-                {sources.map((item) => (
-                  <option key={item} value={item}>
-                    {sourceLabel(item)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              URL
-              <input name="url" type="url" placeholder="https://…" required />
-            </label>
-            <label>
-              Title
-              <input name="title" placeholder="หัวข้อที่ต้องการบันทึก" required />
-            </label>
-            <label>
-              Channel / page
-              <input name="author" placeholder="ชื่อช่องหรือเพจ" />
-            </label>
-            <label>
-              Score
-              <input name="score" type="number" min="0" step="1" placeholder="0" />
-            </label>
-            <button className="btn btn-primary" type="submit">
-              Save item
-            </button>
-          </form>
-        </details>
+          <details className="add-item">
+            <summary
+              className="btn btn-ghost"
+              style={{ display: "inline-block", marginBottom: 12 }}
+            >
+              + Add item
+            </summary>
+            <form action={createItem} className="item-form">
+              <label>
+                Keyword
+                <input name="keyword" placeholder="เช่น AI agent" required />
+              </label>
+              <label>
+                Source
+                <select name="source" defaultValue="youtube">
+                  {sources.map((item) => (
+                    <option key={item} value={item}>
+                      {sourceLabel(item)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                URL
+                <input name="url" type="url" placeholder="https://…" required />
+              </label>
+              <label>
+                Title
+                <input name="title" placeholder="หัวข้อที่ต้องการบันทึก" required />
+              </label>
+              <label>
+                Channel / page
+                <input name="author" placeholder="ชื่อช่องหรือเพจ" />
+              </label>
+              <label>
+                Score
+                <input name="score" type="number" min="0" step="1" placeholder="0" />
+              </label>
+              <button className="btn btn-primary" type="submit">
+                Save item
+              </button>
+            </form>
+          </details>
         ) : null}
 
         <div className="card-head" style={{ marginTop: 4 }}>
@@ -239,7 +245,11 @@ export default async function ItemsPage({
                 </button>
               </form>
             ) : null}
-            <a className="btn btn-ghost" href={exportHref} style={{ padding: "6px 12px", fontSize: 12 }}>
+            <a
+              className="btn btn-ghost"
+              href={exportHref}
+              style={{ padding: "6px 12px", fontSize: 12 }}
+            >
               Export CSV
             </a>
           </div>
@@ -251,19 +261,31 @@ export default async function ItemsPage({
               <ItemRows
                 items={data.items}
                 selectable={writable}
-                actions={writable ? (item) => (
-                  <div className="row-actions">
-                    <Link className="mini-btn" href={`/live/items/${item.id}/edit`}>
-                      Edit
-                    </Link>
-                    <button className="mini-btn" type="submit" formAction={archiveItem.bind(null, item.id!)}>
-                      Archive
-                    </button>
-                    <button className="mini-btn danger" type="submit" formAction={deleteItem.bind(null, item.id!)}>
-                      Delete
-                    </button>
-                  </div>
-                ) : undefined}
+                actions={
+                  writable
+                    ? (item) => (
+                        <div className="row-actions">
+                          <Link className="mini-btn" href={`/live/items/${item.id}/edit`}>
+                            Edit
+                          </Link>
+                          <button
+                            className="mini-btn"
+                            type="submit"
+                            formAction={archiveItem.bind(null, item.id!)}
+                          >
+                            Archive
+                          </button>
+                          <button
+                            className="mini-btn danger"
+                            type="submit"
+                            formAction={deleteItem.bind(null, item.id!)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )
+                    : undefined
+                }
               />
             ) : (
               <div className="empty">No items match this view.</div>
@@ -271,18 +293,18 @@ export default async function ItemsPage({
           </div>
 
           {writable ? (
-          <div className="bulk-bar bulk-bar-live">
-            <button className="btn btn-ghost" type="submit">
-              Archive selected
-            </button>
-            <button className="btn btn-ghost" type="submit" formAction={bulkDelete}>
-              Delete selected
-            </button>
-            <input name="to_keyword" placeholder="ย้ายไป keyword…" aria-label="Move to keyword" />
-            <button className="btn btn-ghost" type="submit" formAction={bulkMove}>
-              Move
-            </button>
-          </div>
+            <div className="bulk-bar bulk-bar-live">
+              <button className="btn btn-ghost" type="submit">
+                Archive selected
+              </button>
+              <button className="btn btn-ghost" type="submit" formAction={bulkDelete}>
+                Delete selected
+              </button>
+              <input name="to_keyword" placeholder="ย้ายไป keyword…" aria-label="Move to keyword" />
+              <button className="btn btn-ghost" type="submit" formAction={bulkMove}>
+                Move
+              </button>
+            </div>
           ) : null}
         </form>
 

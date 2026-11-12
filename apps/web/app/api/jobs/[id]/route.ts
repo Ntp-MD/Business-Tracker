@@ -6,6 +6,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     const data = await getJob(Number(id));
     return Response.json(data);
   } catch (err) {
-    return Response.json({ error: err instanceof Error ? err.message : "unknown" }, { status: 500 });
+    return Response.json(
+      { error: err instanceof Error ? err.message : "unknown" },
+      { status: 500 },
+    );
   }
 }

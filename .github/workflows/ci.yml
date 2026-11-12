@@ -29,6 +29,15 @@ jobs:
 
       - run: npm ci
 
+      - name: Python dev tools
+        run: pip install -r requirements-dev.txt
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
       - name: Python tests
         run: python -m unittest discover -s tests
 

@@ -50,7 +50,11 @@ export function JobStatus({ jobId }: { jobId: number }) {
         : "";
 
   return (
-    <div className={job.status === "error" ? "status err" : "status"} role="status" aria-live="polite">
+    <div
+      className={job.status === "error" ? "status err" : "status"}
+      role="status"
+      aria-live="polite"
+    >
       Job #{job.id} · {LABELS[job.status] ?? job.status}
       {job.total > 0 ? ` · ${job.progress}/${job.total}` : ""}
       {job.error ? ` · ${job.error}` : ""}

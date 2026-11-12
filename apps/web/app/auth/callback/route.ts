@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/ssr";
 
 function safeNext(value: string | null): string {
-  return value && value.startsWith("/") && !value.startsWith("//") ? value : "/live";
+  return value?.startsWith("/") && !value.startsWith("//") ? value : "/live";
 }
 
 export async function GET(request: Request) {
@@ -13,7 +13,10 @@ export async function GET(request: Request) {
   const providerError = url.searchParams.get("error_description") ?? url.searchParams.get("error");
   if (providerError) {
     return NextResponse.redirect(
-      new URL(`/login?error=${encodeURIComponent(providerError)}&next=${encodeURIComponent(next)}`, url.origin),
+      new URL(
+        `/login?error=${encodeURIComponent(providerError)}&next=${encodeURIComponent(next)}`,
+        url.origin,
+      ),
     );
   }
 
@@ -22,7 +25,10 @@ export async function GET(request: Request) {
   const otpType = url.searchParams.get("type");
   if (!code && !(tokenHash && otpType)) {
     return NextResponse.redirect(
-      new URL(`/login?error=${encodeURIComponent("Missing login code.")}&next=${encodeURIComponent(next)}`, url.origin),
+      new URL(
+        `/login?error=${encodeURIComponent("Missing login code.")}&next=${encodeURIComponent(next)}`,
+        url.origin,
+      ),
     );
   }
 
@@ -32,7 +38,10 @@ export async function GET(request: Request) {
     : await supabase.auth.verifyOtp({ token_hash: tokenHash!, type: otpType as "magiclink" });
   if (error) {
     return NextResponse.redirect(
-      new URL(`/login?error=${encodeURIComponent("This login link is invalid or expired.")}&next=${encodeURIComponent(next)}`, url.origin),
+      new URL(
+        `/login?error=${encodeURIComponent("This login link is invalid or expired.")}&next=${encodeURIComponent(next)}`,
+        url.origin,
+      ),
     );
   }
 

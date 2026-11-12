@@ -75,9 +75,21 @@ def strict() -> bool:
     return (os.environ.get("SUPABASE_STRICT") or "1").strip() not in ("0", "false", "no")
 
 
-def _request(method: str, path: str, payload=None, prefer: str = "", raw: bytes | None = None, root: str = "/rest/v1/", content_type: str = "application/json"):
+def _request(
+    method: str,
+    path: str,
+    payload=None,
+    prefer: str = "",
+    raw: bytes | None = None,
+    root: str = "/rest/v1/",
+    content_type: str = "application/json",
+):
     url = f"{base_url()}{root}{path}"
-    body = raw if raw is not None else (None if payload is None else json.dumps(payload, ensure_ascii=False).encode("utf-8"))
+    body = (
+        raw
+        if raw is not None
+        else (None if payload is None else json.dumps(payload, ensure_ascii=False).encode("utf-8"))
+    )
     headers = {
         "apikey": service_key(),
         "Authorization": f"Bearer {service_key()}",
@@ -275,9 +287,7 @@ def _save_items(cls: str, obj: list) -> bool:
     keep = {r["canonical_url"] + "\u0000" + r["keyword"] for r in rows}
     existing = _select("items", CLASS_FILTER[cls])
     stale = [
-        r["id"]
-        for r in existing
-        if f"{r.get('canonical_url')}\u0000{r.get('keyword')}" not in keep
+        r["id"] for r in existing if f"{r.get('canonical_url')}\u0000{r.get('keyword')}" not in keep
     ]
     if stale:
         _delete_missing("items", stale)
@@ -354,7 +364,11 @@ def save(path: Path, obj) -> bool:
                 try:
                     uuid.UUID(pid)
                 except (ValueError, AttributeError):
-                    pid = str(uuid.uuid5(uuid.NAMESPACE_URL, "social-tracker:profile:" + (p.get("name") or pid)))
+                    pid = str(
+                        uuid.uuid5(
+                            uuid.NAMESPACE_URL, "social-tracker:profile:" + (p.get("name") or pid)
+                        )
+                    )
                 rows.append(
                     {
                         "id": pid,
@@ -380,7 +394,8 @@ def save(path: Path, obj) -> bool:
                     {
                         "user_id": user_id(),
                         "source": source,
-                        "checked_at": _dt(value.get("at")) or datetime.now(timezone.utc).isoformat(),
+                        "checked_at": _dt(value.get("at"))
+                        or datetime.now(timezone.utc).isoformat(),
                         "ok": bool(value.get("ok")),
                         "count": int(value.get("count") or 0),
                         "error": str(value.get("error") or "")[:300] or None,
@@ -390,11 +405,11 @@ def save(path: Path, obj) -> bool:
             keep = {r["source"] for r in rows}
             existing = _select("source_status")
             for source in [r["source"] for r in existing if r.get("source") not in keep]:
-                    _request(
-                        "DELETE",
-                        f"source_status?user_id=eq.{urllib.parse.quote(user_id())}&source=eq.{urllib.parse.quote(source)}",
-                        prefer="return=minimal",
-                    )
+                _request(
+                    "DELETE",
+                    f"source_status?user_id=eq.{urllib.parse.quote(user_id())}&source=eq.{urllib.parse.quote(source)}",
+                    prefer="return=minimal",
+                )
             return True
         if name in ("analysis.json", "index.json"):
             rows = []

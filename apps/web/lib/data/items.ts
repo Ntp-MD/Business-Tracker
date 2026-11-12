@@ -1,7 +1,7 @@
 import "server-only";
-import type { Item, Profile } from "@/lib/types";
 
 import { supabaseAdmin } from "@/lib/supabase/server";
+import type { Item, Profile } from "@/lib/types";
 
 export type ItemState = "active" | "archived" | "trash";
 
@@ -9,16 +9,17 @@ export type ItemState = "active" | "archived" | "trash";
 function scoped(state: ItemState) {
   const table = supabaseAdmin().from("items");
   if (state === "active") return table.select("*").is("deleted_at", null).is("archived_at", null);
-  if (state === "archived") return table.select("*").is("deleted_at", null).not("archived_at", "is", null);
+  if (state === "archived")
+    return table.select("*").is("deleted_at", null).not("archived_at", "is", null);
   return table.select("*").not("deleted_at", "is", null);
 }
 
-export async function listItems(opts: {
-  keyword?: string;
-  state?: ItemState;
-  limit?: number;
-} = {}): Promise<Item[]> {
-  let query = scoped(opts.state ?? "active").order("score", { ascending: false }).limit(opts.limit ?? 50);
+export async function listItems(
+  opts: { keyword?: string; state?: ItemState; limit?: number } = {},
+): Promise<Item[]> {
+  let query = scoped(opts.state ?? "active")
+    .order("score", { ascending: false })
+    .limit(opts.limit ?? 50);
   if (opts.keyword) query = query.eq("keyword", opts.keyword);
 
   const { data, error } = await query;
@@ -29,7 +30,8 @@ export async function listItems(opts: {
 export async function countItems(state: ItemState = "active"): Promise<number> {
   let query = supabaseAdmin().from("items").select("id", { count: "exact", head: true });
   if (state === "active") query = query.is("deleted_at", null).is("archived_at", null);
-  else if (state === "archived") query = query.is("deleted_at", null).not("archived_at", "is", null);
+  else if (state === "archived")
+    query = query.is("deleted_at", null).not("archived_at", "is", null);
   else query = query.not("deleted_at", "is", null);
 
   const { count, error } = await query;
