@@ -52,13 +52,13 @@
         flex-direction: column;
         gap: 4px;
       }
-      .nav a {
+      .nav a, .nav .locked {
         display: flex;
         align-items: center;
         gap: 10px;
         padding: 10px 12px;
       }
-      .nav a svg {
+      .nav a svg, .nav .locked svg {
         width: 17px;
         height: 17px;
         flex: 0 0 17px;
