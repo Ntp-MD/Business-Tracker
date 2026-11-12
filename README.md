@@ -81,8 +81,10 @@ python -m backend.collectors.dry_run --connector hn_search --keyword Thailand --
 # add --show-sample 5 to print accepted titles for review (not persisted)
 ```
 
-Reports land in `data/reports/` (gitignored). Persistence, DDL and job dispatch are Phase 1b
-and stay disabled until the owner approves the schema and dry-run sample.
+Reports land in `data/reports/` (gitignored). Phase 1b schema/persistence is drafted in
+`supabase/migrations/20261112010000_collectors.sql` but **not applied**; collector writes
+stay off unless `COLLECTOR_WRITE_ENABLED=1`. Persistence, DDL and job dispatch require owner
+review before any database write.
 
 ## Observability
 

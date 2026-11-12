@@ -26,7 +26,7 @@ ENV_FILE = ROOT / ".env.local"
 TIMEOUT = 30
 PAGE = 1000
 
-SOURCES = ("youtube", "gnews", "tiktok", "facebook", "fbads", "ttads", "manual")
+SOURCES = ("youtube", "gnews", "tiktok", "facebook", "fbads", "ttads", "manual", "hackernews")
 METRICS = ("views", "plays", "likes")
 CLASS_BY_FILE = {
     "items.json": "active",

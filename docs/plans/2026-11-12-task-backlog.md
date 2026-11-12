@@ -145,8 +145,9 @@ summary view would be needed for very large datasets.
 gate, dry-run CLI) + fixture tests. 100 real HN records: 20 accepted, 80 `out_of_window`,
 0 quarantined; report in gitignored `data/reports/`. Existing items audit: 324 active,
 6 duplicate canonical groups, 0 bad URLs/spam/missing titles.
-**Remaining:** Phase 1b (draft DDL, persistence, `collect` job dispatch) needs owner approval
-before any database write.
+**Remaining:** Phase 1b code is drafted (migration
+`20261112010000_collectors.sql`, persistence, `/api/collect` dispatch) but **not applied**;
+writes stay off until the owner reviews the DDL and dry-run sample.
 
 ### 12. Repo governance
 - [x] Decide LICENSE (private / all rights reserved)

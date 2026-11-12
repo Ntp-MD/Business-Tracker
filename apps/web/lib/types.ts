@@ -1,5 +1,5 @@
 /** Row shapes shared with the legacy API/DB (snake_case on purpose). */
-export type Source = "youtube" | "gnews" | "tiktok" | "fbads" | "ttads";
+export type Source = "youtube" | "gnews" | "tiktok" | "facebook" | "fbads" | "ttads" | "hackernews";
 
 export interface Item {
   id?: string;

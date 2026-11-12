@@ -79,7 +79,15 @@ async function patch(id: number, body: Record<string, unknown>): Promise<void> {
 async function run(job: Job): Promise<void> {
   const payload = job.payload ?? {};
   try {
-    const endpoint = job.kind === "refresh_views" ? "/api/refresh-stats" : "/api/fetch";
+    const endpoint =
+      job.kind === "refresh_views"
+        ? "/api/refresh-stats"
+        : job.kind === "fetch"
+          ? "/api/fetch"
+          : job.kind === "collect"
+            ? "/api/collect"
+            : null;
+    if (!endpoint) throw new Error(`unknown job kind: ${job.kind}`);
     const res = await fetch(`${API}${endpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

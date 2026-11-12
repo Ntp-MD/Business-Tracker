@@ -44,6 +44,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import db
+from collectors import dry_run as collector_dry_run
+from collectors.job import validate_collect_payload
 
 ROOT = Path(__file__).resolve().parent.parent
 STATIC = ROOT / "legacy"
@@ -904,11 +906,12 @@ def save_thumbnail(vid: str) -> bool:
         return False
 
 
-DATED_SOURCES = {"youtube", "gnews", "tiktok"}  # ads are current by definition
+DATED_SOURCES = {"youtube", "gnews", "tiktok", "hackernews"}  # ads are current by definition
 ORGANIC_SOURCES = {
     "youtube",
     "gnews",
     "tiktok",
+    "hackernews",
 }  # same title = same content; ads may reuse copy
 TRACKING_KEYS = (
     "utm_",
@@ -2429,6 +2432,20 @@ class Handler(BaseHTTPRequestHandler):
                 _send_json(self, {"error": "missing q"}, 400)
                 return
             _send_json(self, clear_keyword(q))
+        elif parsed.path == "/api/collect":
+            try:
+                payload = validate_collect_payload(body)
+                result = collector_dry_run.run(
+                    payload["connector_id"],
+                    payload["scope"]["keyword"],
+                    payload["max_records"],
+                    collector_dry_run.DEFAULT_REPORT_DIR,
+                    0,
+                )
+            except (ValueError, SystemExit) as exc:
+                _send_json(self, {"error": str(exc)}, 400)
+                return
+            _send_json(self, result)
         elif parsed.path == "/api/prune":
             try:
                 days = int(body.get("days") or 0)
