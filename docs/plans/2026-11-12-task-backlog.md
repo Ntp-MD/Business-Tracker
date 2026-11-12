@@ -135,27 +135,34 @@ views / plays / likes. Verified with 3,500 disposable rows (`__e2e_count__`, del
 summary view would be needed for very large datasets.
 
 ### 11. Collector ingestion quality gate
-- [ ] Follow `docs/plans/COLLECTOR-INTEGRATION-PLAN.md`
-- [ ] Do not start until schema, source list, retention and quality policy are approved
-- [ ] First release: HN only, dry-run sample, no rejected records in Postgres
+- [x] Follow `docs/plans/COLLECTOR-INTEGRATION-PLAN.md` (Phase 0 audit + Phase 1a dry-run)
+- [x] Owner approved HN-only dry-run on 2026-11-12; no Postgres writes
+- [x] First release: HN only, dry-run sample, no rejected records in Postgres
 
 **Done when:** the plan's Phase 0 gate is approved and Phase 1a passes.
-**Decision needed:** owner approvals listed in that plan.
+**Progress:** `backend/collectors/` (contract, registry, HTTP helper, HN adapter, quality
+gate, dry-run CLI) + fixture tests. 100 real HN records: 20 accepted, 80 `out_of_window`,
+0 quarantined; report in gitignored `data/reports/`. Existing items audit: 324 active,
+6 duplicate canonical groups, 0 bad URLs/spam/missing titles.
+**Remaining:** Phase 1b (draft DDL, persistence, `collect` job dispatch) needs owner approval
+before any database write.
 
 ### 12. Repo governance
-- [ ] Decide LICENSE (private or public)
-- [ ] Add `SECURITY.md` and `CONTRIBUTING.md` if the repo is shared
+- [x] Decide LICENSE (private / all rights reserved)
+- [x] Add `SECURITY.md` and `CONTRIBUTING.md`
 
 **Done when:** the repository has an explicit usage/security policy.
-**Decision needed:** license choice.
+**Done:** 2026-11-12. Proprietary `LICENSE`; reporting + secret rules in `SECURITY.md`;
+checks and contribution rules in `CONTRIBUTING.md`.
 
 ---
 
-## Decisions needed
+## Decisions (resolved)
 
-1. Prod auth: Supabase Auth magic link or owner password?
-2. Live isolation: DB-level read-only or app guard + rate limit?
-3. Node/Python versions to pin.
-4. Lint tooling: ESLint/Prettier or Biome.
-5. Observability provider.
-6. License/private policy.
+1. Prod auth: Supabase magic link plus password fallback.
+2. Live isolation: anon key + public read-only views.
+3. Runtime: Node 22.x, Python 3.12, Playwright 1.64.1.
+4. Lint/format: Biome + Ruff.
+5. Observability: GitHub-native health workflow + issues.
+6. License: private / all rights reserved.
+7. Collector: HN-only dry-run approved; DDL/persistence still needs approval.

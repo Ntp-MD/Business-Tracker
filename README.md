@@ -70,6 +70,20 @@ E2E_PROD_EMAIL=owner@example.com E2E_PROD_PASSWORD=... npm run test:e2e
 URLs default to the Vercel deployments; override with `E2E_MOCKUP_URL`, `E2E_LIVE_URL`,
 `E2E_PROD_URL`.
 
+## Collector dry run
+
+New adapters live in `backend/collectors/`. The first connector is Hacker News in dry-run
+mode: it fetches metadata, runs the quality gate, and writes only a local report with URL
+hashes/reason codes — no Postgres writes.
+
+```bash
+python -m backend.collectors.dry_run --connector hn_search --keyword Thailand --limit 50
+# add --show-sample 5 to print accepted titles for review (not persisted)
+```
+
+Reports land in `data/reports/` (gitignored). Persistence, DDL and job dispatch are Phase 1b
+and stay disabled until the owner approves the schema and dry-run sample.
+
 ## Observability
 
 - `GET /api/health` reports item counts and the worker heartbeat (`stale` after 5 minutes).
@@ -100,3 +114,8 @@ Render API shutdown are tracked in [docs/README.md](docs/README.md).
 Active backlog: [docs/plans/2026-11-12-task-backlog.md](docs/plans/2026-11-12-task-backlog.md).
 Remaining plan: [docs/plans/COLLECTOR-INTEGRATION-PLAN.md](docs/plans/COLLECTOR-INTEGRATION-PLAN.md).
 Notes and ideas are in `docs/notes/`.
+
+## License
+
+Private and proprietary; see [LICENSE](LICENSE). Security reports: [SECURITY.md](SECURITY.md).
+Contribution rules: [CONTRIBUTING.md](CONTRIBUTING.md).
