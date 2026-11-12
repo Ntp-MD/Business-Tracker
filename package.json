@@ -10,10 +10,11 @@
     "build:web": "npm run build -w apps/web",
     "build:worker": "npm run build -w apps/worker",
     "typecheck": "npm run typecheck -w apps/worker",
-    "lint": "biome check apps && python -m ruff check backend tests scripts",
-    "format": "biome check --write apps && python -m ruff check --fix backend tests scripts && python -m ruff format backend tests scripts",
-    "format:check": "biome format apps && python -m ruff format --check backend tests scripts",
-    "test": "python -m unittest discover -s tests"
+    "lint": "biome check apps && python -m ruff check backend tests scripts e2e",
+    "format": "biome check --write apps && python -m ruff check --fix backend tests scripts e2e && python -m ruff format backend tests scripts e2e",
+    "format:check": "biome format apps && python -m ruff format --check backend tests scripts e2e",
+    "test": "python -m unittest discover -s tests",
+    "test:e2e": "python -m unittest discover -s e2e -v"
   },
   "engines": {
     "node": "22.x"

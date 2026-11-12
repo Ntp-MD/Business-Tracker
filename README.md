@@ -54,6 +54,22 @@ versions. Backend code is stdlib-only and runs on Python 3.10+; Playwright is pi
 `requirements.txt` to match `Dockerfile`. Web lint/format uses Biome (`biome.json`), Python
 uses Ruff (`pyproject.toml`); `npm run format` applies fixes.
 
+### E2E smoke
+
+`e2e/` checks the three deployed variants. Read-only tests run in CI; the prod write test
+creates one disposable item and deletes it, so it runs only with owner credentials:
+
+```bash
+python -m playwright install chromium
+npm run test:e2e
+
+# Prod filter + archive/trash lifecycle (writes one temp item)
+E2E_PROD_EMAIL=owner@example.com E2E_PROD_PASSWORD=... npm run test:e2e
+```
+
+URLs default to the Vercel deployments; override with `E2E_MOCKUP_URL`, `E2E_LIVE_URL`,
+`E2E_PROD_URL`.
+
 Copy `.env.example` to `.env.local` for the Python side. The Next app reads its env from
 `apps/web/.env.local` or the host's environment.
 

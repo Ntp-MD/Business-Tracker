@@ -84,13 +84,16 @@ Password fallback is available at /login.
 (`requirements-dev.txt`); one-time format applied; lint + format check pass.
 
 ### 7. E2E smoke for 3 variants
-- [ ] Playwright suite: mockup `/` and `/live` redirect
-- [ ] Live `/` redirect, `/live` 200, settings redirect, `POST /live/items` 403
-- [ ] Prod full UI, filters, archive/trash
-- [ ] Read-only tests in CI; write tests use disposable data only
+- [x] Playwright suite: mockup `/` and `/live` redirect
+- [x] Live `/` redirect, `/live` 200, settings redirect, `POST /live/items` 403
+- [x] Prod full UI, filters, archive/trash
+- [x] Read-only tests in CI; write tests use disposable data only
 
 **Done when:** suite passes against the three deployed URLs.
-**Decision needed:** test data strategy for prod writes.
+**Done:** 2026-11-12. `e2e/test_variants.py` (Python Playwright, reuses `requirements.txt`);
+read-only tests run in CI. Prod lifecycle runs only with `E2E_PROD_EMAIL` /
+`E2E_PROD_PASSWORD`, creates one `__e2e__` item, archives/trashes/purges it, and cleans up
+on failure.
 
 ### 8. Observability
 - [ ] Structured server logs with request IDs
