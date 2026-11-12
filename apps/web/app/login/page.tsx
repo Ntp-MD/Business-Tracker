@@ -15,12 +15,12 @@ function safeNext(value: string | undefined): string {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ sent?: string; error?: string; next?: string }>;
+  searchParams: Promise<{ sent?: string; error?: string; next?: string; password?: string }>;
 }) {
   const variant = appVariant();
   if (variant !== "prod") redirect(variant === "mockup" ? "/" : "/live");
 
-  const { sent, error, next } = await searchParams;
+  const { sent, error, next, password } = await searchParams;
   const target = safeNext(next);
 
   const supabase = await createSupabaseServerClient();
@@ -54,25 +54,35 @@ export default async function LoginPage({
               Send magic link
             </button>
           </form>
-          <details className="add-item">
-            <summary className="btn btn-ghost" style={{ display: "inline-block", marginTop: 8 }}>
+          {password ? (
+            <>
+              <form action={signInWithPassword} className="item-form" style={{ marginTop: 8 }}>
+                <input type="hidden" name="next" value={target} />
+                <label>
+                  Email
+                  <input name="email" type="email" autoComplete="email" required />
+                </label>
+                <label>
+                  Password
+                  <input name="password" type="password" autoComplete="current-password" required />
+                </label>
+                <button className="btn btn-ghost" type="submit">
+                  Sign in with password
+                </button>
+              </form>
+              <Link className="btn btn-ghost" href={`/login?next=${encodeURIComponent(target)}`} style={{ marginTop: 8 }}>
+                Use magic link instead
+              </Link>
+            </>
+          ) : (
+            <Link
+              className="btn btn-ghost"
+              href={`/login?password=1&next=${encodeURIComponent(target)}`}
+              style={{ marginTop: 8 }}
+            >
               Use password instead
-            </summary>
-            <form action={signInWithPassword} className="item-form" style={{ marginTop: 8 }}>
-              <input type="hidden" name="next" value={target} />
-              <label>
-                Email
-                <input name="email" type="email" autoComplete="email" required />
-              </label>
-              <label>
-                Password
-                <input name="password" type="password" autoComplete="current-password" required />
-              </label>
-              <button className="btn btn-ghost" type="submit">
-                Sign in with password
-              </button>
-            </form>
-          </details>
+            </Link>
+          )}
           {sent ? <div className="status">Check your email for the login link.</div> : null}
           {error ? <div className="status err">{error}</div> : null}
           <p className="src-detail" style={{ marginTop: 12 }}>
