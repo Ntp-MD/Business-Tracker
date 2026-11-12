@@ -8,6 +8,7 @@ import sys
 import tempfile
 import unittest
 from datetime import datetime, timezone
+from unittest.mock import patch
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "backend"))
 
@@ -180,6 +181,13 @@ class JobPayloadTests(unittest.TestCase):
                 {"connector_id": "hn_search", "scope": {"keyword": "x"}, "dry_run": False}
             )
 
+    def test_allows_writes_when_enabled(self):
+        with patch.dict(os.environ, {"COLLECTOR_WRITE_ENABLED": "1"}):
+            payload = validate_collect_payload(
+                {"connector_id": "hn_search", "scope": {"keyword": "x"}, "dry_run": False}
+            )
+        self.assertFalse(payload["dry_run"])
+
     def test_rejects_bad_limits_and_modes(self):
         for payload in (
             {"connector_id": "hn_search", "scope": {"keyword": "x"}, "max_records": 0},
@@ -256,6 +264,8 @@ class StoreTests(unittest.TestCase):
         self.assertEqual(item_call[2][0]["body"], "")
         self.assertEqual(item_call[2][0]["score"], 10)
         self.assertEqual(result["written"], 1)
+        self.assertEqual(result["inserted"], 1)
+        self.assertEqual(result["updated"], 0)
 
 
 if __name__ == "__main__":

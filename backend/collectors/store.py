@@ -10,7 +10,10 @@ from __future__ import annotations
 import os
 from urllib.parse import quote
 
-import db
+try:  # running as `python backend/server.py` or importing `collectors.*`
+    import db
+except ModuleNotFoundError:  # running as `python -m backend.collectors.dry_run`
+    from backend import db
 
 from .contract import CollectorRecord, utc_now
 from .registry import Connector
@@ -62,6 +65,21 @@ def _find_item_id(user_id: str, keyword: str, canonical_url: str) -> str | None:
         or []
     )
     return rows[0]["id"] if rows else None
+
+
+def _record_exists(user_id: str, connector: Connector, source_item_id: str) -> bool:
+    rows = (
+        db._request(
+            "GET",
+            "collector_records?select=id"
+            f"&user_id=eq.{quote(user_id)}"
+            f"&source=eq.{quote(connector.source)}"
+            f"&source_item_id=eq.{quote(source_item_id, safe='')}"
+            "&limit=1",
+        )
+        or []
+    )
+    return bool(rows)
 
 
 def _record_row(record: CollectorRecord, user_id: str, keyword: str) -> dict:
@@ -125,6 +143,10 @@ def save_accepted(
     user = db.user_id()
     now = utc_now().isoformat()
 
+    existing_records = sum(
+        1 for record in records if _record_exists(user, connector, record.source_item_id)
+    )
+
     record_rows = [_record_row(record, user, keyword) for record in records]
     saved_records = _post(
         "collector_records",
@@ -170,7 +192,12 @@ def save_accepted(
             )
     _post("collector_item_links", link_rows, "record_id,item_id")
 
-    written = {**counters, "written": len(saved_records)}
+    written = {
+        **counters,
+        "written": len(saved_records),
+        "inserted": len(records) - existing_records,
+        "updated": existing_records,
+    }
     state = {
         "user_id": user,
         "connector_id": connector.connector_id,

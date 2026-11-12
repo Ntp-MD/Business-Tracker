@@ -65,6 +65,9 @@ def run(
     limit: int,
     report_dir: Path,
     show_sample: int,
+    *,
+    write: bool = False,
+    item_keyword: str | None = None,
 ) -> dict:
     connector = get_connector(connector_id)
     if not connector.enabled:
@@ -72,14 +75,28 @@ def run(
     if not connector.dry_run:
         raise SystemExit(f"connector is not in dry-run mode: {connector_id}")
 
+    save_accepted = None
+    if write:
+        from .store import save_accepted as save
+        from .store import writes_enabled
+
+        if not writes_enabled():
+            raise SystemExit("collector writes disabled (set COLLECTOR_WRITE_ENABLED=1)")
+        save_accepted = save
+
     fetched = hn.fetch(keyword, limit, connector)
     outcome = gate(fetched, connector)
     counters = outcome.counters(len(fetched))
+    projection_keyword = item_keyword or keyword
+    if save_accepted is not None:
+        counters = save_accepted(connector, projection_keyword, outcome.accepted, counters)
+
     summary = {
         "connector_id": connector.connector_id,
         "source": connector.source,
         "keyword": keyword,
-        "dry_run": True,
+        "item_keyword": projection_keyword,
+        "dry_run": not write,
         "quality_rules_version": QUALITY_RULES_VERSION,
         "at": utc_now().isoformat(),
         "counters": counters,
@@ -97,15 +114,25 @@ def run(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Run one collector in dry-run mode (no DB writes)."
+        description="Run one collector; dry-run by default, --write persists accepted records."
     )
     parser.add_argument("--connector", default="hn_search")
     parser.add_argument("--keyword", required=True)
+    parser.add_argument("--item-keyword", help="items.keyword projection (defaults to --keyword)")
     parser.add_argument("--limit", type=int, default=50)
     parser.add_argument("--report-dir", type=Path, default=DEFAULT_REPORT_DIR)
     parser.add_argument("--show-sample", type=int, default=0)
+    parser.add_argument("--write", action="store_true", help="persist accepted records")
     args = parser.parse_args(argv)
-    run(args.connector, args.keyword, args.limit, args.report_dir, args.show_sample)
+    run(
+        args.connector,
+        args.keyword,
+        args.limit,
+        args.report_dir,
+        args.show_sample,
+        write=args.write,
+        item_keyword=args.item_keyword,
+    )
     return 0
 
 

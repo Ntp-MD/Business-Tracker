@@ -22,7 +22,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-ENV_FILE = ROOT / ".env.local"
+ENV_FILES = (ROOT / ".env.local", ROOT.parent / ".env.local")
 TIMEOUT = 30
 PAGE = 1000
 
@@ -41,14 +41,15 @@ CLASS_FILTER = {
 
 
 def _load_env() -> None:
-    if not ENV_FILE.is_file():
-        return
-    for line in ENV_FILE.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
+    for env_file in ENV_FILES:
+        if not env_file.is_file():
             continue
-        key, value = line.split("=", 1)
-        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+        for line in env_file.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
 
 
 _load_env()

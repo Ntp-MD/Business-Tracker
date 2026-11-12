@@ -81,10 +81,18 @@ python -m backend.collectors.dry_run --connector hn_search --keyword Thailand --
 # add --show-sample 5 to print accepted titles for review (not persisted)
 ```
 
-Reports land in `data/reports/` (gitignored). Phase 1b schema/persistence is drafted in
-`supabase/migrations/20261112010000_collectors.sql` but **not applied**; collector writes
-stay off unless `COLLECTOR_WRITE_ENABLED=1`. Persistence, DDL and job dispatch require owner
-review before any database write.
+Reports land in `data/reports/` (gitignored). Phase 1b schema is applied; accepted records
+can be persisted with `--write` only when `COLLECTOR_WRITE_ENABLED=1`. Writes stay off by
+default and are not required for dry-run use.
+
+```bash
+# persist accepted records (reviewed rollout only)
+COLLECTOR_WRITE_ENABLED=1 python -m backend.collectors.dry_run \
+  --connector hn_search --keyword Thailand --limit 50 --item-keyword thailand --write
+```
+
+Records/items/links/state are upserted by stable keys; rejected records are never written.
+Re-running updates metrics without duplicating rows.
 
 ## Observability
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from .registry import get_connector
+from .store import writes_enabled
 
 ALLOWED_FIELDS = {
     "connector_id",
@@ -45,7 +46,7 @@ def validate_collect_payload(payload: Any) -> dict:
     dry_run = payload.get("dry_run", True)
     if not isinstance(dry_run, bool):
         raise ValueError("dry_run must be a boolean")
-    if not dry_run:
+    if not dry_run and not writes_enabled():
         raise ValueError("collector writes are disabled; run with dry_run=true")
 
     try:

@@ -141,13 +141,11 @@ summary view would be needed for very large datasets.
 - [x] First release: HN only, dry-run sample, no rejected records in Postgres
 
 **Done when:** the plan's Phase 0 gate is approved and Phase 1a passes.
-**Progress:** `backend/collectors/` (contract, registry, HTTP helper, HN adapter, quality
-gate, dry-run CLI) + fixture tests. 100 real HN records: 20 accepted, 80 `out_of_window`,
-0 quarantined; report in gitignored `data/reports/`. Existing items audit: 324 active,
-6 duplicate canonical groups, 0 bad URLs/spam/missing titles.
-**Remaining:** Phase 1b code is drafted (migration
-`20261112010000_collectors.sql`, persistence, `/api/collect` dispatch) but **not applied**;
-writes stay off until the owner reviews the DDL and dry-run sample.
+**Done:** 2026-11-12. Migration `20261112010000_collectors.sql` applied; HN dry-run produced
+20 accepted / 80 `out_of_window` / 0 quarantined from 100 records. Write test: 8 records →
+7 items (URL dedup) + 8 links; repeat run updated 5/0 duplicates. Test rows deleted; writes
+remain off by default (`COLLECTOR_WRITE_ENABLED=0`).
+**Note:** recurring scheduling/leases (Phase 4) are out of scope for this item.
 
 ### 12. Repo governance
 - [x] Decide LICENSE (private / all rights reserved)

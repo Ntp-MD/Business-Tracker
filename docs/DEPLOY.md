@@ -117,6 +117,13 @@ Search Now writes a `jobs` row; a local worker claims it and calls the Python AP
 If the worker is offline, jobs stay `queued` and the UI says so. TikTok / FB Ads / TikTok Ads
 also need a logged-in session: `python backend/pw_login.py <platform>`.
 
+## Collector persistence
+
+Apply `supabase/migrations/20261112010000_collectors.sql` once. The Python collector keeps
+writes disabled by default; set `COLLECTOR_WRITE_ENABLED=1` on the local API/worker host only
+when intentionally enabling persistence. Records, keyword items, links and state upsert by
+stable keys; rejected records are never stored. See `backend/collectors/`.
+
 ## Backups and retention
 
 - Supabase is the source of truth. Check Dashboard → Database → Backups for the plan's

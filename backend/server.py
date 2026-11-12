@@ -2441,8 +2441,9 @@ class Handler(BaseHTTPRequestHandler):
                     payload["max_records"],
                     collector_dry_run.DEFAULT_REPORT_DIR,
                     0,
+                    write=not payload["dry_run"],
                 )
-            except (ValueError, SystemExit) as exc:
+            except (ValueError, RuntimeError, SystemExit) as exc:
                 _send_json(self, {"error": str(exc)}, 400)
                 return
             _send_json(self, result)
