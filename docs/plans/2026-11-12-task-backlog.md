@@ -39,13 +39,15 @@ changes + docs updated. Never claim done with a failing check.
 - [x] Choose Supabase Auth magic link
 - [x] Update owner email to 
 tpsrm.md@gmail.com
-- [x] Add login/callback/logout and prod auth guard
-- [ ] Set Supabase Site URL + redirect URL (owner, dashboard)
-- [ ] Set Vercel public env and deploy
-- [ ] Verify unauthenticated prod POST is rejected; owner can log in and CRUD
+- [x] Add login/callback/logout, password fallback and prod auth guard
+- [x] Set Supabase Site URL + redirect URLs
+- [x] Set Vercel public env and deploy
+- [x] Verify unauthenticated prod access is blocked; password login + logout work
+- [ ] Verify magic-link delivery/login (blocked by Supabase email rate limit)
 
 **Done when:** magic-link login works on production and unauth writes are blocked.
-**Blocked by:** Supabase Dashboard -> Authentication -> URL Configuration.
+**Blocked by:** Supabase default email quota; configure custom SMTP for reliable magic links.
+Password fallback is available at /login.
 
 ### 4. Live read-only hardening
 - [ ] Choose: read-only DB role/JWT, anon key + RLS views, or keep app guards + rate limit

@@ -30,7 +30,8 @@ vercel deploy --project trendrail-live --prod
 
 Only the `prod` variant requires login. `mockup` and `live` stay public; `live` remains read-only.
 
-- Provider: Supabase Auth magic link (PKCE, `@supabase/ssr`).
+- Provider: Supabase Auth magic link (PKCE, `@supabase/ssr`), with a password fallback for
+  email-quota outages. For production reliability, configure custom SMTP in Supabase.
 - Owner: `ntpsrm.md@gmail.com`.
 - Routes: `/login` (send link), `/auth/callback` (exchange code), `/auth/logout`.
 - Guard: `apps/web/proxy.ts` redirects unauthenticated `/live` + `/api` to `/login`;
