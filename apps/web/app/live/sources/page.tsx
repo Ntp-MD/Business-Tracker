@@ -28,7 +28,7 @@ export default async function SourcesPage() {
                   last.ok ? (
                     <>Last run OK · {new Date(last.at).toLocaleString("th-TH")}</>
                   ) : (
-                    <>Last error · {last.message}</>
+                    <>Last error · {last.message || "Unknown error"}</>
                   )
                 ) : (
                   <>No run recorded on this project</>

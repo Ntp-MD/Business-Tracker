@@ -15,23 +15,25 @@ changes + docs updated. Never claim done with a failing check.
 ## P0 — start here
 
 ### 1. CI pipeline
-- [ ] Add `.github/workflows/ci.yml`
-- [ ] Run: `python -m unittest discover -s tests`
-- [ ] Run: `python -m py_compile backend/server.py backend/db.py backend/pw_login.py`
-- [ ] Run: `npx tsc --noEmit -p apps/web/tsconfig.json`
-- [ ] Run: `npm run typecheck` and `npm run build`
-- [ ] Cache npm; no secrets in CI
+- [x] Add `.github/workflows/ci.yml`
+- [x] Run: `python -m unittest discover -s tests`
+- [x] Run: `python -m py_compile backend/server.py backend/db.py backend/pw_login.py`
+- [x] Run: `npx tsc --noEmit -p apps/web/tsconfig.json`
+- [x] Run: `npm run typecheck` and `npm run build`
+- [x] Cache npm; no secrets in CI
 
 **Done when:** push/PR is green and a failing check blocks merge.
 **Decision needed:** none.
+**Done:** 2026-11-12
 
 ### 2. Fix source-status mapping
-- [ ] `apps/web/lib/data/items-query.ts` selects `message,updated_at`; schema has `error,checked_at`
-- [ ] Map `checked_at → at`, `error → message`; surface read errors instead of returning `{}`
-- [ ] Test against the deployed schema
+- [x] `apps/web/lib/data/items-query.ts` selects `message,updated_at`; schema has `error,checked_at`
+- [x] Map `checked_at → at`, `error → message`; surface read errors instead of returning `{}`
+- [x] Test against the deployed schema
 
 **Done when:** Sources page shows last run/ok/error instead of "No run recorded".
 **Decision needed:** none.
+**Done:** 2026-11-12
 
 ### 3. Auth for prod
 - [ ] Choose: Supabase Auth magic link (recommended) or owner password + signed cookie

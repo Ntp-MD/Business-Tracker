@@ -93,12 +93,14 @@ export async function getItem(id: string): Promise<Item | null> {
 }
 
 export async function getSourceStatus(): Promise<Record<string, { ok: boolean; message: string; at: string }>> {
-  const { data, error } = await supabaseAdmin().from("source_status").select("source,ok,message,updated_at");
-  if (error) return {};
+  const { data, error } = await supabaseAdmin()
+    .from("source_status")
+    .select("source,ok,error,checked_at");
+  if (error) throw new Error(`source_status: ${error.message}`);
   return Object.fromEntries(
-    (data ?? []).map((row: { source: string; ok: boolean; message: string; updated_at: string }) => [
+    (data ?? []).map((row: { source: string; ok: boolean; error: string | null; checked_at: string }) => [
       row.source,
-      { ok: row.ok, message: row.message, at: row.updated_at },
+      { ok: row.ok, message: row.error ?? "", at: row.checked_at },
     ]),
   );
 }
