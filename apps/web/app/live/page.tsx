@@ -16,12 +16,9 @@ export default async function OverviewPage({
   const data = await getSummary(q);
 
   const sources = Object.entries(data.bySource).sort((a, b) => b[1] - a[1]);
-  const share: [string, number][] = Object.entries(
-    data.items.reduce<Record<string, number>>((acc, item) => {
-      acc[item.source] = (acc[item.source] ?? 0) + (Number(item.score) || 0);
-      return acc;
-    }, {}),
-  ).sort((a, b) => b[1] - a[1]);
+  const share: [string, number][] = Object.entries(data.scoreBySource).sort((a, b) => b[1] - a[1]);
+  const compact = (value: number) =>
+    new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(value);
 
   const top = data.items
     .filter((item) => platform === "all" || item.source === platform)
@@ -84,7 +81,7 @@ export default async function OverviewPage({
         </div>
         <div className="card kpi kpi-donut">
           <div className="label">
-            <span>Total score</span>
+            <span>Signal points</span>
           </div>
           <Donut share={share} />
         </div>
@@ -103,7 +100,10 @@ export default async function OverviewPage({
       <div className="bottom">
         <div className="card">
           <div className="tbl-head">
-            <h3>Top items ({top.length})</h3>
+            <h3>
+              Top items ({top.length} of {data.total.toLocaleString("en-US")}
+              {data.sampled ? " · sampled" : ""})
+            </h3>
             <div className="tbl-tabs" role="tablist" aria-label="Top items by platform">
               <Link
                 href={href("all")}
@@ -144,7 +144,12 @@ export default async function OverviewPage({
         <div className="side-stack">
           <div className="card">
             <div className="card-head">
-              <h3>Top terms (summary)</h3>
+              <h3>Top terms (sample)</h3>
+              <span className="chart-note">
+                {data.sampled
+                  ? `top ${data.sampleSize.toLocaleString("en-US")} of ${data.total.toLocaleString("en-US")} items`
+                  : "all items"}
+              </span>
               <Link
                 className="btn btn-ghost"
                 href="/live/terms"
@@ -192,7 +197,10 @@ export default async function OverviewPage({
         <div className="card chart-card">
           <div className="card-head">
             <h3>Score by source</h3>
-            <span className="chart-note">Total score</span>
+            <span className="chart-note">
+              Signal points · {compact(data.metrics.views)} views · {compact(data.metrics.plays)}{" "}
+              plays · {compact(data.metrics.likes)} likes
+            </span>
           </div>
           <Bars share={share} />
         </div>
@@ -220,7 +228,9 @@ export default async function OverviewPage({
             <h3>Score distribution</h3>
             <span className="chart-note">
               {scores.length
-                ? `${scores.length}/${data.total} scored · ${low.toLocaleString("en-US")}–${high.toLocaleString("en-US")}`
+                ? data.sampled
+                  ? `sample ${data.sampleSize.toLocaleString("en-US")} of ${data.total.toLocaleString("en-US")} · ${low.toLocaleString("en-US")}–${high.toLocaleString("en-US")}`
+                  : `${scores.length}/${data.total} scored · ${low.toLocaleString("en-US")}–${high.toLocaleString("en-US")}`
                 : "No scored items"}
             </span>
           </div>

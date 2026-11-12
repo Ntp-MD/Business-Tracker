@@ -123,12 +123,16 @@ trash 7 days, items indefinite, Supabase plan backups + manual export before sch
 **Decision:** backup retention follows the Supabase plan; restore drill quarterly.
 
 ### 10. Data correctness
-- [ ] Replace `getSummary()` 3,000-row cap with count aggregates for totals
-- [ ] Separate metrics: views/plays/points/signals
-- [ ] Label sampled top-items/terms explicitly
+- [x] Replace `getSummary()` 3,000-row cap with count aggregates for totals
+- [x] Separate metrics: views/plays/points/signals
+- [x] Label sampled top-items/terms explicitly
 
 **Done when:** totals and units are correct with more than 3,000 items.
-**Decision needed:** none; follow `COLLECTOR-INTEGRATION-PLAN.md`.
+**Done:** 2026-11-12. Overview totals use an exact count and paged score aggregation; only
+top terms / charts use a labeled 3,000-item sample. Units are shown as signal points plus
+views / plays / likes. Verified with 3,500 disposable rows (`__e2e_count__`, deleted after).
+**Note:** aggregation pages through rows because PostgREST aggregates are disabled; a DB
+summary view would be needed for very large datasets.
 
 ### 11. Collector ingestion quality gate
 - [ ] Follow `docs/plans/COLLECTOR-INTEGRATION-PLAN.md`

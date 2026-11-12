@@ -17,11 +17,26 @@ export type Summary = {
   total: number;
   items: Item[];
   bySource: Record<string, number>;
+  scoreBySource: Record<string, number>;
   totalScore: number;
   avgScore: number;
+  metrics: { views: number; plays: number; likes: number; signals: number };
+  sampleSize: number;
+  sampled: boolean;
   topTerms: [string, number][];
   suggestions: string[];
   profiles: Profile[];
+};
+
+/** PostgREST caps a response at 1,000 rows; page through so totals are not sampled. */
+const SUMMARY_PAGE_SIZE = 1000;
+const SAMPLE_SIZE = 3000;
+
+type SummaryRow = {
+  source: string;
+  metric: string | null;
+  score: number | string | null;
+  views: number | string | null;
 };
 
 const SUGGESTIONS = [
@@ -46,42 +61,89 @@ export function topTerms(items: Item[], limit = 12): [string, number][] {
 
 export async function getSummary(q = ""): Promise<Summary> {
   const db = supabaseAdmin();
-  let query = db
+
+  let countQuery = db
     .from(itemsTable())
-    .select("*")
+    .select("id", { count: "exact", head: true })
     .is("deleted_at", null)
-    .is("archived_at", null)
-    .order("score", { ascending: false })
-    .limit(3000);
-  if (q) query = query.eq("keyword", q);
+    .is("archived_at", null);
+  if (q) countQuery = countQuery.eq("keyword", q);
 
   const profilePromise =
     appVariant() === "live"
       ? Promise.resolve({ data: [] as Profile[], error: null })
       : db.from("profiles").select("id,name,keywords,sources").order("name");
 
-  const [{ data, error }, profileRes] = await Promise.all([query, profilePromise]);
-  if (error) throw new Error(`items: ${error.message}`);
+  const [{ count, error: countError }, profileRes] = await Promise.all([
+    countQuery,
+    profilePromise,
+  ]);
+  if (countError) throw new Error(`items count: ${countError.message}`);
   if (profileRes.error) throw new Error(`profiles: ${profileRes.error.message}`);
 
-  const items = (data ?? []) as Item[];
+  const items: Item[] = [];
+  for (let from = 0; from < SAMPLE_SIZE; from += SUMMARY_PAGE_SIZE) {
+    const to = Math.min(from + SUMMARY_PAGE_SIZE, SAMPLE_SIZE) - 1;
+    let sampleQuery = db
+      .from(itemsTable())
+      .select("*")
+      .is("deleted_at", null)
+      .is("archived_at", null)
+      .order("score", { ascending: false })
+      .order("id")
+      .range(from, to);
+    if (q) sampleQuery = sampleQuery.eq("keyword", q);
+    const { data, error } = await sampleQuery;
+    if (error) throw new Error(`items: ${error.message}`);
+    items.push(...((data ?? []) as Item[]));
+    if ((data?.length ?? 0) < to - from + 1) break;
+  }
+
+  const rows: SummaryRow[] = [];
+  for (let from = 0; ; from += SUMMARY_PAGE_SIZE) {
+    let pageQuery = db
+      .from(itemsTable())
+      .select("source,metric,score,views")
+      .is("deleted_at", null)
+      .is("archived_at", null)
+      .order("id")
+      .range(from, from + SUMMARY_PAGE_SIZE - 1);
+    if (q) pageQuery = pageQuery.eq("keyword", q);
+    const { data, error } = await pageQuery;
+    if (error) throw new Error(`items summary: ${error.message}`);
+    rows.push(...((data ?? []) as SummaryRow[]));
+    if ((data?.length ?? 0) < SUMMARY_PAGE_SIZE) break;
+  }
+
   const bySource: Record<string, number> = {};
+  const scoreBySource: Record<string, number> = {};
+  const metrics = { views: 0, plays: 0, likes: 0, signals: 0 };
   let totalScore = 0;
   let scoredCount = 0;
-  for (const item of items) {
-    bySource[item.source] = (bySource[item.source] ?? 0) + 1;
-    const score = Number(item.score) || 0;
+  for (const row of rows) {
+    const score = Number(row.score) || 0;
+    const views = Number(row.views) || 0;
+    bySource[row.source] = (bySource[row.source] ?? 0) + 1;
+    scoreBySource[row.source] = (scoreBySource[row.source] ?? 0) + score;
     totalScore += score;
     if (score > 0) scoredCount += 1;
+    metrics.signals += score;
+    if (row.metric === "views") metrics.views += views;
+    else if (row.metric === "plays") metrics.plays += views;
+    else if (row.metric === "likes") metrics.likes += views;
   }
 
   return {
     q,
-    total: items.length,
+    total: count ?? rows.length,
     items,
     bySource,
+    scoreBySource,
     totalScore,
     avgScore: scoredCount ? Math.round(totalScore / scoredCount) : 0,
+    metrics,
+    sampleSize: items.length,
+    sampled: (count ?? rows.length) > items.length,
     topTerms: topTerms(items),
     suggestions: q ? SUGGESTIONS.map((s) => s.replace("{q}", q)) : [],
     profiles: (profileRes.data ?? []) as Profile[],
