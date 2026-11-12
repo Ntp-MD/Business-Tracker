@@ -45,3 +45,23 @@ export async function signInWithEmail(form: FormData): Promise<void> {
 
   redirect(`/login?sent=1&next=${encodeURIComponent(next)}`);
 }
+
+export async function signInWithPassword(form: FormData): Promise<void> {
+  const email = String(form.get("email") ?? "").trim().toLowerCase();
+  const password = String(form.get("password") ?? "");
+  const next = safeNext(form.get("next"));
+
+  if (!email || !password) {
+    redirect(`/login?error=${encodeURIComponent("Enter email and password.")}&next=${encodeURIComponent(next)}`);
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    console.error("signInWithPassword failed:", error.message);
+    redirect(`/login?error=${encodeURIComponent("Invalid email or password.")}&next=${encodeURIComponent(next)}`);
+  }
+
+  redirect(next);
+}

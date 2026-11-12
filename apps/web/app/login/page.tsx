@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/ssr";
 import { appVariant } from "@/lib/variant";
 
-import { signInWithEmail } from "./actions";
+import { signInWithEmail, signInWithPassword } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -54,6 +54,25 @@ export default async function LoginPage({
               Send magic link
             </button>
           </form>
+          <details className="add-item">
+            <summary className="btn btn-ghost" style={{ display: "inline-block", marginTop: 8 }}>
+              Use password instead
+            </summary>
+            <form action={signInWithPassword} className="item-form" style={{ marginTop: 8 }}>
+              <input type="hidden" name="next" value={target} />
+              <label>
+                Email
+                <input name="email" type="email" autoComplete="email" required />
+              </label>
+              <label>
+                Password
+                <input name="password" type="password" autoComplete="current-password" required />
+              </label>
+              <button className="btn btn-ghost" type="submit">
+                Sign in with password
+              </button>
+            </form>
+          </details>
           {sent ? <div className="status">Check your email for the login link.</div> : null}
           {error ? <div className="status err">{error}</div> : null}
           <p className="src-detail" style={{ marginTop: 12 }}>
