@@ -96,12 +96,15 @@ read-only tests run in CI. Prod lifecycle runs only with `E2E_PROD_EMAIL` /
 on failure.
 
 ### 8. Observability
-- [ ] Structured server logs with request IDs
-- [ ] Error tracking (Sentry or equivalent)
-- [ ] Alert when worker heartbeat is stale or API errors spike
+- [x] Structured server logs with request IDs
+- [x] Error tracking through the health workflow + GitHub issues (no Sentry account)
+- [x] Alert when worker heartbeat is stale or the API health check fails
 
 **Done when:** an alert fires on a real simulated failure.
-**Decision needed:** provider/account.
+**Done:** 2026-11-12. `/api/health` reports worker heartbeat; proxy/Python logs are JSON with
+`request_id`; `.github/workflows/health.yml` runs every 30 min and opens/closes a
+`Health check failing` issue. Simulated failure opened issue #1; recovery run closed it.
+**Provider:** GitHub-native (no external account). Per-error spikes would need Sentry.
 
 ---
 
