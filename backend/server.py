@@ -155,6 +155,7 @@ def ensure_data() -> None:
 def atomic_write(path: Path, obj) -> None:
     if db.save(path, obj):
         return
+    path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(path.name + ".tmp")
     tmp.write_text(json.dumps(obj, ensure_ascii=False, indent=1), encoding="utf-8")
     for attempt in range(6):

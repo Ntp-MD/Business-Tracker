@@ -28,6 +28,8 @@ class CoreTests(unittest.TestCase):
                 "ASSETS",
                 "ARCHIVE_FILE",
                 "TRASH_FILE",
+                "SOURCE_LOG_FILE",
+                "PROFILES_FILE",
             )
         }
         server.ITEMS_FILE = self.tmp / "items.json"
@@ -35,6 +37,8 @@ class CoreTests(unittest.TestCase):
         server.ANALYSIS_FILE = self.tmp / "analysis.json"
         server.ARCHIVE_FILE = self.tmp / "archive.json"
         server.TRASH_FILE = self.tmp / "trash.json"
+        server.SOURCE_LOG_FILE = self.tmp / "sources.json"
+        server.PROFILES_FILE = self.tmp / "profiles.json"
         server.ASSETS = self.tmp / "assets"
         server.ASSETS.mkdir()
 
