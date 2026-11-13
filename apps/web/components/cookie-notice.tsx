@@ -45,7 +45,6 @@ export function CookieNotice() {
             <span className="cookie-eyebrow">Cookie notice</span>
             <h2 className="cookie-title">คุกกี้ที่จำเป็น</h2>
           </div>
-          <span className="cookie-pill">จำเป็นเท่านั้น</span>
         </div>
         <p className="cookie-copy">
           ใช้คุกกี้เพื่อการเข้าสู่ระบบและความปลอดภัยเท่านั้น ไม่มีการติดตาม วิเคราะห์ หรือโฆษณา
