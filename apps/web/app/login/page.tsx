@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { BrandLogo } from "@/components/brand-logo";
+import { CookieNotice } from "@/components/cookie-notice";
 import { DEFAULT_NEXT, loginPath, safeNext } from "@/lib/auth/next";
 import { createSupabaseServerClient } from "@/lib/supabase/ssr";
 import { appVariant } from "@/lib/variant";
@@ -104,9 +105,12 @@ export default async function LoginPage({
               Magic-link access with password fallback
             </li>
           </ul>
-          <div className="login-brand-foot">
-            <span>TrendRail 0.2</span>
-            <span>Owner console</span>
+          <div className="login-brand-bottom">
+            <CookieNotice variant="brand" />
+            <div className="login-brand-foot">
+              <span>TrendRail 0.2</span>
+              <span>Owner console</span>
+            </div>
           </div>
         </section>
 

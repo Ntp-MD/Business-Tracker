@@ -2458,6 +2458,16 @@
   text-transform: uppercase;
 }
 
+.login-brand-bottom {
+  display: grid;
+  gap: 14px;
+  margin-top: auto;
+}
+
+.login-brand-bottom .login-brand-foot {
+  margin-top: 0;
+}
+
 .login-main {
   display: flex;
   align-items: center;

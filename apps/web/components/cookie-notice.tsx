@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const STORAGE_KEY = "trendrail-cookie-notice-v1";
 
-export function CookieNotice() {
+export function CookieNotice({ variant = "bar" }: { variant?: "bar" | "brand" }) {
+  const pathname = usePathname();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -21,10 +23,15 @@ export function CookieNotice() {
     setVisible(false);
   }
 
+  const isBrand = variant === "brand";
+  const className = isBrand
+    ? "cookie-brand"
+    : `cookie-notice${pathname === "/login" ? " cookie-notice-login" : ""}`;
+
   return (
     <>
       <link rel="stylesheet" href="/assets/css/cookie.css" />
-      <section className="cookie-notice" aria-label="Cookie notice">
+      <section className={className} aria-label="Cookie notice">
         <div className="cookie-head">
           <span className="cookie-icon" aria-hidden="true">
             <svg
