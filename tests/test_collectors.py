@@ -12,12 +12,12 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "backend"))
 
-from collectors import store
+from collectors import gdelt, store
 from collectors.contract import QUALITY_RULES_VERSION, RawRecord
 from collectors.dry_run import write_report
 from collectors.job import validate_collect_payload
 from collectors.quality import canonicalize_url, gate
-from collectors.registry import Connector
+from collectors.registry import Connector, get_connector
 
 NOW = datetime(2026, 11, 12, 12, 0, tzinfo=timezone.utc)
 TEST_CONNECTOR = Connector(
@@ -110,6 +110,65 @@ class QualityTests(unittest.TestCase):
     def test_canonicalize_rejects_private_host(self):
         with self.assertRaises(ValueError):
             canonicalize_url("http://127.0.0.1/private")
+
+
+class GdeltAdapterTests(unittest.TestCase):
+    connector = get_connector("gdelt_doc")
+
+    def fetch(self, articles, limit=10):
+        with patch("collectors.gdelt.fetch_json", return_value={"articles": articles}) as fake:
+            records = gdelt.fetch("Thailand", limit, self.connector)
+        return records, fake.call_args[0][0]
+
+    def test_maps_articles_to_raw_records(self):
+        records, url = self.fetch(
+            [
+                {
+                    "url": "https://example.com/a?utm=1",
+                    "title": "Thailand startup raises fund",
+                    "seendate": "20261111T004500Z",
+                    "domain": "example.com",
+                    "language": "English",
+                    "sourcecountry": "Thailand",
+                },
+                {"title": "missing url"},
+            ]
+        )
+        self.assertIn("query=Thailand", url)
+        self.assertIn("maxrecords=10", url)
+        self.assertEqual(len(records), 1)
+        record = records[0]
+        self.assertEqual(record.source, "gdelt")
+        self.assertEqual(
+            record.source_item_id, hashlib.sha256(b"https://example.com/a?utm=1").hexdigest()
+        )
+        self.assertEqual(record.published_at, "2026-11-11T00:45:00+00:00")
+        self.assertEqual(record.author_display, "example.com")
+
+    def test_bad_seendate_is_none(self):
+        records, _ = self.fetch(
+            [{"url": "https://example.com/b", "title": "A story", "seendate": "bad"}]
+        )
+        self.assertIsNone(records[0].published_at)
+
+    def test_caps_max_records(self):
+        _, url = self.fetch([], limit=500)
+        self.assertIn("maxrecords=250", url)
+
+    def test_gate_accepts_adapter_output(self):
+        records, _ = self.fetch(
+            [
+                {
+                    "url": "https://example.com/a",
+                    "title": "Thailand startup raises fund",
+                    "seendate": "20261111T004500Z",
+                    "domain": "example.com",
+                }
+            ]
+        )
+        outcome = gate(records, self.connector, now=NOW)
+        self.assertEqual(len(outcome.accepted), 1)
+        self.assertEqual(outcome.accepted[0].language, "en")
 
 
 class ReportTests(unittest.TestCase):

@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
+import { createCollectJob } from "@/lib/data/jobs";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { assertWritable } from "@/lib/variant";
 
@@ -48,6 +50,29 @@ export async function deleteProfile(id: string): Promise<void> {
   if (error) throw new Error(error.message);
   revalidatePath("/live", "layout");
   revalidatePath("/live/settings");
+}
+
+export async function collectProfile(id: string): Promise<void> {
+  assertWritable();
+  const { data, error } = await supabaseAdmin()
+    .from("profiles")
+    .select("keywords")
+    .eq("id", id)
+    .eq("user_id", userId())
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  const keywords = ((data as { keywords?: string[] } | null)?.keywords ?? []).filter(Boolean);
+  for (const keyword of keywords) {
+    await createCollectJob({
+      connector_id: "gdelt_doc",
+      scope: { keyword },
+      mode: "manual",
+      dry_run: true,
+      max_records: 50,
+    });
+  }
+  revalidatePath("/live/settings");
+  redirect(`/live/settings?collect=${keywords.length}`);
 }
 
 type ImportItem = {

@@ -29,7 +29,7 @@ Supabase Google-provider configuration, and end-to-end OAuth verification are pe
 | Plan | Status |
 |---|---|
 | [plans/COLLECTOR-INTEGRATION-PLAN.md](plans/COLLECTOR-INTEGRATION-PLAN.md) | **Consolidated backlog.** Collector integration and the proposed AI analysis export |
-| [notes/COLLECTOR-ASSESSMENT.md](notes/COLLECTOR-ASSESSMENT.md) | **Packages 1-3.** Gap list, baseline, owner decisions, local persistence work |
+| [notes/COLLECTOR-ASSESSMENT.md](notes/COLLECTOR-ASSESSMENT.md) | **Packages 1-7.** Gap list, baseline, owner decisions, GDELT adapter, worker lease |
 | [plans/USER-DASHBOARD-SETTINGS-PLAN.md](plans/USER-DASHBOARD-SETTINGS-PLAN.md) | **Implemented 2026-11-13.** User menu, Account section, public and mock states |
 
 ## Post-cutover

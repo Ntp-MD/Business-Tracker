@@ -57,6 +57,18 @@ const ICONS: Record<string, () => ReactNode> = {
       <circle cx="17.3" cy="6.7" r="1.3" fill="#fff" />
     </g>
   ),
+  gdelt: () => (
+    <g>
+      <circle cx="12" cy="12" r="12" fill="#1D4ED8" />
+      <circle cx="12" cy="12" r="7" fill="none" stroke="#fff" strokeWidth="1.6" />
+      <path
+        d="M5 12h14M12 5a11 11 0 0 1 0 14M12 5a11 11 0 0 0 0 14"
+        stroke="#fff"
+        strokeWidth="1.6"
+        fill="none"
+      />
+    </g>
+  ),
   line: () => (
     <g>
       <rect width="24" height="24" rx="6" fill="#06C755" />

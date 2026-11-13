@@ -158,11 +158,12 @@ also need a logged-in session: `python backend/pw_login.py <platform>`.
 
 ## Collector persistence
 
-The collector framework and schema are installed, but **no adapter is enabled**: Hacker News
-was removed on 2026-11-12. Apply `20261112020000_remove_hackernews.sql` after the code removal
-to narrow the source/metric checks. `COLLECTOR_WRITE_ENABLED` stays 0; set it to 1 only for a
-future approved adapter. Records, keyword items, links and state upsert by stable keys;
-rejected records are never stored. See `backend/collectors/`.
+The collector framework and schema are installed. GDELT (`gdelt_doc`) is the first approved
+source and runs dry-run by default; other connectors stay disabled. Apply
+`20261113000000_collector_sources.sql` before enabling GDELT writes.
+`COLLECTOR_WRITE_ENABLED` stays 0 until a dry-run sample is reviewed; set it to 1 only then.
+Records, keyword items, links and state upsert by stable keys; rejected records are never
+stored. See `backend/collectors/`.
 
 ## Backups and retention
 

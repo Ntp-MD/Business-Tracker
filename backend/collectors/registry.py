@@ -1,7 +1,7 @@
 """Connector allowlist. Only enabled connectors may be collected.
 
-No adapter is enabled right now: Hacker News was removed on 2026-11-12. Future
-adapters stay disabled until access, rights and quality rules are approved.
+GDELT is enabled for dry-run after the owner decision on 2026-11-13. Every other
+connector stays disabled until access, rights and quality rules are approved.
 """
 
 from __future__ import annotations
@@ -37,9 +37,9 @@ CONNECTORS: dict[str, Connector] = {
         source="gdelt",
         scope="keyword",
         record_kind="content",
-        enabled=False,
+        enabled=True,
         dry_run=True,
-        rights="review",
+        rights="public",
     ),
     "bluesky_search": Connector(
         connector_id="bluesky_search",

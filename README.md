@@ -101,13 +101,15 @@ URLs default to the Vercel deployments; override with `E2E_MOCKUP_URL`, `E2E_LIV
 ## Collector framework
 
 `backend/collectors/` keeps the registry, quality gate, dry-run report and targeted
-persistence for future approved sources. **No adapter is enabled** — Hacker News was removed
-by owner decision on 2026-11-12, so there is no collector CLI command until a new adapter is
-added and approved.
+persistence. GDELT (`gdelt_doc`) is the first approved source and is enabled for dry-run;
+every other connector stays disabled.
 
-The collector schema remains in `supabase/migrations/20261112010000_collectors.sql`;
-`20261112020000_remove_hackernews.sql` narrows the source/metric checks back. Writes stay off
-unless `COLLECTOR_WRITE_ENABLED=1` is set intentionally for a future adapter.
+```bash
+python -m backend.collectors.dry_run --connector gdelt_doc --keyword technology --show-sample 10
+```
+
+`20261113000000_collector_sources.sql` adds `gdelt` to the item/source checks. Writes stay
+off unless `COLLECTOR_WRITE_ENABLED=1`.
 
 ## Observability
 

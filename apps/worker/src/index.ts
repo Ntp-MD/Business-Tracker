@@ -10,16 +10,28 @@ const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
 const USER_ID = process.env.SUPABASE_USER_ID ?? "";
 const API = (process.env.LOCAL_API ?? "http://127.0.0.1:8000").replace(/\/$/, "");
 const POLL_MS = Number(process.env.WORKER_POLL_MS ?? 3000);
+const LEASE_MS = Number(process.env.WORKER_LEASE_MS ?? 3_600_000);
+const MAX_ATTEMPTS = Number(process.env.WORKER_MAX_ATTEMPTS ?? 3);
+const SCHEDULE_HOURS = Number(process.env.COLLECT_SCHEDULE_HOURS ?? 0);
+const COLLECTOR_WRITES = ["1", "true", "yes"].includes(
+  (process.env.COLLECTOR_WRITE_ENABLED ?? "0").toLowerCase(),
+);
+const WORKER_ID = `${process.env.COMPUTERNAME ?? "worker"}-${process.pid}`;
 
 type Job = {
   id: number;
   kind: string;
+  attempts?: number;
   payload: {
     q?: string;
     sources?: string[];
     mode?: string;
     max_age_days?: number;
     profile_id?: string;
+    connector_id?: string;
+    scope?: { keyword?: string };
+    dry_run?: boolean;
+    max_records?: number;
   };
 };
 
@@ -45,8 +57,18 @@ async function heartbeat(): Promise<void> {
 }
 
 async function claim(): Promise<Job | null> {
+  const now = new Date().toISOString();
+  await fetch(
+    `${SUPABASE_URL}/rest/v1/jobs?status=eq.running&lease_until=lt.${encodeURIComponent(now)}&user_id=eq.${USER_ID}`,
+    {
+      method: "PATCH",
+      headers: headers(),
+      body: JSON.stringify({ status: "queued", lease_owner: null, lease_until: null }),
+    },
+  );
+
   const list = await fetch(
-    `${SUPABASE_URL}/rest/v1/jobs?status=eq.queued&order=created_at&limit=1&select=id,kind,payload`,
+    `${SUPABASE_URL}/rest/v1/jobs?status=eq.queued&user_id=eq.${USER_ID}&order=created_at&limit=1&select=id,kind,payload,attempts`,
     {
       headers: headers(),
     },
@@ -60,8 +82,11 @@ async function claim(): Promise<Job | null> {
     headers: headers({ Prefer: "return=representation" }),
     body: JSON.stringify({
       status: "running",
-      started_at: new Date().toISOString(),
+      started_at: now,
       user_id: USER_ID,
+      lease_owner: WORKER_ID,
+      lease_until: new Date(Date.now() + LEASE_MS).toISOString(),
+      attempts: (job.attempts ?? 0) + 1,
     }),
   });
   const updated = (await claimed.json()) as Job[];
@@ -76,8 +101,9 @@ async function patch(id: number, body: Record<string, unknown>): Promise<void> {
   });
 }
 
-async function run(job: Job): Promise<void> {
+async function run(job: Job, attempts: number): Promise<void> {
   const payload = job.payload ?? {};
+  const body = job.kind === "collect" ? { ...payload, dry_run: !COLLECTOR_WRITES } : payload;
   try {
     const endpoint =
       job.kind === "refresh_views"
@@ -91,7 +117,7 @@ async function run(job: Job): Promise<void> {
     const res = await fetch(`${API}${endpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(body),
     });
     if (!res.ok) throw new Error(`fetch ${res.status}: ${(await res.text()).slice(0, 200)}`);
     const out = (await res.json()) as { added?: number; duplicates?: number; errors?: string[] };
@@ -101,18 +127,79 @@ async function run(job: Job): Promise<void> {
       progress: 1,
       total: 1,
       error: out.errors?.length ? out.errors.join(" · ").slice(0, 500) : null,
+      lease_owner: null,
+      lease_until: null,
     });
   } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (attempts < MAX_ATTEMPTS) {
+      await patch(job.id, {
+        status: "queued",
+        started_at: null,
+        error: message.slice(0, 500),
+        lease_owner: null,
+        lease_until: null,
+      });
+      return;
+    }
     await patch(job.id, {
       status: "error",
       finished_at: new Date().toISOString(),
-      error: err instanceof Error ? err.message : String(err),
+      error: message.slice(0, 500),
+      lease_owner: null,
+      lease_until: null,
     });
   }
 }
 
+let lastScheduleCheck = 0;
+
+async function scheduleCollect(): Promise<void> {
+  if (!SCHEDULE_HOURS) return;
+  if (Date.now() - lastScheduleCheck < 60_000) return;
+  lastScheduleCheck = Date.now();
+
+  const active = await fetch(
+    `${SUPABASE_URL}/rest/v1/jobs?status=in.(queued,running)&kind=eq.collect&user_id=eq.${USER_ID}&select=id&limit=1`,
+    { headers: headers() },
+  );
+  if (((await active.json()) as unknown[]).length) return;
+
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/profiles?select=keywords&user_id=eq.${USER_ID}`,
+    { headers: headers() },
+  );
+  const profiles = (await res.json()) as { keywords?: string[] }[];
+  const keywords = [
+    ...new Set(profiles.flatMap((profile) => profile.keywords ?? []).filter(Boolean)),
+  ];
+  if (!keywords.length) return;
+
+  const window = Math.floor(Date.now() / (SCHEDULE_HOURS * 3_600_000));
+  const rows = keywords.map((keyword) => ({
+    user_id: USER_ID,
+    kind: "collect",
+    payload: {
+      connector_id: "gdelt_doc",
+      scope: { keyword },
+      mode: "scheduled",
+      dry_run: true,
+      max_records: 50,
+    },
+    schedule_key: `gdelt:${window}:${keyword}`,
+  }));
+  // The schedule_key index is partial, so ignore a duplicate-key response instead of
+  // using on_conflict.
+  await fetch(`${SUPABASE_URL}/rest/v1/jobs`, {
+    method: "POST",
+    headers: headers(),
+    body: JSON.stringify(rows),
+  });
+}
+
 async function tick(): Promise<void> {
   await heartbeat();
+  await scheduleCollect();
   const job = await claim();
   if (!job) return;
 
@@ -122,10 +209,15 @@ async function tick(): Promise<void> {
   );
   const [row] = (await check.json()) as { cancel_requested: boolean }[];
   if (row?.cancel_requested) {
-    await patch(job.id, { status: "cancelled", finished_at: new Date().toISOString() });
+    await patch(job.id, {
+      status: "cancelled",
+      finished_at: new Date().toISOString(),
+      lease_owner: null,
+      lease_until: null,
+    });
     return;
   }
-  await run(job);
+  await run(job, job.attempts ?? 1);
 }
 
 async function main(): Promise<void> {

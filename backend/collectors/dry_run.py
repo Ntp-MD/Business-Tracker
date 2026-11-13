@@ -9,6 +9,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+from . import gdelt
 from .contract import QUALITY_RULES_VERSION, utc_now
 from .quality import gate
 from .registry import get_connector
@@ -16,9 +17,9 @@ from .registry import get_connector
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_REPORT_DIR = ROOT / "data" / "reports"
 
-# No adapters after the Hacker News removal. A future adapter registers here only
-# after its access/rights/quality review.
-ADAPTERS: dict[str, object] = {}
+# Registered adapters. A source is registered here only after its access/rights/quality
+# review. GDELT is the first approved source (owner decision 2026-11-13).
+ADAPTERS: dict[str, object] = {"gdelt_doc": gdelt}
 
 
 def _url_hash(url: str) -> str:
@@ -130,15 +131,19 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--show-sample", type=int, default=0)
     parser.add_argument("--write", action="store_true", help="persist accepted records")
     args = parser.parse_args(argv)
-    run(
-        args.connector,
-        args.keyword,
-        args.limit,
-        args.report_dir,
-        args.show_sample,
-        write=args.write,
-        item_keyword=args.item_keyword,
-    )
+    try:
+        run(
+            args.connector,
+            args.keyword,
+            args.limit,
+            args.report_dir,
+            args.show_sample,
+            write=args.write,
+            item_keyword=args.item_keyword,
+        )
+    except (RuntimeError, ValueError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
     return 0
 
 

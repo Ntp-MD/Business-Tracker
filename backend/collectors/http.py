@@ -12,7 +12,7 @@ MAX_BYTES = 2_000_000
 TIMEOUT_SECONDS = 15
 
 
-class TransportError(Exception):
+class TransportError(RuntimeError):
     """Transport-level failure; the gate reports this as transport_error."""
 
 

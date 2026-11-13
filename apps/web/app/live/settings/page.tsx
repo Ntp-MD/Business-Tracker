@@ -3,11 +3,16 @@ import { getCounts } from "@/lib/data/counts";
 import { getSummary, sourceLabel } from "@/lib/data/live";
 import { createSupabaseServerClient } from "@/lib/supabase/ssr";
 
-import { createProfile, deleteProfile, importItems, pruneOld } from "./actions";
+import { collectProfile, createProfile, deleteProfile, importItems, pruneOld } from "./actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ collect?: string }>;
+}) {
+  const sp = await searchParams;
   const [summary, counts] = await Promise.all([getSummary(), getCounts()]);
 
   let accountName = "—";
@@ -66,6 +71,9 @@ export default async function SettingsPage() {
           <h3>Profiles</h3>
           <span className="chart-note">{summary.profiles.length} saved</span>
         </div>
+        {sp.collect ? (
+          <p className="account-note">{sp.collect} collect job(s) queued for the local worker.</p>
+        ) : null}
         {summary.profiles.length ? (
           <div className="tbl-scroll">
             <table>
@@ -85,6 +93,15 @@ export default async function SettingsPage() {
                     <td>{(profile.sources ?? []).map(sourceLabel).join(", ") || "—"}</td>
                     <td>
                       <div className="row-actions">
+                        <form action={collectProfile.bind(null, profile.id!)}>
+                          <button
+                            className="mini-btn"
+                            type="submit"
+                            disabled={!(profile.keywords ?? []).length}
+                          >
+                            Collect
+                          </button>
+                        </form>
                         <form action={deleteProfile.bind(null, profile.id!)}>
                           <button className="mini-btn danger" type="submit">
                             Delete

@@ -10,6 +10,14 @@ export type FetchPayload = {
   max_age_days?: number;
 };
 
+export type CollectPayload = {
+  connector_id: string;
+  scope: { keyword: string };
+  mode?: string;
+  dry_run?: boolean;
+  max_records?: number;
+};
+
 export async function createFetchJob(payload: FetchPayload): Promise<number> {
   return createJob("fetch", payload);
 }
@@ -18,7 +26,14 @@ export async function createRefreshJob(payload: FetchPayload): Promise<number> {
   return createJob("refresh_views", payload);
 }
 
-async function createJob(kind: "fetch" | "refresh_views", payload: FetchPayload): Promise<number> {
+export async function createCollectJob(payload: CollectPayload): Promise<number> {
+  return createJob("collect", payload);
+}
+
+async function createJob(
+  kind: "fetch" | "refresh_views" | "collect",
+  payload: Record<string, unknown>,
+): Promise<number> {
   const userId = process.env.SUPABASE_USER_ID;
   if (!userId) throw new Error("SUPABASE_USER_ID missing");
 

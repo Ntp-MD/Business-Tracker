@@ -128,15 +128,26 @@ Applying it is an owner step before the GDELT adapter can write.
 ## Status after the decisions
 
 - Packages 1-2: done (this document).
-- Package 3: implemented locally with tests; pending migration application and an approved
-  isolated database validation. Versioned backup export is not implemented.
-- Package 4 (worker leases, retries, cancellation): not started.
-- Package 5 (GDELT adapter and sample review): not started.
-
+- Package 3: done locally; migration applied by the owner on 2026-11-13.
+- Package 4: done locally. Jobs are owner-scoped, leased for 60 minutes, retried up to
+  3 attempts, and expired leases return to `queued`. Cancellation is still checked only
+  before a job starts.
+- Package 5: `backend/collectors/gdelt.py` is implemented and `gdelt_doc` is enabled for
+  dry-run only. Unit tests cover mapping and the gate. A live sample could not be
+  collected because GDELT returned HTTP 429 from this network; rerun
+  `python -m backend.collectors.dry_run --connector gdelt_doc --keyword technology --show-sample 10`
+  from another network before enabling writes.
+- Package 6: `source_status` is written on every collector run and the Sources page reads
+  it. Existing JSON/CSV item export is unchanged; collector records, links, and state are
+  not part of the backup. That is accepted for now because the JSON files remain the
+  version-1 backup and collector rows are reproducible from the source.
+- Package 7: Settings has a per-profile **Collect** button that queues one `collect` job
+  per keyword. The worker can also self-schedule when `COLLECT_SCHEDULE_HOURS` is set;
+  it is off by default, so recurring collection needs an owner cadence decision.
+- Package 8: the Render API still needs to be disabled in its dashboard (owner action).
+- Package 9 (AI export): still proposed, no format approved.
 
 ## Remaining fixes
 
-Still open: worker lease/attempts/retry and cancellation (package 4), the GDELT adapter and
-excerpt capture (package 5), source health UI (package 6), and recurring scheduling
-(package 7). Completed locally in package 3: batched reads and item writes, appended reports,
-error state, `quality_rules_version` enforcement, and `HTTPError` handling.
+Still open: a successful live GDELT sample, cancellation during work, versioned backup
+of collector tables (if the owner wants it), Render cleanup, and the AI export format.
