@@ -50,18 +50,19 @@ export function CookieNotice({ variant = "bar" }: { variant?: "bar" | "brand" })
           </span>
           <div>
             <span className="cookie-eyebrow">Cookie notice</span>
-            <h2 className="cookie-title">คุกกี้ที่จำเป็น</h2>
+            <h2 className="cookie-title">Essential cookies</h2>
           </div>
         </div>
         <p className="cookie-copy">
-          ใช้คุกกี้เพื่อการเข้าสู่ระบบและความปลอดภัยเท่านั้น ไม่มีการติดตาม วิเคราะห์ หรือโฆษณา
+          We use essential cookies only for sign-in and security. No analytics or advertising
+          cookies.
         </p>
         <div className="cookie-actions">
           <Link className="cookie-more" href="/privacy">
-            รายละเอียด
+            Details
           </Link>
           <button className="btn btn-primary cookie-accept" type="button" onClick={acknowledge}>
-            รับทราบ
+            Got it
           </button>
         </div>
       </section>
