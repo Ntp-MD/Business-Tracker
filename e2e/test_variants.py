@@ -80,7 +80,13 @@ class ReadOnlyTests(BrowserCase):
         self.page.goto(f"{PROD_URL}/live", wait_until="domcontentloaded")
         parsed = urlparse(self.page.url)
         self.assertEqual(parsed.path, "/login")
-        self.assertIn("next=%2Flive", parsed.query)
+        self.assertEqual(parsed.query, "")
+
+    def test_prod_deep_link_keeps_next(self):
+        self.page.goto(f"{PROD_URL}/live/items?q=test", wait_until="domcontentloaded")
+        parsed = urlparse(self.page.url)
+        self.assertEqual(parsed.path, "/login")
+        self.assertIn("next=%2Flive%2Fitems%3Fq%3Dtest", parsed.query)
 
 
 @unittest.skipUnless(PROD_EMAIL and PROD_PASSWORD, "set E2E_PROD_EMAIL / E2E_PROD_PASSWORD")

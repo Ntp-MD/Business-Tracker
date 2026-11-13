@@ -1,6 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
+import { loginPath } from "@/lib/auth/next";
+
 type Variant = "prod" | "mockup" | "live";
 
 function variant(): Variant {
@@ -126,8 +128,7 @@ async function handleRequest(request: NextRequest, requestId: string) {
     if (request.method !== "GET" && request.method !== "HEAD") {
       return new NextResponse("Unauthorized", { status: 401 });
     }
-    const login = new URL("/login", request.url);
-    login.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
+    const login = new URL(loginPath({ next: `${pathname}${request.nextUrl.search}` }), request.url);
     return NextResponse.redirect(login);
   }
 

@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { DEFAULT_NEXT, loginPath, safeNext } from "@/lib/auth/next";
 import { createSupabaseServerClient } from "@/lib/supabase/ssr";
 
 function siteUrl(requestHeaders: Headers): string {
@@ -15,11 +16,6 @@ function siteUrl(requestHeaders: Headers): string {
   return `${proto}://${host}`;
 }
 
-function safeNext(value: FormDataEntryValue | null): string {
-  const next = String(value ?? "");
-  return next.startsWith("/") && !next.startsWith("//") ? next : "/live";
-}
-
 export async function signInWithEmail(form: FormData): Promise<void> {
   const email = String(form.get("email") ?? "")
     .trim()
@@ -27,29 +23,27 @@ export async function signInWithEmail(form: FormData): Promise<void> {
   const next = safeNext(form.get("next"));
 
   if (!email.includes("@")) {
-    redirect(
-      `/login?error=${encodeURIComponent("Enter a valid email address.")}&next=${encodeURIComponent(next)}`,
-    );
+    redirect(loginPath({ error: "Enter a valid email address.", next }));
   }
 
   const requestHeaders = await headers();
   const supabase = await createSupabaseServerClient();
+  const callback = new URL(`${siteUrl(requestHeaders)}/auth/callback`);
+  if (next !== DEFAULT_NEXT) callback.searchParams.set("next", next);
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
       shouldCreateUser: false,
-      emailRedirectTo: `${siteUrl(requestHeaders)}/auth/callback`,
+      emailRedirectTo: callback.toString(),
     },
   });
 
   if (error) {
     console.error("signInWithOtp failed:", error.message);
-    redirect(
-      `/login?error=${encodeURIComponent("Could not send the magic link. Try again.")}&next=${encodeURIComponent(next)}`,
-    );
+    redirect(loginPath({ error: "Could not send the magic link. Try again.", next }));
   }
 
-  redirect(`/login?sent=1&next=${encodeURIComponent(next)}`);
+  redirect(loginPath({ sent: true, next }));
 }
 
 export async function signInWithPassword(form: FormData): Promise<void> {
@@ -60,9 +54,7 @@ export async function signInWithPassword(form: FormData): Promise<void> {
   const next = safeNext(form.get("next"));
 
   if (!email || !password) {
-    redirect(
-      `/login?error=${encodeURIComponent("Enter email and password.")}&password=1&next=${encodeURIComponent(next)}`,
-    );
+    redirect(loginPath({ error: "Enter email and password.", password: true, next }));
   }
 
   const supabase = await createSupabaseServerClient();
@@ -70,9 +62,7 @@ export async function signInWithPassword(form: FormData): Promise<void> {
 
   if (error) {
     console.error("signInWithPassword failed:", error.message);
-    redirect(
-      `/login?error=${encodeURIComponent("Invalid email or password.")}&password=1&next=${encodeURIComponent(next)}`,
-    );
+    redirect(loginPath({ error: "Invalid email or password.", password: true, next }));
   }
 
   redirect(next);

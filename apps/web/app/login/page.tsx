@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { BrandLogo } from "@/components/brand-logo";
+import { DEFAULT_NEXT, loginPath, safeNext } from "@/lib/auth/next";
 import { createSupabaseServerClient } from "@/lib/supabase/ssr";
 import { appVariant } from "@/lib/variant";
 
@@ -14,10 +15,6 @@ export const metadata = {
   description: "Owner access to the TrendRail social intelligence console.",
 };
 
-function safeNext(value: string | undefined): string {
-  return value?.startsWith("/") && !value.startsWith("//") ? value : "/live";
-}
-
 export default async function LoginPage({
   searchParams,
 }: {
@@ -28,6 +25,17 @@ export default async function LoginPage({
 
   const { sent, error, next, password } = await searchParams;
   const target = safeNext(next);
+
+  // Old bookmarks such as /login?next=%2Flive should land on the clean /login.
+  if (next && target === DEFAULT_NEXT) {
+    redirect(
+      loginPath({
+        sent: Boolean(sent),
+        error,
+        password: Boolean(password),
+      }),
+    );
+  }
 
   const supabase = await createSupabaseServerClient();
   const {
@@ -176,14 +184,11 @@ export default async function LoginPage({
             </div>
 
             {password ? (
-              <Link className="login-alt" href={`/login?next=${encodeURIComponent(target)}`}>
+              <Link className="login-alt" href={loginPath({ next: target })}>
                 Use a magic link instead
               </Link>
             ) : (
-              <Link
-                className="login-alt"
-                href={`/login?password=1&next=${encodeURIComponent(target)}`}
-              >
+              <Link className="login-alt" href={loginPath({ password: true, next: target })}>
                 Use a password instead
               </Link>
             )}
