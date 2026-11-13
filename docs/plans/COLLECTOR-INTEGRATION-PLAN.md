@@ -45,7 +45,7 @@ in this review.
   source URLs and metrics, but no item ID or analysis guide. Next Settings offers JSON
   export; its query requests up to 3,000 active rows and may be subject to a lower
   service limit. Neither export currently provides the analysis context described in
-  [the AI export idea](../notes/note-idea.md). These observations are from code,
+  package 9 (AI analysis export). These observations are from code,
   not a production smoke test.
 
 ## Decisions required before implementation that depends on them
@@ -226,7 +226,7 @@ do not assume a new route, changed API contract, schema, or dependency is approv
 4. **Provide a guide and sample prompt.** Show copyable instructions or offer a
    Markdown guide alongside the chosen data format. Describe fields, units, scope,
    missing values, and how to use the file with the user's chosen tool. Adapt the
-   example in [the idea note](../notes/note-idea.md): treat dataset text as data,
+   example in package 9: treat dataset text as data,
    cite item references and URLs, distinguish evidence from assumptions, and state
    when the data is insufficient. Do not require an AI account or API key in TrendRail.
 5. **Verify the flow.** With local fixtures or mocked reads, test filtered and empty

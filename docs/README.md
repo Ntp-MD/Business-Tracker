@@ -14,13 +14,11 @@ the remaining plan, post-cutover checks, and notes.
 | [DESIGN.md](DESIGN.md) | Visual language and design system |
 | [Favicon (120×120 PNG)](brand/trendrail-favicon-120.png) | Square train-and-rail mark for Next.js and legacy pages |
 | [Favicon square master](brand/trendrail-favicon-square.png) | 1254×1254 source artwork |
-| [Selected logo master (transparent PNG)](brand/trendrail-logo-final-transparent.png) | Owner-approved final artwork |
-| [Header crop (transparent PNG)](brand/trendrail-logo-horizontal-transparent.png) | Used in the web and legacy headers |
-| [Earlier 16:10 artwork](brand/trendrail-logo-final-16x10.png) | Superseded by the transparent final |
+| [Logo master](brand/logo-master.png) | Source artwork for the header logo used by the web and legacy apps |
+| [Favicon source](brand/fav.png) | Earlier favicon export kept for reference |
 | [Earlier symbol explorations](brand/trendrail-highspeed-logo-concepts.html) | Superseded concept study |
-| [Earlier full logo board](brand/trendrail-full-logo-concepts-16x10.png) | Ten options; the transparent logo above is selected |
-| [Modern minimal variants (16:10 PNG)](brand/trendrail-logo-modern-minimal-variants-16x10.png) | Eight fresh full-logo directions; awaiting selection |
-| [Creative logo directions (16:10 PNG)](brand/trendrail-logo-creative-directions-16x10.png) | Eight distinct concepts with more varied T, rail, and wordmark constructions |
+| [Earlier full logo board](brand/trendrail-full-logo-concepts-16x10.png) | Ten options; the logo master above is selected |
+| [Earlier train logo board](brand/trendrail-train-logo-concepts.png) | Concept board kept for reference |
 | [Unselected vector studies](brand/trendrail-logo-train-t.svg) and [logo trace](brand/trendrail-logo.svg) | Drafts kept for reference; not used by the app |
 
 ## Remaining work
@@ -31,7 +29,8 @@ Supabase Google-provider configuration, and end-to-end OAuth verification are pe
 | Plan | Status |
 |---|---|
 | [plans/COLLECTOR-INTEGRATION-PLAN.md](plans/COLLECTOR-INTEGRATION-PLAN.md) | **Consolidated backlog.** Collector integration and the proposed AI analysis export |
-| [plans/USER-DASHBOARD-SETTINGS-PLAN.md](plans/USER-DASHBOARD-SETTINGS-PLAN.md) | **Proposed.** User menu and account settings; implementation not started |
+| [notes/COLLECTOR-ASSESSMENT.md](notes/COLLECTOR-ASSESSMENT.md) | **Done 2026-11-13.** Packages 1-2 gap list, environment baseline, open owner decisions |
+| [plans/USER-DASHBOARD-SETTINGS-PLAN.md](plans/USER-DASHBOARD-SETTINGS-PLAN.md) | **Implemented 2026-11-13.** User menu, Account section, public and mock states |
 
 ## Post-cutover
 
@@ -60,7 +59,7 @@ Hacker News was removed on 2026-11-12.
 | Document | Use |
 |---|---|
 | [notes/SECURITY-AND-PROJECT-HEALTH.md](notes/SECURITY-AND-PROJECT-HEALTH.md) | Security, code quality, operational health, and handoff reminders |
-| [notes/note-idea.md](notes/note-idea.md) | AI analysis export idea and sample prompt; implementation is planned, not started |
+| [notes/COLLECTOR-ASSESSMENT.md](notes/COLLECTOR-ASSESSMENT.md) | Collector packages 1-2 assessment and decisions |
 
 ## Layout
 
@@ -72,5 +71,5 @@ docs/
   DESIGN.md
   plans/       COLLECTOR-INTEGRATION-PLAN.md, USER-DASHBOARD-SETTINGS-PLAN.md
   reference/   public_data_collector_agent_integration_guide.md
-  notes/       SECURITY-AND-PROJECT-HEALTH.md, note-idea.md
+  notes/       SECURITY-AND-PROJECT-HEALTH.md, COLLECTOR-ASSESSMENT.md
 ```

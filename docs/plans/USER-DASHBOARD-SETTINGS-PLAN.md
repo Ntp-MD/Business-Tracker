@@ -1,9 +1,10 @@
 # Software — User menu and account settings plan
 
-Status: **proposed; not implemented**. This document plans the top-right user control
-and its account-settings destination. It does not authorize a schema, API, auth,
-deployment, or business-policy change. Follow [AGENTS.md](../../AGENTS.md) before
-implementation and keep existing unrelated work intact. Review the
+Status: **implemented 2026-11-13**. Read-only account information shipped first; the
+scope decisions at the end remain open for any later editing feature. This document does
+not authorize a schema, API, auth, deployment, or business-policy change. Follow
+[AGENTS.md](../../AGENTS.md) before further implementation and keep existing unrelated
+work intact. Review the
 [security and project health reminders](../notes/SECURITY-AND-PROJECT-HEALTH.md)
 throughout this work.
 
