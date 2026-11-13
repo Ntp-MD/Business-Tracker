@@ -87,7 +87,7 @@ export function PatchNotes() {
                 </li>
                 <li className="tl-item">
                   <div className="tl-top">
-                    <b>0.1V</b>
+                    <b>0.1</b>
                     <span className="tl-date">10 พ.ย. 2026</span>
                   </div>
                   <p className="tl-note">Dashboard ใช้งานจริงบนเครื่อง</p>

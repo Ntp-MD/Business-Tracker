@@ -1,6 +1,6 @@
 # TrendRail docs
 
-Last updated: 2026-11-11. Code is the source of truth; this folder tracks active reference,
+Last updated: 2026-11-13. Code is the source of truth; this folder tracks active reference,
 the remaining plan, post-cutover checks, and notes.
 
 ## Current reference
@@ -12,14 +12,26 @@ the remaining plan, post-cutover checks, and notes.
 | [DEPLOY.md](DEPLOY.md) | Vercel, Render, local worker, env vars |
 | [PRIVACY.md](PRIVACY.md) | PDPA notice, cookie inventory, owner review checklist |
 | [DESIGN.md](DESIGN.md) | Visual language and design system |
-| [TrendRail logo & CI exploration](brand/trendrail-logo-concepts.html) | 10 vector directions based on the product concept |
+| [Favicon (120×120 PNG)](brand/trendrail-favicon-120.png) | Square train-and-rail mark for Next.js and legacy pages |
+| [Favicon square master](brand/trendrail-favicon-square.png) | 1254×1254 source artwork |
+| [Selected logo master (transparent PNG)](brand/trendrail-logo-final-transparent.png) | Owner-approved final artwork |
+| [Header crop (transparent PNG)](brand/trendrail-logo-horizontal-transparent.png) | Used in the web and legacy headers |
+| [Earlier 16:10 artwork](brand/trendrail-logo-final-16x10.png) | Superseded by the transparent final |
+| [Earlier symbol explorations](brand/trendrail-highspeed-logo-concepts.html) | Superseded concept study |
+| [Earlier full logo board](brand/trendrail-full-logo-concepts-16x10.png) | Ten options; the transparent logo above is selected |
+| [Modern minimal variants (16:10 PNG)](brand/trendrail-logo-modern-minimal-variants-16x10.png) | Eight fresh full-logo directions; awaiting selection |
+| [Creative logo directions (16:10 PNG)](brand/trendrail-logo-creative-directions-16x10.png) | Eight distinct concepts with more varied T, rail, and wordmark constructions |
+| [Unselected vector studies](brand/trendrail-logo-train-t.svg) and [logo trace](brand/trendrail-logo.svg) | Drafts kept for reference; not used by the app |
 
 ## Remaining work
 
+Google owner sign-in and owner-only authorization are implemented locally. Deployment,
+Supabase Google-provider configuration, and end-to-end OAuth verification are pending.
+
 | Plan | Status |
 |---|---|
-| [plans/2026-11-12-task-backlog.md](plans/2026-11-12-task-backlog.md) | **Active backlog.** P0: CI, source-status fix, prod auth, live read-only |
-| [plans/COLLECTOR-INTEGRATION-PLAN.md](plans/COLLECTOR-INTEGRATION-PLAN.md) | **Proposed, not started.** No collectors enabled, no schema change applied. Includes a pre-write quality gate (reject trash before DB) |
+| [plans/COLLECTOR-INTEGRATION-PLAN.md](plans/COLLECTOR-INTEGRATION-PLAN.md) | **Consolidated backlog.** Collector integration and the proposed AI analysis export |
+| [plans/USER-DASHBOARD-SETTINGS-PLAN.md](plans/USER-DASHBOARD-SETTINGS-PLAN.md) | **Proposed.** User menu and account settings; implementation not started |
 
 ## Post-cutover
 
@@ -47,7 +59,8 @@ Hacker News was removed on 2026-11-12.
 
 | Document | Use |
 |---|---|
-| [notes/note-idea.md](notes/note-idea.md) | Idea: export a dataset for analysis with the user's own AI (not started) |
+| [notes/SECURITY-AND-PROJECT-HEALTH.md](notes/SECURITY-AND-PROJECT-HEALTH.md) | Security, code quality, operational health, and handoff reminders |
+| [notes/note-idea.md](notes/note-idea.md) | AI analysis export idea and sample prompt; implementation is planned, not started |
 
 ## Layout
 
@@ -57,7 +70,7 @@ docs/
   DB.md
   DEPLOY.md
   DESIGN.md
-  plans/       2026-11-12-task-backlog.md, COLLECTOR-INTEGRATION-PLAN.md
+  plans/       COLLECTOR-INTEGRATION-PLAN.md, USER-DASHBOARD-SETTINGS-PLAN.md
   reference/   public_data_collector_agent_integration_guide.md
-  notes/       note-idea.md
+  notes/       SECURITY-AND-PROJECT-HEALTH.md, note-idea.md
 ```

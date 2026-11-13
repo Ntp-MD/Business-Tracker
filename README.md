@@ -1,7 +1,32 @@
 # TrendRail
 
-Thai social-trend collector and dashboard. Next.js app on Vercel, Supabase for storage, and a
-local Python collector driven by a job worker.
+**Social intelligence for content research.**
+
+TrendRail brings social content, news, and advertising research into one dashboard. It helps
+teams collect results by keyword, review their sources, and organize material for further work.
+
+> Proprietary software. All rights reserved.
+
+[View the live dashboard](https://trendrail-live.vercel.app) ·
+[Explore the mockup](https://trendrail-mockup.vercel.app) ·
+[Documentation](docs/README.md)
+
+## Capabilities
+
+- **Collect:** search YouTube, Google News, TikTok, Facebook Ads Library, and TikTok Creative
+  Center through the existing collectors.
+- **Review:** search and filter stored items by text, source, and date; inspect source links and metrics.
+- **Organize:** manage items, archive or restore them, and export data as CSV or JSON.
+- **Share:** use the public read-only dashboard or the separate mockup with sample data.
+
+Collection runs through a local worker and Python API; source availability and login
+requirements vary. The mockup uses fixtures and does not connect to production data.
+
+## Architecture
+
+The web application is built with Next.js. Supabase stores the live data and job queue,
+while a local TypeScript worker dispatches collection jobs to the Python API. The legacy
+static dashboard remains available through the Python server.
 
 ## Layout
 
@@ -18,16 +43,19 @@ legacy/       Old static dashboard served by the Python API at `/` and `/live/`
 supabase/     SQL migrations
 scripts/      One-off import / baseline capture tools
 tests/        Python unittest suite
-docs/         Current docs + plans + notes (see docs/README.md)
+docs/         Documentation and plans (see docs/README.md)
 data/         Runtime JSON cache (gitignored)
 sessions/     Playwright login sessions (gitignored)
 ```
 
 ## Run
 
+Node 22 and Python 3.12 are the pinned runtimes. Configure the environment using
+`.env.example` and [the deployment guide](docs/DEPLOY.md) before running the live application.
+
 ```bash
 # Next app
-npm install
+npm ci
 npm run dev                 # http://localhost:3000
 
 # Python collector API (used by Search Now)
@@ -35,7 +63,7 @@ python backend/server.py    # http://127.0.0.1:8000
 
 # Worker (separate terminal)
 npm run build:worker
-npm run start -w apps/worker
+node --env-file=.env.local apps/worker/dist/index.js
 
 # Tests
 python -m unittest discover -s tests
@@ -49,8 +77,8 @@ npm run format:check
 pip install -r requirements.txt
 ```
 
-Node 22 (`.nvmrc`, `engines.node`) and Python 3.12 (`.python-version`) are the pinned
-versions. Backend code is stdlib-only and runs on Python 3.10+; Playwright is pinned in
+Node is pinned in `.nvmrc` and `engines.node`; Python in `.python-version`. Backend code is
+stdlib-only and runs on Python 3.10+; Playwright is pinned in
 `requirements.txt` to match `Dockerfile`. Web lint/format uses Biome (`biome.json`), Python
 uses Ruff (`pyproject.toml`); `npm run format` applies fixes.
 
@@ -106,13 +134,13 @@ The same codebase runs all three; `APP_VARIANT` selects behavior. See
 ## Docs
 
 Start at [docs/README.md](docs/README.md). Working rules are in [AGENTS.md](AGENTS.md).
-Migration closed 2026-11-11: redirects live, Pages disabled; monitoring through 2026-11-18 and
-Render API shutdown are tracked in [docs/README.md](docs/README.md).
-Active backlog: [docs/plans/2026-11-12-task-backlog.md](docs/plans/2026-11-12-task-backlog.md).
-Remaining plan: [docs/plans/COLLECTOR-INTEGRATION-PLAN.md](docs/plans/COLLECTOR-INTEGRATION-PLAN.md).
-Notes and ideas are in `docs/notes/`.
+Active backlog and remaining plan: [docs/plans/COLLECTOR-INTEGRATION-PLAN.md](docs/plans/COLLECTOR-INTEGRATION-PLAN.md).
 
 ## License
 
-Private and proprietary; see [LICENSE](LICENSE). Security reports: [SECURITY.md](SECURITY.md).
-Contribution rules: [CONTRIBUTING.md](CONTRIBUTING.md).
+TrendRail is proprietary software and is not offered under an open-source license.
+Copyright © 2026 TrendRail. All rights reserved. See [LICENSE](LICENSE) for terms;
+third-party dependencies retain their respective licenses.
+
+Security reports: [SECURITY.md](SECURITY.md). Contributor guidance for authorized
+maintainers: [CONTRIBUTING.md](CONTRIBUTING.md).

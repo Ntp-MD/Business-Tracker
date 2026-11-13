@@ -2,6 +2,8 @@
 
 Operational brief for coding agents in this repo. Keep this file about **rules and commands**.
 Status and remaining work live in [`docs/README.md`](docs/README.md); do not duplicate them here.
+Use the [security and project health reminders](docs/notes/SECURITY-AND-PROJECT-HEALTH.md)
+when planning, implementing, reviewing, and handing off work.
 
 ## 1. System
 

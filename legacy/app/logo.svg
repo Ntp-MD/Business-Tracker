@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 92" role="img" aria-label="ITOPPLUS logo">
-  <rect x="2" y="14" width="64" height="64" rx="16" fill="#0f172a"/>
-  <rect x="14" y="52" width="7" height="14" rx="2" fill="#94a3b8"/>
-  <rect x="26" y="46" width="7" height="20" rx="2" fill="#cbd5e1"/>
-  <rect x="38" y="40" width="7" height="26" rx="2" fill="#ffffff"/>
-  <rect x="50" y="32" width="7" height="34" rx="2" fill="#22c55e"/>
-  <text x="82" y="54" font-family="Segoe UI, Arial, sans-serif" font-size="40" font-weight="800" letter-spacing="-1" fill="currentColor">ITOP<tspan fill="#22c55e">PLUS</tspan></text>
-  <text x="84" y="76" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="600" letter-spacing="3.4" fill="#64748b">DIGITAL MARKETING</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="15" fill="#18372D"/>
+  <path d="M12 24C23 13 39 13 53 22l-3 8H17Z" fill="#40BD79"/>
+  <path d="M15 28c8-7 17-7 25-2l8 6-6 9-14 7c-10 2-17-3-18-9-1-4 1-8 5-11Z" fill="#F3F5EF"/>
+  <path d="M19 31c5-4 10-4 15-2l5 4-8 6-16 2Z" fill="#18372D"/>
+  <path d="M14 43c6 0 12-2 18-5l-8 10c-4 2-9 2-11-1Z" fill="#C7EF70"/>
+  <path d="m29 47-10 12m17-14-3 14" fill="none" stroke="#40BD79" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="m22 53 15-3m-18 9 15-3" fill="none" stroke="#F3F5EF" stroke-width="2" stroke-linecap="round"/>
 </svg>

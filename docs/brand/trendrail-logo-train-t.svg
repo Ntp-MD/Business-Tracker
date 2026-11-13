@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 430 120" role="img" aria-labelledby="title desc">
+  <title id="title">TrendRail logo concept</title>
+  <desc id="desc">A three-quarter high-speed train forms the initial T, followed by the word rendRail.</desc>
+  <g aria-hidden="true">
+    <!-- Broad train front forms the T crossbar; the visible right flank sets a slight angle. -->
+    <path d="M23 43C37 29 57 25 73 31L91 38 85 57H33Z" fill="#18372D"/>
+    <path d="m70 31 21 7-6 19-14-1 5-11Z" fill="#40BD79"/>
+    <path d="M34 43c11-8 24-11 36-8l4 8-7 7H30Z" fill="#F3F5EF"/>
+    <path d="m75 37 10 3-2 8-11-2Z" fill="#C7EF70"/>
+    <!-- T stem is the tapered locomotive nose, kept on the same track axis. -->
+    <path d="m42 56 35 0-5 18c-3 10-9 17-16 22-7-5-12-12-14-22Z" fill="#18372D"/>
+    <path d="m50 62 19 0-3 9H48Z" fill="#40BD79"/>
+    <!-- Perspective rails widen evenly beneath the train instead of bending away from it. -->
+    <path d="m51 77-10 19M66 77l11 19" fill="none" stroke="#40BD79" stroke-width="4" stroke-linecap="round"/>
+    <path d="m46 86 26 0" fill="none" stroke="#18372D" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+  <text x="102" y="84" fill="#18372D" font-family="Inter, Arial, sans-serif" font-size="60" font-weight="700" letter-spacing="-2.5">rend<tspan fill="#40BD79">Rail</tspan></text>
+</svg>

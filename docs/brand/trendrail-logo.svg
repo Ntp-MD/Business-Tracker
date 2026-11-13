@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 470 110" role="img" aria-labelledby="title desc">
+  <title id="title">TrendRail</title>
+  <desc id="desc">A high-speed train forms the initial T, followed by the word rendRail.</desc>
+  <g aria-hidden="true">
+    <!-- Broad T crossbar is the streamlined train body. -->
+    <path d="M15 29C43 9 93 8 139 25l-8 14C88 27 49 30 22 48Z" fill="#18372D"/>
+    <path d="M53 18C80 2 116 8 143 24l-9 5C109 16 82 16 59 27Z" fill="#40BD79"/>
+    <path d="m94 22 43 8-6 9-41-8Z" fill="#2FAF69"/>
+    <!-- The train nose turns slightly toward the viewer; the flank recedes right. -->
+    <path d="M27 40c14-10 32-10 49-2l23 14-14 17-30 12C37 84 21 76 18 63c-2-9 1-17 9-23Z" fill="#18372D"/>
+    <path d="M31 45c12-8 25-8 37-3l13 8-19 12-39 2Z" fill="#F3F5EF"/>
+    <path d="M22 64c14-1 27-5 41-12L48 69c-9 5-20 4-26-1Z" fill="#C7EF70"/>
+    <path d="m88 32 10 2-2 7-10-2Zm14 3 10 2-2 7-10-2Zm14 3 9 2-2 7-9-2Z" fill="#F3F5EF"/>
+    <!-- A straight T stem and aligned perspective rails complete the train track. -->
+    <path d="m91 47 25-4-7 56H88Z" fill="#18372D"/>
+    <path d="m67 72-40 29m47-33-12 33" fill="none" stroke="#40BD79" stroke-width="6" stroke-linecap="round"/>
+    <path d="m43 83 47-8m-57 18 48-7" fill="none" stroke="#18372D" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+  <text x="142" y="81" fill="#18372D" font-family="Inter, Arial, sans-serif" font-size="59" font-weight="800" letter-spacing="-2.5">rend<tspan fill="#40BD79">Rail</tspan></text>
+</svg>

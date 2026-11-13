@@ -8,47 +8,35 @@
       name="description"
       content="Localhost social trend tracker for ITOPPLUS: fetch YouTube, Google News, TikTok, FB Ads and TikTok Ads by keyword, then read scores, top terms and content ideas from disk."
     />
-    <meta property="og:title" content="Business · Social Tracker Analytics — ITOPPLUS">
+    <meta property="og:title" content="Business · Social Tracker Analytics — ITOPPLUS" />
     <meta property="og:description" content="Fetch Thai social trends by keyword and turn them into content angles." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary" />
     <meta name="theme-color" content="#22c55e" />
     <meta name="api-base" content="" />
-    <link rel="icon" href="../app/logo.svg" type="image/svg+xml" />
+    <link rel="icon" href="../app/favicon.png" type="image/png" sizes="120x120" />
     <!-- Offline localhost: ไม่มี CDN นอกเครื่อง ใช้ system font ล้วน (ก่อนหน้าใช้ Inter/Anuphan จาก Google Fonts — ตัดออกเพื่อเปิดแบบไม่มีเน็ตได้) -->
     <link rel="stylesheet" href="../assets/css/variables.css" />
     <link rel="stylesheet" href="../assets/css/base.css" />
     <link rel="stylesheet" href="../assets/css/component.css" />
     <link rel="stylesheet" href="../assets/css/layout.css" />
-      <script>
+    <script>
       (() => {
         const base = (document.querySelector('meta[name="api-base"]')?.content || "").replace(/\/$/, "");
         if (base) {
           const f = window.fetch;
-          window.fetch = (url, opts) =>
-            typeof url === "string" && url.startsWith("/api/") ? f(base + url, opts) : f(url, opts);
+          window.fetch = (url, opts) => (typeof url === "string" && url.startsWith("/api/") ? f(base + url, opts) : f(url, opts));
         }
       })();
     </script>
-</head>
+  </head>
   <body>
     <a class="skip-link" href="#page-overview">Skip to content</a>
     <div class="app">
       <!-- ================= Sidebar ================= -->
       <aside class="sidebar" aria-label="Primary">
         <div class="logo">
-          <svg class="logo-img" viewBox="0 0 320 92" role="img" aria-label="ITOPPLUS logo" style="color: var(--text)">
-            <rect class="logo-badge" x="2" y="14" width="64" height="64" rx="16" fill="#0f172a" />
-            <rect x="14" y="52" width="7" height="14" rx="2" fill="#94a3b8" />
-            <rect x="26" y="46" width="7" height="20" rx="2" fill="#cbd5e1" />
-            <rect x="38" y="40" width="7" height="26" rx="2" fill="#ffffff" />
-            <rect x="50" y="32" width="7" height="34" rx="2" fill="#22c55e" />
-            <text x="82" y="54" font-size="40" font-weight="800" letter-spacing="-1" fill="currentColor">
-              ITOP
-              <tspan fill="#22c55e">PLUS</tspan>
-            </text>
-            <text class="logo-sub" x="84" y="76" font-size="11.5" font-weight="600" letter-spacing="3.4" fill="#64748b">DIGITAL MARKETING</text>
-          </svg>
+          <img class="logo-img" src="../assets/trendrail-logo.png" alt="TrendRail" />
         </div>
         <nav class="nav">
           <a href="#page-overview" data-page="overview" class="active"
@@ -60,10 +48,15 @@
             >Overview</a
           >
           <a href="#page-sources" data-page="sources"
-            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M4 7h16M4 7v13h16V7M4 7l2-4h12l2 4" /></svg>Sources<span class="badge-n">0</span></a
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M4 7h16M4 7v13h16V7M4 7l2-4h12l2 4" /></svg>Sources<span
+              class="badge-n"
+              >0</span
+            ></a
           >
           <a href="#page-terms" data-page="terms"
-            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.5L3 21l2-5.6A8.5 8.5 0 1 1 21 11.5z" /></svg>Top Terms</a
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+              <path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.5L3 21l2-5.6A8.5 8.5 0 1 1 21 11.5z" /></svg
+            >Top Terms</a
           >
           <a href="#page-ideas" data-page="ideas"
             ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
@@ -72,9 +65,8 @@
             >Content Ideas<span class="badge-n">0</span></a
           >
           <a href="#page-items" data-page="items"
-            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01" /></svg>All Items<span class="badge-n"
-              >0</span
-            ></a
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01" /></svg
+            >All Items<span class="badge-n">0</span></a
           >
           <a href="#page-archive" data-page="archive"
             ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
@@ -104,7 +96,10 @@
             ><span class="badge-n">0</span></a
           >
           <a href="#page-ads" data-page="ads"
-            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M3 11l18-5-5 18-2.5-7.5L3 11z" /></svg>Ads Manager<span class="badge-n">0</span></a
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M3 11l18-5-5 18-2.5-7.5L3 11z" /></svg>Ads Manager<span
+              class="badge-n"
+              >0</span
+            ></a
           >
           <a href="#page-calendar" data-page="calendar" class="locked" aria-disabled="true" tabindex="-1" data-tip="not compatible"
             ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
@@ -153,7 +148,7 @@
         <div class="help-card ver-card">
           <div class="ver-top">
             <span class="ver-label">Version</span>
-            <span class="ver-num">0.1V</span>
+            <span class="ver-num">0.1</span>
           </div>
           <div class="ver-date">10 พ.ย. 2026</div>
           <button class="btn btn-ghost ver-btn" id="btnNotes" aria-haspopup="dialog" aria-controls="notesModal">Patch notes</button>
@@ -178,7 +173,9 @@
                 <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
               </svg>
               <button class="switch" id="themeSwitch" role="switch" aria-checked="false" aria-label="Dark mode"></button>
-              <svg class="tgl-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>
+              <svg class="tgl-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              </svg>
             </div>
             <div class="user"><span class="avatar">IT</span><span class="uname">ITOPPLUS</span></div>
           </div>
@@ -220,8 +217,7 @@
         </nav>
 
         <div class="static-notice" id="staticNotice" hidden>
-          <b>Static preview</b> — GitHub Pages ไม่มี API จริง. ข้อมูลจะไม่โหลด/ค้นหาไม่ได้
-          จนกว่าจะรัน <code>python backend/server.py</code> หรือตั้ง
+          <b>Static preview</b> — GitHub Pages ไม่มี API จริง. ข้อมูลจะไม่โหลด/ค้นหาไม่ได้ จนกว่าจะรัน <code>python backend/server.py</code> หรือตั้ง
           <code>&lt;meta name="api-base" content="https://..."&gt;</code> แล้วกำหนด CORS
         </div>
 
@@ -236,7 +232,7 @@
             </div>
             <div class="field grow">
               <label for="q">Keyword</label>
-              <input type="text" id="q" value="" placeholder="Keyword…" list="kwSuggest">
+              <input type="text" id="q" value="" placeholder="Keyword…" list="kwSuggest" />
               <!-- 2.8 keyword autocomplete: history + profile keywords (updated on change) -->
               <datalist id="kwSuggest"></datalist>
             </div>
@@ -324,7 +320,7 @@
             <div class="notes-head">
               <div>
                 <div class="loading-title" id="notesTitle">Patch notes</div>
-                <div class="loading-sub">เวอร์ชัน 0.1V · 10 พ.ย. 2026</div>
+                <div class="loading-sub">เวอร์ชัน 0.1 · 10 พ.ย. 2026</div>
               </div>
               <button class="btn btn-ghost notes-close" id="notesClose" aria-label="ปิด patch notes">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
@@ -332,7 +328,7 @@
             </div>
             <ol class="timeline">
               <li class="tl-item current">
-                <div class="tl-top"><b>0.1V</b><span class="tl-date">10 พ.ย. 2026</span><span class="pill pill-green">current</span></div>
+                <div class="tl-top"><b>0.1</b><span class="tl-date">10 พ.ย. 2026</span><span class="pill pill-green">current</span></div>
                 <p class="tl-note">Dashboard ใช้งานจริงบนเครื่อง</p>
                 <ul class="tl-list">
                   <li>ค้นเทรนด์จาก 5 ช่องทาง: YouTube, Google News, TikTok, Facebook Ads และ TikTok Ads</li>
@@ -375,10 +371,10 @@
               </button>
             </div>
             <div class="item-form">
-              <label class="item-field"><span>URL</span><input type="url" id="itemUrl" placeholder="https://…"></label>
+              <label class="item-field"><span>URL</span><input type="url" id="itemUrl" placeholder="https://…" /></label>
               <label class="item-field"><span>Title</span><input type="text" id="itemTitleInput" placeholder="หัวข้อ" /></label>
-              <label class="item-field"><span>Author / channel</span><input type="text" id="itemAuthor" placeholder="ชื่อช่อง/เพจ"></label>
-              <label class="item-field"><span>Channel URL</span><input type="url" id="itemChannel" placeholder="https://…"></label>
+              <label class="item-field"><span>Author / channel</span><input type="text" id="itemAuthor" placeholder="ชื่อช่อง/เพจ" /></label>
+              <label class="item-field"><span>Channel URL</span><input type="url" id="itemChannel" placeholder="https://…" /></label>
               <label class="item-field"><span>Keyword</span><input type="text" id="itemKeyword" placeholder="keyword" /></label>
               <label class="item-field"
                 ><span>Source</span
@@ -491,7 +487,8 @@
               <div class="label">
                 <span>Top item</span
                 ><span class="kpi-ic"
-                  ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M12 3l2.6 5.6 6.4.8-4.7 4.3 1.3 6.3L12 17l-5.6 3 1.3-6.3L3 9.4l6.4-.8z" /></svg
+                  ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+                    <path d="M12 3l2.6 5.6 6.4.8-4.7 4.3 1.3 6.3L12 17l-5.6 3 1.3-6.3L3 9.4l6.4-.8z" /></svg
                 ></span>
               </div>
               <div class="big" id="stTop">0</div>
@@ -603,7 +600,9 @@
             </div>
             <div class="tbl-scroll">
               <table>
-                <caption class="visually-hidden">Per-source detail</caption>
+                <caption class="visually-hidden">
+                  Per-source detail
+                </caption>
                 <thead>
                   <tr>
                     <th scope="col">Source</th>
@@ -626,7 +625,9 @@
             </div>
             <div class="tbl-scroll">
               <table>
-                <caption class="visually-hidden">Channel performance comparison</caption>
+                <caption class="visually-hidden">
+                  Channel performance comparison
+                </caption>
                 <thead>
                   <tr>
                     <th scope="col">Channel</th>
@@ -649,7 +650,9 @@
             </div>
             <div class="tbl-scroll">
               <table>
-                <caption class="visually-hidden">Top mentioned pages</caption>
+                <caption class="visually-hidden">
+                  Top mentioned pages
+                </caption>
                 <thead>
                   <tr>
                     <th scope="col">#</th>
@@ -676,11 +679,13 @@
           <div class="card">
             <div class="tbl-head">
               <h3 id="termsCount">0 terms</h3>
-              <label class="filter-lbl" for="filterTerms">Filter</label><input type="text" class="filter" id="filterTerms" placeholder="Search terms…" aria-label="Search terms">
+              <label class="filter-lbl" for="filterTerms">Filter</label><input type="text" class="filter" id="filterTerms" placeholder="Search terms…" aria-label="Search terms" />
             </div>
             <div class="tbl-scroll">
               <table>
-                <caption class="visually-hidden">Top terms</caption>
+                <caption class="visually-hidden">
+                  Top terms
+                </caption>
                 <thead>
                   <tr>
                     <th scope="col">Rank</th>
@@ -734,7 +739,9 @@
               </div>
               <div class="tbl-scroll">
                 <table class="heatmap">
-                  <caption class="visually-hidden">Best posting time heatmap</caption>
+                  <caption class="visually-hidden">
+                    Best posting time heatmap
+                  </caption>
                   <thead>
                     <tr>
                       <th scope="col"></th>
@@ -758,7 +765,9 @@
               <div class="card-head"><h3>Content performance (30 days)</h3></div>
               <div class="tbl-scroll">
                 <table>
-                  <caption class="visually-hidden">Content performance (30 days)</caption>
+                  <caption class="visually-hidden">
+                    Content performance (30 days)
+                  </caption>
                   <thead>
                     <tr>
                       <th scope="col">Content</th>
@@ -791,9 +800,9 @@
               <div class="item-tools">
                 <input type="text" class="filter" id="filterFull" placeholder="Filter title/source…" aria-label="Filter all items" />
                 <span class="filter-lbl">วันที่</span>
-                <input type="date" class="filter date-filter" id="filterFrom" aria-label="From date" title="ตั้งแต่วันที่ (ใช้ published หรือวันที่เก็บ)">
+                <input type="date" class="filter date-filter" id="filterFrom" aria-label="From date" title="ตั้งแต่วันที่ (ใช้ published หรือวันที่เก็บ)" />
                 <span class="date-sep" aria-hidden="true">–</span>
-                <input type="date" class="filter date-filter" id="filterTo" aria-label="To date" title="ถึงวันที่ (รวมวันนั้นทั้งวัน)">
+                <input type="date" class="filter date-filter" id="filterTo" aria-label="To date" title="ถึงวันที่ (รวมวันนั้นทั้งวัน)" />
                 <span class="quick-dates" role="group" aria-label="Quick date range">
                   <button type="button" class="chip qd" data-quick="today">วันนี้</button>
                   <button type="button" class="chip qd" data-quick="7">7 วัน</button>
@@ -1195,7 +1204,7 @@
               <div class="card">
                 <div class="card-head"><h3>Data</h3></div>
                 <div class="set-row">
-                  <div class="t"><b>Version 0.1V</b><span>10 พ.ย. 2026 · ดูสิ่งที่ทำได้</span></div>
+                  <div class="t"><b>Version 0.1</b><span>10 พ.ย. 2026 · ดูสิ่งที่ทำได้</span></div>
                   <button class="btn btn-ghost" id="btnNotes2">Patch notes</button>
                 </div>
                 <div class="set-row">
@@ -1311,7 +1320,7 @@
         tasks: "Tasks · no data yet",
         reports: "Reports · no data yet",
         goals: "Goal Tracker · no data yet",
-        settings: "Settings · keywords / sources / fetch / data"
+        settings: "Settings · keywords / sources / fetch / data",
       };
       /* locked feature: เมนูยังแสดงแต่กดเข้าหน้าไม่ได้ (CRM/Competitors/Ads/Calendar/Tasks/Reports/Goals) */
       const LOCKED_PAGES = ["crm", "competitors", "calendar", "tasks", "reports", "goals"];
@@ -1340,11 +1349,11 @@
       /* ===== LIVE DATA — จาก API เท่านั้น (ไม่มี mock) ===== */
       const SRC_LABELS = { youtube: "YouTube", gnews: "Google News", tiktok: "TikTok", facebook: "Facebook", fbads: "FB Ads", ttads: "TikTok Ads" };
       const SOURCES = [
-        {name:"youtube", label:"YouTube", api:"youtube.com/results · scrape ytInitialData (stdlib)"},
+        { name: "youtube", label: "YouTube", api: "youtube.com/results · scrape ytInitialData (stdlib)" },
         { name: "gnews", label: "ข่าว (GNews)", api: "news.google.com/rss/search · RSS" },
-        {name:"tiktok", label:"TikTok", api:"tiktok.com/search · Playwright + JSON (public/session)"},
-        {name:"fbads", label:"FB Ads", api:"facebook.com/ads/library · Playwright public (TH, active)"},
-        {name:"ttads", label:"TikTok Ads", api:"ads.tiktok.com/business/creativecenter/inspiration/topads/pc/en · Playwright public (TH)"}
+        { name: "tiktok", label: "TikTok", api: "tiktok.com/search · Playwright + JSON (public/session)" },
+        { name: "fbads", label: "FB Ads", api: "facebook.com/ads/library · Playwright public (TH, active)" },
+        { name: "ttads", label: "TikTok Ads", api: "ads.tiktok.com/business/creativecenter/inspiration/topads/pc/en · Playwright public (TH)" },
       ];
 
       /* ===== render overview ===== */
@@ -1547,11 +1556,8 @@
         fbads: "../assets/icons/facebook.png",
         ttads: "../assets/icons/tiktok.png",
       };
-      const srcIcon = (key, size = 16, cls = "mini-icon") => SRC_ICONS[key]
-        ? `<img class="src-img ${cls}" src="${SRC_ICONS[key]}" width="${size}" height="${size}" alt="" loading="lazy">`
-        : "";
-      const srcBadge = (key, size = 18) => srcIcon(key, size)
-        || `<span class="mini-avatar" style="background:${SRC_COLORS[key] || "#64748b"}">${esc(srcLabel(key).slice(0, 2).toUpperCase())}</span>`;
+      const srcIcon = (key, size = 16, cls = "mini-icon") => (SRC_ICONS[key] ? `<img class="src-img ${cls}" src="${SRC_ICONS[key]}" width="${size}" height="${size}" alt="" loading="lazy">` : "");
+      const srcBadge = (key, size = 18) => srcIcon(key, size) || `<span class="mini-avatar" style="background:${SRC_COLORS[key] || "#64748b"}">${esc(srcLabel(key).slice(0, 2).toUpperCase())}</span>`;
       document.querySelectorAll("#srcPicker .src-option").forEach((l) => {
         const cb = l.querySelector("input[type=checkbox]");
         const key = cb && cb.value;
@@ -1941,9 +1947,7 @@
       }
       function sessionNotReady(mode, sources) {
         if (mode !== "session") return null;
-        const need = (sources || [])
-          .map((s) => (s === "tiktok" ? "tiktok" : s === "fbads" || s === "facebook" ? "facebook" : null))
-          .filter(Boolean);
+        const need = (sources || []).map((s) => (s === "tiktok" ? "tiktok" : s === "fbads" || s === "facebook" ? "facebook" : null)).filter(Boolean);
         const missing = [...new Set(need)].filter((s) => !sessionStatus[s]);
         return missing.length ? missing : null;
       }
@@ -2059,11 +2063,7 @@
             });
           } else {
             $("status").textContent =
-              action === "archive"
-                ? `เก็บ ${d.archived || 0} รายการใน Archive แล้ว`
-                : action === "restore"
-                  ? `กู้คืน ${d.restored || 0} รายการแล้ว`
-                  : `ย้าย ${d.changed || 0} รายการไป "${extra.to_keyword}"`;
+              action === "archive" ? `เก็บ ${d.archived || 0} รายการใน Archive แล้ว` : action === "restore" ? `กู้คืน ${d.restored || 0} รายการแล้ว` : `ย้าย ${d.changed || 0} รายการไป "${extra.to_keyword}"`;
             $("status").className = "status";
           }
         } catch (e) {
@@ -2558,9 +2558,7 @@
         const list = Array.isArray(items) ? items : currentItems;
         const picked = selectedSources();
         if (!list.length) {
-          box.innerHTML = `<div class="empty">${
-            picked.length ? `ยังไม่มีข้อมูลสำหรับ keyword นี้ — กด Search Now เพื่อดึงจาก ${picked.length} ช่องทางที่เลือก` : "ยังไม่ได้เลือกช่องทาง — เลือก Sources ก่อน"
-          }</div>`;
+          box.innerHTML = `<div class="empty">${picked.length ? `ยังไม่มีข้อมูลสำหรับ keyword นี้ — กด Search Now เพื่อดึงจาก ${picked.length} ช่องทางที่เลือก` : "ยังไม่ได้เลือกช่องทาง — เลือก Sources ก่อน"}</div>`;
           if (tbody) tbody.innerHTML = "";
           return;
         }
@@ -2822,8 +2820,8 @@
         if (!fill) return;
         const pct = total > 0 ? Math.round((done / total) * 100) : 0;
         fill.style.width = pct + "%";
-        if(name) name.textContent = label || "—";
-        if(count) count.textContent = `${done}/${total} · ${pct}%`;
+        if (name) name.textContent = label || "—";
+        if (count) count.textContent = `${done}/${total} · ${pct}%`;
       }
       function hideLoading() {
         const m = $("loadModal");
@@ -2844,8 +2842,7 @@
         } catch {}
         if (activeAbort) activeAbort.abort();
         hideLoading();
-        $("status").textContent =
-        $("status").className = "status";
+        $("status").textContent = $("status").className = "status";
       }
       $("loadCancel").addEventListener("click", cancelFetch);
       /* patch notes modal */
@@ -3126,8 +3123,10 @@
         }
       }
       function showSkeletons() {
-        const rows = Array.from({ length: 8 }, () =>
-          `<div class="skel-row"><span class="skel skel-dot"></span><span class="skel skel-line" style="flex:1"></span><span class="skel skel-line" style="width:78px"></span><span class="skel skel-line" style="width:48px"></span></div>`,
+        const rows = Array.from(
+          { length: 8 },
+          () =>
+            `<div class="skel-row"><span class="skel skel-dot"></span><span class="skel skel-line" style="flex:1"></span><span class="skel skel-line" style="width:78px"></span><span class="skel skel-line" style="width:48px"></span></div>`,
         ).join("");
         const fill = (el, html) => {
           if (!el) return;
@@ -3138,8 +3137,7 @@
         fill($("bars"), `<div class="skel-bars">${[62, 84, 48, 70, 36].map((h) => `<span class="skel" style="height:${h}%"></span>`).join("")}</div>`);
         fill($("termsBox"), `<div class="skel-chips">${[70, 92, 64, 84, 58, 76].map((w) => `<span class="skel" style="width:${w}px"></span>`).join("")}</div>`);
         const hasQuery = !!($("q").value.trim() || ($("profileSel") && $("profileSel").value));
-        if (hasQuery)
-          fill($("suggest"), [100, 92, 70].map((w) => `<li class="skel-item"><div class="skel-lines"><span class="skel" style="display:block;width:${w}%"></span></div></li>`).join(""));
+        if (hasQuery) fill($("suggest"), [100, 92, 70].map((w) => `<li class="skel-item"><div class="skel-lines"><span class="skel" style="display:block;width:${w}%"></span></div></li>`).join(""));
         fill($("stTopTitle"), `<span class="skel" style="display:block;height:12px;width:80%;margin-bottom:6px"></span><span class="skel" style="display:block;height:12px;width:55%"></span>`);
         document.querySelectorAll(".line-box").forEach((el) => el.classList.add("skel-box"));
         ["stTotal", "stSrc", "stScore", "stTop", "invScore", "invCover", "scoreHigh", "scoreLow"].forEach((id) => {
@@ -3399,10 +3397,7 @@
         }
       });
       $("btnClearAll")?.addEventListener("click", async () => {
-        if (
-          !(await askConfirm({ title: "ลบข้อมูลทั้งหมด", msg: "ลบ items ทุก keyword, analysis/index และ thumbnail ทั้งหมด?\n\nProfiles จะยังอยู่ — กู้คืนไม่ได้", okText: "ลบทั้งหมด", danger: true }))
-        )
-          return;
+        if (!(await askConfirm({ title: "ลบข้อมูลทั้งหมด", msg: "ลบ items ทุก keyword, analysis/index และ thumbnail ทั้งหมด?\n\nProfiles จะยังอยู่ — กู้คืนไม่ได้", okText: "ลบทั้งหมด", danger: true }))) return;
         if (!(await askConfirm({ title: "ยืนยันอีกครั้ง", msg: "ลบข้อมูลทั้งหมดเลยไหม? (Trash ถูกลบด้วย — ไม่มี Undo)", okText: "ลบถาวร", danger: true }))) return;
         try {
           const r = await fetch("/api/clear-all", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
