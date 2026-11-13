@@ -1,12 +1,18 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { BrandLogo } from "@/components/brand-logo";
 import { createSupabaseServerClient } from "@/lib/supabase/ssr";
 import { appVariant } from "@/lib/variant";
 
 import { signInWithEmail, signInWithPassword } from "./actions";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = {
+  title: "Sign in · TrendRail",
+  description: "Owner access to the TrendRail social intelligence console.",
+};
 
 function safeNext(value: string | undefined): string {
   return value?.startsWith("/") && !value.startsWith("//") ? value : "/live";
@@ -35,70 +41,158 @@ export default async function LoginPage({
       <link rel="stylesheet" href="/assets/css/base.css" />
       <link rel="stylesheet" href="/assets/css/component.css" />
       <link rel="stylesheet" href="/assets/css/layout.css" />
-      <main style={{ maxWidth: 430, margin: "10vh auto", padding: 20 }}>
-        <div className="card">
-          <div className="card-head">
-            <h3>Sign in</h3>
-            <span className="chart-note">Owner only</span>
+      <main className="login-shell">
+        <section className="login-brand" aria-labelledby="login-brand-title">
+          <div className="login-wordmark">
+            <BrandLogo />
           </div>
-          <p className="src-detail">
-            We send a one-time magic link to the owner email. No password is stored in this app.
-          </p>
-          <form action={signInWithEmail} className="item-form">
-            <input type="hidden" name="next" value={target} />
-            <label>
-              Email
-              <input
-                name="email"
-                type="email"
-                autoComplete="email"
-                placeholder="owner@example.com"
-                required
-              />
-            </label>
-            <button className="btn btn-primary" type="submit">
-              Send magic link
-            </button>
-          </form>
-          {password ? (
-            <>
-              <form action={signInWithPassword} className="item-form" style={{ marginTop: 8 }}>
+          <div className="login-brand-copy">
+            <span className="login-eyebrow">Social intelligence</span>
+            <h1 id="login-brand-title">
+              Every signal.
+              <br />
+              One rail.
+            </h1>
+            <p>
+              Trends, content, ads and leads for Thai brands — collected in one console and ready
+              for the next move.
+            </p>
+          </div>
+          <ul className="login-points">
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden="true"
+              >
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+              YouTube, Google News, TikTok, Meta and TikTok Ads
+            </li>
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden="true"
+              >
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+              Read-only live sharing for clients
+            </li>
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden="true"
+              >
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+              Magic-link access — no password stored
+            </li>
+          </ul>
+          <div className="login-brand-foot">
+            <span>TrendRail 0.2</span>
+            <span>Owner console</span>
+          </div>
+        </section>
+
+        <section className="login-main" aria-labelledby="login-title">
+          <div className="card login-card">
+            <div className="login-card-head">
+              <span className="login-eyebrow">Owner access</span>
+              <h2 id="login-title">Sign in to TrendRail</h2>
+              <p>
+                {password
+                  ? "Use the owner email and password, or switch back to a magic link."
+                  : "Use the owner email. We send a one-time link — no password is stored."}
+              </p>
+            </div>
+
+            {sent ? (
+              <div className="login-alert login-alert-ok" role="status">
+                Check your inbox. The link expires shortly.
+              </div>
+            ) : null}
+            {error ? (
+              <div className="login-alert login-alert-err" role="alert">
+                {error}
+              </div>
+            ) : null}
+
+            {password ? (
+              <form action={signInWithPassword} className="login-form">
                 <input type="hidden" name="next" value={target} />
                 <label>
-                  Email
-                  <input name="email" type="email" autoComplete="email" required />
+                  Owner email
+                  <input
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="owner@email.com"
+                    required
+                  />
                 </label>
                 <label>
                   Password
-                  <input name="password" type="password" autoComplete="current-password" required />
+                  <input
+                    name="password"
+                    type="password"
+                    autoComplete="current-password"
+                    placeholder="Enter your password"
+                    required
+                  />
                 </label>
-                <button className="btn btn-ghost" type="submit">
+                <button className="btn btn-primary" type="submit">
                   Sign in with password
                 </button>
               </form>
-              <Link
-                className="btn btn-ghost"
-                href={`/login?next=${encodeURIComponent(target)}`}
-                style={{ marginTop: 8 }}
-              >
-                Use magic link instead
+            ) : (
+              <form action={signInWithEmail} className="login-form">
+                <input type="hidden" name="next" value={target} />
+                <label>
+                  Owner email
+                  <input
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="owner@email.com"
+                    required
+                  />
+                </label>
+                <button className="btn btn-primary" type="submit">
+                  Send magic link
+                </button>
+              </form>
+            )}
+
+            <div className="login-divider">
+              <span>or</span>
+            </div>
+
+            {password ? (
+              <Link className="login-alt" href={`/login?next=${encodeURIComponent(target)}`}>
+                Use a magic link instead
               </Link>
-            </>
-          ) : (
-            <Link
-              className="btn btn-ghost"
-              href={`/login?password=1&next=${encodeURIComponent(target)}`}
-              style={{ marginTop: 8 }}
-            >
-              Use password instead
+            ) : (
+              <Link
+                className="login-alt"
+                href={`/login?password=1&next=${encodeURIComponent(target)}`}
+              >
+                Use a password instead
+              </Link>
+            )}
+
+            <Link className="login-back" href="/">
+              ← Back to mockup
             </Link>
-          )}
-          {sent ? <div className="status">Check your email for the login link.</div> : null}
-          {error ? <div className="status err">{error}</div> : null}
-          <p className="src-detail" style={{ marginTop: 12 }}>
-            <Link href="/">Back to mockup</Link>
-          </p>
-        </div>
+          </div>
+        </section>
       </main>
     </>
   );
