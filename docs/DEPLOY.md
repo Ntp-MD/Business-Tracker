@@ -71,6 +71,21 @@ exposes source health. Both are select-only for `anon`, so a code bypass still c
 
 Only the `prod` variant requires login. `mockup` and `live` stay public; `live` remains read-only.
 
+### Temporary read-only demo access
+
+For presentations, the prod login can show a demo button when both server-only variables are set:
+
+- `AUTH_BYPASS=1`
+- `AUTH_BYPASS_UNTIL=2026-11-20T23:59:59+07:00` (ISO timestamp, Bangkok timezone accepted)
+
+The proxy allows `GET`/`HEAD` only, `isWritable()` returns false (no add/edit/delete UI or
+actions), and every dashboard page shows a “Demo mode · read-only” banner. The window expires
+automatically; after that, normal auth returns even if the variables remain.
+
+Disable immediately: remove both variables from the Vercel `trendrail` project and redeploy
+(or set `AUTH_BYPASS=0`). Never add these to `mockup`/`live`, never prefix them with
+`NEXT_PUBLIC_`, and do not leave the bypass on after the demo.
+
 - Provider: Supabase Auth magic link (PKCE, `@supabase/ssr`), with a password fallback for
   email-quota outages. For production reliability, configure custom SMTP in Supabase.
 - Owner: `ntpsrm.md@gmail.com`.

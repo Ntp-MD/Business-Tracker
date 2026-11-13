@@ -176,6 +176,27 @@
   .cookie-actions {
     justify-content: space-between;
   }
+
+  /* Login already has the brand panel; keep the mobile bar compact. */
+  .cookie-notice-login .cookie-copy {
+    display: none;
+  }
+
+  .cookie-notice-login {
+    gap: 8px;
+    padding-top: 12px;
+  }
+
+  body:has(.cookie-notice-login) {
+    padding-bottom: 128px;
+  }
+}
+
+@media (max-width: 600px) {
+  .login-foot-links,
+  .login-demo-note {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

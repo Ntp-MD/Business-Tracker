@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { FetchStrip } from "@/components/live/fetch-strip";
 import { Sidebar } from "@/components/live/sidebar";
 import { ThemeToggle } from "@/components/live/theme-toggle";
+import { authBypassUntil } from "@/lib/auth/bypass";
 import { getCounts } from "@/lib/data/counts";
 import { listProfiles } from "@/lib/data/live";
 import type { Profile } from "@/lib/types";
@@ -26,6 +27,14 @@ const MOBILE = [
 export default async function LiveLayout({ children }: { children: ReactNode }) {
   if (appVariant() === "mockup") redirect("/");
   const writable = isWritable();
+  const bypassUntil = authBypassUntil();
+  const bypassLabel = bypassUntil
+    ? new Intl.DateTimeFormat("th-TH", {
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone: "Asia/Bangkok",
+      }).format(bypassUntil)
+    : null;
 
   let counts = { items: 0, sources: 0, archive: 0, ads: 0 };
   let profiles: Profile[] = [];
@@ -48,6 +57,7 @@ export default async function LiveLayout({ children }: { children: ReactNode }) 
       <link rel="stylesheet" href="/assets/css/base.css" />
       <link rel="stylesheet" href="/assets/css/component.css" />
       <link rel="stylesheet" href="/assets/css/layout.css" />
+      <link rel="stylesheet" href="/assets/css/demo.css" />
       <a className="skip-link" href="#live-content">
         Skip to content
       </a>
@@ -72,6 +82,11 @@ export default async function LiveLayout({ children }: { children: ReactNode }) 
             ))}
           </nav>
           <FetchStrip profiles={profiles} enabled={writable} />
+          {bypassLabel ? (
+            <div className="bypass-banner" role="status">
+              <b>Demo mode</b> · อ่านอย่างเดียว · หมดอายุ {bypassLabel}
+            </div>
+          ) : null}
           <div id="live-content">{children}</div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { BrandLogo } from "@/components/brand-logo";
 import { CookieNotice } from "@/components/cookie-notice";
+import { authBypassUntil } from "@/lib/auth/bypass";
 import { DEFAULT_NEXT, loginPath, safeNext } from "@/lib/auth/next";
 import { createSupabaseServerClient } from "@/lib/supabase/ssr";
 import { appVariant } from "@/lib/variant";
@@ -44,12 +45,22 @@ export default async function LoginPage({
   } = await supabase.auth.getUser();
   if (user) redirect(target);
 
+  const bypassUntil = authBypassUntil();
+  const bypassLabel = bypassUntil
+    ? new Intl.DateTimeFormat("th-TH", {
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone: "Asia/Bangkok",
+      }).format(bypassUntil)
+    : null;
+
   return (
     <>
       <link rel="stylesheet" href="/assets/css/variables.css" />
       <link rel="stylesheet" href="/assets/css/base.css" />
       <link rel="stylesheet" href="/assets/css/component.css" />
       <link rel="stylesheet" href="/assets/css/layout.css" />
+      <link rel="stylesheet" href="/assets/css/demo.css" />
       <main className="login-shell">
         <section className="login-brand" aria-labelledby="login-brand-title">
           <div className="login-wordmark">
@@ -196,6 +207,15 @@ export default async function LoginPage({
                 Use a password instead
               </Link>
             )}
+
+            {bypassLabel ? (
+              <div className="login-demo">
+                <Link className="btn btn-ghost login-bypass" href={target}>
+                  ดูเดโม (อ่านอย่างเดียว)
+                </Link>
+                <p className="login-demo-note">ชั่วคราว · หมดอายุ {bypassLabel}</p>
+              </div>
+            ) : null}
 
             <div className="login-foot-links">
               <Link className="login-back" href="/">

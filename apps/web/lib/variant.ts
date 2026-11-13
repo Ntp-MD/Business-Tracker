@@ -1,5 +1,7 @@
 import "server-only";
 
+import { authBypassActive } from "@/lib/auth/bypass";
+
 export type AppVariant = "prod" | "mockup" | "live";
 
 export function appVariant(): AppVariant {
@@ -8,7 +10,7 @@ export function appVariant(): AppVariant {
 }
 
 export function isWritable(): boolean {
-  return appVariant() === "prod";
+  return appVariant() === "prod" && !authBypassActive();
 }
 
 export function assertWritable(): void {

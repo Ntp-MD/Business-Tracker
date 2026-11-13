@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
-
+import { authBypassActive } from "@/lib/auth/bypass";
 import { loginPath } from "@/lib/auth/next";
 
 type Variant = "prod" | "mockup" | "live";
@@ -125,6 +125,12 @@ async function handleRequest(request: NextRequest, requestId: string) {
   }
 
   if (!user) {
+    if (authBypassActive()) {
+      if (request.method !== "GET" && request.method !== "HEAD") {
+        return new NextResponse("Demo mode is read-only", { status: 403 });
+      }
+      return response;
+    }
     if (request.method !== "GET" && request.method !== "HEAD") {
       return new NextResponse("Unauthorized", { status: 401 });
     }
