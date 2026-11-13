@@ -13,7 +13,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "backend"))
 
 from collectors import store
-from collectors.contract import RawRecord
+from collectors.contract import QUALITY_RULES_VERSION, RawRecord
 from collectors.dry_run import write_report
 from collectors.job import validate_collect_payload
 from collectors.quality import canonicalize_url, gate
@@ -127,6 +127,15 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(line["status"], "accepted")
         self.assertNotIn("title", line)
 
+    def test_second_run_appends_to_report(self):
+        outcome = gate([raw()], TEST_CONNECTOR, now=NOW)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = pathlib.Path(tmp) / "report.jsonl"
+            write_report(path, outcome)
+            write_report(path, outcome)
+            lines = path.read_text(encoding="utf-8").splitlines()
+        self.assertEqual(len(lines), 2)
+
 
 class JobPayloadTests(unittest.TestCase):
     def validate(self, payload):
@@ -178,6 +187,17 @@ class JobPayloadTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.validate(payload)
 
+    def test_quality_rules_version_must_match(self):
+        payload = {"connector_id": "test_search", "scope": {"keyword": "x"}}
+        self.assertEqual(
+            self.validate({**payload, "quality_rules_version": QUALITY_RULES_VERSION})[
+                "quality_rules_version"
+            ],
+            QUALITY_RULES_VERSION,
+        )
+        with self.assertRaises(ValueError):
+            self.validate({**payload, "quality_rules_version": "2026-01-01.1"})
+
 
 class StoreTests(unittest.TestCase):
     def setUp(self):
@@ -188,6 +208,13 @@ class StoreTests(unittest.TestCase):
             "request": store.db._request,
         }
         self.calls = []
+        self.existing_records = []
+        self.existing_items = []
+        self.fail_on = set()
+        os.environ[store.WRITE_ENV] = "1"
+        store.db.configured = lambda: True
+        store.db.user_id = lambda: "user-1"
+        store.db._request = self.fake_request
 
     def tearDown(self):
         if self.orig["env"] is None:
@@ -200,19 +227,39 @@ class StoreTests(unittest.TestCase):
 
     def fake_request(self, method, path, payload=None, prefer="", **kwargs):
         self.calls.append((method, path, payload, prefer))
+        table = path.split("?")[0]
+        if method == "POST" and table in self.fail_on:
+            raise RuntimeError(f"boom: {table}")
         if method == "GET":
+            if table == "collector_records":
+                return self.existing_records
+            if table == "items":
+                return self.existing_items
             return []
-        if path.startswith("collector_records"):
+        if table == "collector_records":
             return [
                 {"id": f"rec-{row['source_item_id']}", "source_item_id": row["source_item_id"]}
                 for row in payload
             ]
-        if path.startswith("items"):
+        if table == "items":
             return [
                 {"id": f"item-{row['canonical_url']}", "canonical_url": row["canonical_url"]}
                 for row in payload
             ]
         return None
+
+    def save(self):
+        outcome = gate([raw()], TEST_CONNECTOR, now=NOW)
+        return store.save_accepted(
+            TEST_CONNECTOR, "Thailand", outcome.accepted, outcome.counters(1)
+        )
+
+    def posts(self, table, resolution=""):
+        return [
+            payload
+            for method, path, payload, prefer in self.calls
+            if method == "POST" and path.startswith(table) and resolution in prefer
+        ]
 
     def test_writes_disabled_by_default(self):
         os.environ.pop(store.WRITE_ENV, None)
@@ -220,15 +267,7 @@ class StoreTests(unittest.TestCase):
             store.save_accepted(TEST_CONNECTOR, "Thailand", [], {})
 
     def test_save_upserts_records_items_links_state(self):
-        os.environ[store.WRITE_ENV] = "1"
-        store.db.configured = lambda: True
-        store.db.user_id = lambda: "user-1"
-        store.db._request = self.fake_request
-        connector = TEST_CONNECTOR
-        outcome = gate([raw()], connector, now=NOW)
-        counters = outcome.counters(1)
-
-        result = store.save_accepted(connector, "Thailand", outcome.accepted, counters)
+        result = self.save()
 
         paths = [call[1].split("?")[0] for call in self.calls]
         self.assertIn("collector_records", paths)
@@ -246,6 +285,70 @@ class StoreTests(unittest.TestCase):
         self.assertEqual(result["written"], 1)
         self.assertEqual(result["inserted"], 1)
         self.assertEqual(result["updated"], 0)
+
+    def test_uses_two_batched_reads_per_run(self):
+        self.save()
+        gets = [path for method, path, _, _ in self.calls if method == "GET"]
+        self.assertEqual(len(gets), 2)
+        self.assertTrue(gets[0].startswith("collector_records?"))
+        self.assertTrue(gets[1].startswith("items?"))
+
+    def test_repeat_run_merges_keywords(self):
+        self.existing_records = [{"source_item_id": "1001", "keywords_matched": ["old"]}]
+
+        result = self.save()
+
+        self.assertEqual(result["inserted"], 0)
+        self.assertEqual(result["updated"], 1)
+        record = self.posts("collector_records")[0][0]
+        self.assertEqual(record["keywords_matched"], ["old", "Thailand"])
+
+    def test_existing_item_refreshes_metric_columns_only(self):
+        self.existing_items = [
+            {"id": "item-x", "canonical_url": "https://example.com/story", "deleted_at": None}
+        ]
+
+        self.save()
+
+        self.assertEqual(self.posts("items", "ignore-duplicates"), [])
+        projection = self.posts("items", "merge-duplicates")[0][0]
+        self.assertEqual(
+            set(projection), {"user_id", "keyword", "canonical_url", "score", "metric"}
+        )
+        self.assertEqual(projection["score"], 10)
+        self.assertEqual(projection["metric"], "views")
+
+    def test_trashed_item_is_not_relinked_or_refreshed(self):
+        self.existing_items = [
+            {
+                "id": "item-x",
+                "canonical_url": "https://example.com/story",
+                "deleted_at": "2026-11-01T00:00:00Z",
+            }
+        ]
+
+        self.save()
+
+        self.assertEqual(self.posts("collector_item_links"), [])
+        self.assertEqual(self.posts("items"), [])
+
+    def test_success_updates_source_status(self):
+        self.save()
+        status = self.posts("source_status")[0][0]
+        self.assertEqual(status["source"], "example")
+        self.assertTrue(status["ok"])
+        self.assertEqual(status["count"], 1)
+
+    def test_failed_write_records_error_state_and_reraises(self):
+        self.fail_on = {"collector_records"}
+
+        with self.assertRaises(RuntimeError):
+            self.save()
+
+        state = self.posts("collector_state")[-1][0]
+        self.assertEqual(state["last_status"], "error")
+        self.assertNotIn("cursor", state)
+        self.assertNotIn("counters", state)
 
 
 if __name__ == "__main__":

@@ -31,6 +31,7 @@ import re
 import threading
 import time
 import unicodedata
+import urllib.error
 import urllib.parse
 import urllib.request
 import uuid
@@ -2442,7 +2443,7 @@ class Handler(BaseHTTPRequestHandler):
                     0,
                     write=not payload["dry_run"],
                 )
-            except (ValueError, RuntimeError, SystemExit) as exc:
+            except (ValueError, RuntimeError, SystemExit, urllib.error.HTTPError) as exc:
                 _send_json(self, {"error": str(exc)}, 400)
                 return
             _send_json(self, result)

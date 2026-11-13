@@ -56,9 +56,9 @@ def write_report(path: Path, outcome) -> None:
                 "source_item_id": quarantine.raw.source_item_id,
             }
         )
-    path.write_text(
-        "\n".join(json.dumps(line, ensure_ascii=False) for line in lines) + "\n", encoding="utf-8"
-    )
+    # Append: same-day runs must not overwrite earlier evidence.
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write("\n".join(json.dumps(line, ensure_ascii=False) for line in lines) + "\n")
     print(f"report: {path} ({len(lines)} records)")
 
 

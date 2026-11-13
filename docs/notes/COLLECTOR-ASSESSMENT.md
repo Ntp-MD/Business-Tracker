@@ -95,9 +95,48 @@ CI at the time of this assessment: green on `e96f755`.
 Package 5 also needs decision 1; packages 6-7 need decision 3; package 7 additionally needs a
 scheduler owner and cadence, which is plan decision 6.
 
-## Safe fixes that need no schema decision
+## Owner decisions (2026-11-13)
 
-These belong to packages 3-4 and are listed only so they are not lost: batch the item writes,
-append instead of overwrite reports, record an error state on failure, honor
-`quality_rules_version`, catch `HTTPError` in `/api/collect`, use the lease columns, and add
-the missing tests.
+The owner accepted the recommendations in this document. Scope of each decision:
+
+1. **First source:** `gdelt_doc`, keyword scope. The adapter stays disabled until the
+   package 5 access check and sample review pass.
+2. **Rights:** store title, canonical URL, author display, engagement, timestamps, and an
+   excerpt of at most 280 characters. No full article body. Excerpt capture lands with the
+   package 5 adapter; `collector_records.text_excerpt` already exists.
+3. **Persistence:** implemented in `backend/collectors/store.py`:
+   - `keywords_matched` is unioned across runs; the first link keyword is kept.
+   - Existing items refresh `score` and `metric` only; body, author, channel, archive, and
+     trash fields are never rewritten.
+   - Trashed items are skipped: no link, no projection refresh.
+   - Quarantine stays a drop. Review happens on the local dry-run sample (titles printed by
+     `--show-sample`), not in Postgres.
+   - `source_status` is written after every run; a failed run records `last_status = error`
+     and does not advance the cursor.
+   - Records and items are read in two batched requests per run instead of one request per
+     record.
+   - Same-day reports append instead of overwrite.
+   - Local JSON fallback is not required; collectors are Supabase-only.
+4. **Quality policy:** unchanged hard rejects and soft flags in `backend/collectors/quality.py`.
+   The owner reviews the 50-100 record sample from a dry run. Low engagement alone is not a
+   hard rejection.
+
+Schema: `supabase/migrations/20261113000000_collector_sources.sql` adds `gdelt` to the
+`items` and `source_status` source allowlists. It is additive and has **not** been applied.
+Applying it is an owner step before the GDELT adapter can write.
+
+## Status after the decisions
+
+- Packages 1-2: done (this document).
+- Package 3: implemented locally with tests; pending migration application and an approved
+  isolated database validation. Versioned backup export is not implemented.
+- Package 4 (worker leases, retries, cancellation): not started.
+- Package 5 (GDELT adapter and sample review): not started.
+
+
+## Remaining fixes
+
+Still open: worker lease/attempts/retry and cancellation (package 4), the GDELT adapter and
+excerpt capture (package 5), source health UI (package 6), and recurring scheduling
+(package 7). Completed locally in package 3: batched reads and item writes, appended reports,
+error state, `quality_rules_version` enforcement, and `HTTPError` handling.

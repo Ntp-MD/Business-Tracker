@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
+from .contract import QUALITY_RULES_VERSION
 from .registry import Connector, get_connector
 from .store import writes_enabled
 
@@ -59,11 +60,15 @@ def validate_collect_payload(
     if max_records < 1 or max_records > 100:
         raise ValueError("max_records must be between 1 and 100")
 
+    version = payload.get("quality_rules_version")
+    if version is not None and str(version) != QUALITY_RULES_VERSION:
+        raise ValueError(f"quality rules version mismatch: {version}")
+
     return {
         "connector_id": connector_id,
         "scope": {"keyword": keyword},
         "mode": mode,
         "dry_run": dry_run,
         "max_records": max_records,
-        "quality_rules_version": payload.get("quality_rules_version"),
+        "quality_rules_version": QUALITY_RULES_VERSION,
     }
