@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { BrandLogo } from "@/components/brand-logo";
+import { Bars } from "@/components/live/charts";
 import { PatchNotes } from "@/components/live/patch-notes";
 import { SourceIcon } from "@/components/live/source-icon";
 import { ThemeToggle } from "@/components/live/theme-toggle";
@@ -235,12 +236,200 @@ const MOCK_REPORT = [
   { label: "Followers", value: "12,450", note: "+11.5%", pct: 81 },
 ];
 
-const MOCK_GOALS = [
-  { name: "Reach", target: "200,000", actual: "182,600", pct: 91 },
-  { name: "Leads", target: "50", actual: "34", pct: 68 },
-  { name: "ROAS", target: "4.0x", actual: "4.2x", pct: 105 },
-  { name: "Followers", target: "15,000", actual: "12,450", pct: 83 },
-  { name: "Retention", target: "95%", actual: "96%", pct: 100 },
+const MOCK_SOURCE_HEALTH = [
+  { name: "youtube", status: "OK", count: 24, checked: "2 นาทีที่แล้ว", note: "YouTube Data API" },
+  { name: "gnews", status: "OK", count: 18, checked: "2 นาทีที่แล้ว", note: "Google News RSS" },
+  { name: "tiktok", status: "OK", count: 12, checked: "5 นาทีที่แล้ว", note: "Playwright session" },
+  { name: "fbads", status: "OK", count: 8, checked: "5 นาทีที่แล้ว", note: "Meta Ad Library" },
+  { name: "ttads", status: "ช้า", count: 5, checked: "28 นาทีที่แล้ว", note: "รอ rate limit" },
+];
+
+const MOCK_IDEAS = [
+  {
+    title: "5 checklist Local SEO ที่ร้านไทยทำได้เอง",
+    keyword: "Local SEO",
+    format: "Carousel",
+    owner: "Content",
+    status: "Approved",
+    due: "13 พ.ย.",
+    tone: "green",
+  },
+  {
+    title: "Line OA กับเว็บไซต์ เลือกอะไรก่อน",
+    keyword: "LINE OA",
+    format: "Reel",
+    owner: "Video",
+    status: "Draft",
+    due: "14 พ.ย.",
+    tone: "yellow",
+  },
+  {
+    title: "ทำไมร้านค้าออนไลน์ควรมีเว็บของตัวเอง",
+    keyword: "เว็บร้านค้า",
+    format: "Blog",
+    owner: "SEO",
+    status: "Scheduled",
+    due: "15 พ.ย.",
+    tone: "blue",
+  },
+  {
+    title: "3 สัญญาณว่าร้านควรยิงแอดแล้ว",
+    keyword: "Facebook Ads",
+    format: "Short",
+    owner: "Ads",
+    status: "Approved",
+    due: "16 พ.ย.",
+    tone: "green",
+  },
+  {
+    title: "เคสลูกค้า: ลด no-show ด้วยระบบจอง",
+    keyword: "ระบบจองคิว",
+    format: "Case study",
+    owner: "Account",
+    status: "Draft",
+    due: "17 พ.ย.",
+    tone: "yellow",
+  },
+];
+
+const MOCK_LEADS = [
+  {
+    name: "คุณมายด์",
+    source: "Facebook",
+    owner: "Palm",
+    value: "35,000",
+    stage: "New",
+    next: "โทรครั้งแรก",
+  },
+  {
+    name: "Baan Cha",
+    source: "TikTok",
+    owner: "Palm",
+    value: "18,000",
+    stage: "New",
+    next: "ส่งแพ็กเกจ",
+  },
+  { name: "K. Ton", source: "LINE", owner: "Fern", value: "12,000", stage: "New", next: "นัด demo" },
+  {
+    name: "Glow Clinic",
+    source: "Facebook",
+    owner: "Fern",
+    value: "85,000",
+    stage: "Talking",
+    next: "รอใบเสนอราคา",
+  },
+  {
+    name: "Nok Cafe",
+    source: "TikTok",
+    owner: "Palm",
+    value: "24,000",
+    stage: "Talking",
+    next: "นัดถ่ายคลิป",
+  },
+  {
+    name: "Siam Fitness",
+    source: "Referral",
+    owner: "Fern",
+    value: "120,000",
+    stage: "Quoted",
+    next: "ติดตามผล 14 พ.ย.",
+  },
+  {
+    name: "ITOPPLUS Case",
+    source: "Facebook",
+    owner: "Palm",
+    value: "180,000",
+    stage: "Won",
+    next: "เริ่ม onboarding",
+  },
+  {
+    name: "Cafe Amazon",
+    source: "Facebook",
+    owner: "Fern",
+    value: "45,000",
+    stage: "Won",
+    next: "ส่งรายงานรอบแรก",
+  },
+];
+
+const MOCK_GOALS_DETAIL = [
+  {
+    name: "Reach",
+    owner: "Content",
+    target: "200,000",
+    actual: "182,600",
+    pct: 91,
+    status: "On track",
+    tone: "green",
+  },
+  {
+    name: "Leads",
+    owner: "Sales",
+    target: "50",
+    actual: "34",
+    pct: 68,
+    status: "At risk",
+    tone: "yellow",
+  },
+  {
+    name: "ROAS",
+    owner: "Ads",
+    target: "4.0x",
+    actual: "4.2x",
+    pct: 105,
+    status: "Exceeded",
+    tone: "green",
+  },
+  {
+    name: "Followers",
+    owner: "Content",
+    target: "15,000",
+    actual: "12,450",
+    pct: 83,
+    status: "On track",
+    tone: "green",
+  },
+  {
+    name: "Retention",
+    owner: "Account",
+    target: "95%",
+    actual: "96%",
+    pct: 100,
+    status: "Exceeded",
+    tone: "green",
+  },
+];
+
+const MOCK_REPORTS_HISTORY = [
+  {
+    name: "ITOPPLUS · พ.ย. 2026",
+    period: "1–12 พ.ย.",
+    owner: "Fern",
+    status: "Ready",
+    tone: "green",
+  },
+  {
+    name: "ITOPPLUS · ต.ค. 2026",
+    period: "1–31 ต.ค.",
+    owner: "Fern",
+    status: "Sent",
+    tone: "blue",
+  },
+  {
+    name: "Local Heroes · ต.ค. 2026",
+    period: "1–31 ต.ค.",
+    owner: "Palm",
+    status: "Sent",
+    tone: "blue",
+  },
+];
+
+const MOCK_COMP_SOV: [string, number][] = [
+  ["ITOPPLUS", 38],
+  ["Agency A", 22],
+  ["Agency B", 17],
+  ["Agency C", 16],
+  ["DIY", 7],
 ];
 
 function score(value: number): string {
@@ -297,11 +486,13 @@ export default async function MockPage({
   searchParams: Promise<{ view?: string }>;
 }) {
   const { view = "overview" } = await searchParams;
-  if (appVariant() === "live") redirect("/live");
+  const variant = appVariant();
+  if (variant === "live") redirect("/live");
   const items = MOCK_ITEMS;
-  const sources = [...new Set(items.map((item) => item.source))];
+  const sources = MOCK_SOURCE_HEALTH.map((source) => source.name);
   const totalScore = items.reduce((sum, item) => sum + Number(item.score), 0);
   const terms = mockTerms();
+  const termTotal = terms.reduce((sum, [, count]) => sum + count, 0);
 
   return (
     <>
@@ -337,7 +528,9 @@ export default async function MockPage({
             ))}
           </nav>
           <div className="help-card">
-            <span className="proto-tag">PROTOTYPE · mock data — not production</span>
+            <span className="proto-tag">
+              {variant === "mockup" ? "MOCKUP · sample data" : "MOCK PREVIEW · real data at /live"}
+            </span>
             <PatchNotes />
           </div>
         </aside>
@@ -353,7 +546,11 @@ export default async function MockPage({
                 <span className="uname">ITOPPLUS</span>
               </div>
             </div>
-            <div className="page-sub">Mockup · sample data · no backend</div>
+            <div className="page-sub">
+              {variant === "mockup"
+                ? "MOCKUP · sample data · no backend"
+                : "MOCK PREVIEW · production data lives at /live"}
+            </div>
           </div>
 
           <nav className="mobile-nav" aria-label="Mobile">
@@ -508,10 +705,71 @@ export default async function MockPage({
               <div className="card">
                 <div className="card-head">
                   <h3>All items ({items.length})</h3>
-                  <span className="chart-note">Sample data · mock table</span>
+                  <span className="chart-note">Mock table · no backend</span>
+                </div>
+                <div className="items-filters">
+                  <label>
+                    ค้นหา
+                    <input type="search" name="q" placeholder="Filter title/source…" />
+                  </label>
+                  <label>
+                    Source
+                    <select name="source" defaultValue="">
+                      <option value="">ทุกแหล่ง</option>
+                      {sources.map((source) => (
+                        <option key={source} value={source}>
+                          {mockSourceLabel(source)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    Sort
+                    <select name="sort" defaultValue="score">
+                      <option value="score">Score</option>
+                      <option value="published">Published</option>
+                      <option value="title">Title</option>
+                    </select>
+                  </label>
+                  <label>
+                    จาก
+                    <input type="date" name="from" defaultValue="2026-11-01" />
+                  </label>
+                  <label>
+                    ถึง
+                    <input type="date" name="to" defaultValue="2026-11-13" />
+                  </label>
+                  <button className="btn btn-primary" type="button">
+                    Filter
+                  </button>
+                  <button className="btn btn-ghost" type="button">
+                    Reset
+                  </button>
+                </div>
+                <div className="tbl-head">
+                  <div className="tbl-tabs" role="tablist" aria-label="Items by source">
+                    <a className="active" href="?view=items" role="tab" aria-selected="true">
+                      All {items.length}
+                    </a>
+                    {sources.map((source) => (
+                      <a key={source} href="?view=items" role="tab" aria-selected="false">
+                        {mockSourceLabel(source)}{" "}
+                        {items.filter((item) => item.source === source).length}
+                      </a>
+                    ))}
+                  </div>
+                  <span className="chart-note">Page 1 / 1</span>
                 </div>
                 <div className="tbl-scroll">
                   <Table rows={items} />
+                </div>
+                <div className="pager">
+                  <span>
+                    Showing 1–{items.length} of {items.length}
+                  </span>
+                  <a className="active" href="?view=items">
+                    1
+                  </a>
                 </div>
               </div>
             </section>
@@ -520,37 +778,144 @@ export default async function MockPage({
           {view === "sources" && (
             <section className="page active">
               <div className="src-grid">
-                {sources.map((source) => (
-                  <div className="card src-card" key={source}>
+                {MOCK_SOURCE_HEALTH.map((source) => (
+                  <div className="card src-card" key={source.name}>
                     <div className="card-head">
                       <h3>
-                        <SourceIcon source={source} size={20} />
-                        {mockSourceLabel(source)}
+                        <SourceIcon source={source.name} size={20} />
+                        {mockSourceLabel(source.name)}
                       </h3>
-                      <span className="badge-n">
-                        {items.filter((item) => item.source === source).length}
+                      <span className={`pill pill-${source.status === "OK" ? "green" : "yellow"}`}>
+                        {source.status}
                       </span>
                     </div>
-                    <p className="src-detail">Sample rows only — live data is on /live</p>
+                    <p className="src-detail">{source.note}</p>
+                    <div className="metric-grid" style={{ marginTop: 10 }}>
+                      <div className="m">
+                        <b>{source.count}</b>
+                        <span>items</span>
+                      </div>
+                      <div className="m">
+                        <b>{source.checked}</b>
+                        <span>last run</span>
+                      </div>
+                    </div>
                   </div>
                 ))}
+              </div>
+              <div className="card" style={{ marginTop: 16 }}>
+                <div className="card-head">
+                  <h3>Source health</h3>
+                  <span className="chart-note">Mock run · 13 พ.ย. 2026</span>
+                </div>
+                <div className="tbl-scroll">
+                  <table>
+                    <caption className="visually-hidden">Source health</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">Source</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Items</th>
+                        <th scope="col">Last run</th>
+                        <th scope="col">Note</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {MOCK_SOURCE_HEALTH.map((source) => (
+                        <tr key={source.name}>
+                          <td>
+                            <b>{mockSourceLabel(source.name)}</b>
+                          </td>
+                          <td>
+                            <span
+                              className={`pill pill-${source.status === "OK" ? "green" : "yellow"}`}
+                            >
+                              {source.status}
+                            </span>
+                          </td>
+                          <td>{source.count}</td>
+                          <td>{source.checked}</td>
+                          <td>{source.note}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </section>
           )}
 
           {view === "terms" && (
             <section className="page active">
-              <div className="card">
+              <div className="kpis">
+                <div className="card kpi">
+                  <div className="label">Unique terms</div>
+                  <div className="big">{terms.length}</div>
+                  <div className="delta">
+                    <small>จาก {items.length} sample items</small>
+                  </div>
+                </div>
+                <div className="card kpi">
+                  <div className="label">Top term</div>
+                  <div className="big">{terms[0]?.[0] ?? "—"}</div>
+                  <div className="delta up">{terms[0]?.[1] ?? 0} mentions</div>
+                </div>
+                <div className="card kpi">
+                  <div className="label">Mentions</div>
+                  <div className="big">{termTotal}</div>
+                  <div className="delta">
+                    <small>รวมทุก term</small>
+                  </div>
+                </div>
+                <div className="card kpi">
+                  <div className="label">Avg / item</div>
+                  <div className="big">{(termTotal / Math.max(items.length, 1)).toFixed(1)}</div>
+                  <div className="delta">
+                    <small>term ต่อ item</small>
+                  </div>
+                </div>
+              </div>
+              <div className="card" style={{ marginTop: 16 }}>
                 <div className="card-head">
                   <h3>Top terms · {items.length} sample items</h3>
+                  <span className="chart-note">Mock analysis</span>
                 </div>
-                <div className="terms">
-                  {terms.map(([word, count]) => (
-                    <span className="term" key={word}>
-                      {word}
-                      <b>{count}</b>
-                    </span>
-                  ))}
+                <div className="tbl-scroll">
+                  <table>
+                    <caption className="visually-hidden">Top terms</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">Term</th>
+                        <th scope="col">Mentions</th>
+                        <th scope="col">Share</th>
+                        <th scope="col">Trend</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {terms.map(([word, count], index) => (
+                        <tr key={word}>
+                          <td>
+                            <b>{word}</b>
+                          </td>
+                          <td>{count}</td>
+                          <td>
+                            <span className="term-bar" style={{ display: "block", width: 160 }}>
+                              <i
+                                style={{
+                                  width: `${Math.max(8, Math.round((count / Math.max(terms[0][1], 1)) * 100))}%`,
+                                }}
+                              />
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`pill pill-${index < 3 ? "green" : "blue"}`}>
+                              {index < 3 ? "Rising" : "Steady"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </section>
@@ -558,22 +923,95 @@ export default async function MockPage({
 
           {view === "ideas" && (
             <section className="page active">
-              {MOCK_PROFILES.map((profile) => (
-                <div className="card" key={profile.name} style={{ marginBottom: 12 }}>
-                  <div className="card-head">
-                    <h3>{profile.name}</h3>
-                    <span className="chart-note">{profile.keywords.length} keywords</span>
-                  </div>
-                  <ul className="suggest">
-                    {profile.keywords.map((keyword) => (
-                      <li key={keyword}>
-                        SEO post: answer &quot;{keyword}&quot; in one clear headline + hashtags + a
-                        single CTA.
-                      </li>
-                    ))}
-                  </ul>
+              <div className="kpis">
+                <div className="card kpi">
+                  <div className="label">Ideas ทั้งหมด</div>
+                  <div className="big">{MOCK_IDEAS.length}</div>
+                  <div className="delta up">พร้อมผลิต</div>
                 </div>
-              ))}
+                <div className="card kpi">
+                  <div className="label">Approved</div>
+                  <div className="big">
+                    {MOCK_IDEAS.filter((idea) => idea.status === "Approved").length}
+                  </div>
+                  <div className="delta">
+                    <small>รอเข้า calendar</small>
+                  </div>
+                </div>
+                <div className="card kpi">
+                  <div className="label">Draft</div>
+                  <div className="big">
+                    {MOCK_IDEAS.filter((idea) => idea.status === "Draft").length}
+                  </div>
+                  <div className="delta">
+                    <small>รอรีวิว</small>
+                  </div>
+                </div>
+                <div className="card kpi">
+                  <div className="label">Scheduled</div>
+                  <div className="big">
+                    {MOCK_IDEAS.filter((idea) => idea.status === "Scheduled").length}
+                  </div>
+                  <div className="delta">
+                    <small>ตั้งเวลาแล้ว</small>
+                  </div>
+                </div>
+              </div>
+              <div className="card" style={{ marginTop: 16 }}>
+                <div className="card-head">
+                  <h3>Content ideas</h3>
+                  <span className="chart-note">Mock pipeline</span>
+                </div>
+                <div
+                  className="tbl-tabs"
+                  role="tablist"
+                  aria-label="Ideas by profile"
+                  style={{ marginBottom: 10 }}
+                >
+                  {MOCK_PROFILES.map((profile, index) => (
+                    <a
+                      key={profile.name}
+                      className={index === 0 ? "active" : ""}
+                      href="?view=ideas"
+                      role="tab"
+                      aria-selected={index === 0}
+                    >
+                      {profile.name}
+                    </a>
+                  ))}
+                </div>
+                <div className="tbl-scroll">
+                  <table>
+                    <caption className="visually-hidden">Content ideas</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">Idea</th>
+                        <th scope="col">Keyword</th>
+                        <th scope="col">Format</th>
+                        <th scope="col">Owner</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Due</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {MOCK_IDEAS.map((idea) => (
+                        <tr key={idea.title}>
+                          <td>
+                            <b>{idea.title}</b>
+                          </td>
+                          <td>{idea.keyword}</td>
+                          <td>{idea.format}</td>
+                          <td>{idea.owner}</td>
+                          <td>
+                            <span className={`pill pill-${idea.tone}`}>{idea.status}</span>
+                          </td>
+                          <td>{idea.due}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </section>
           )}
 
@@ -582,10 +1020,55 @@ export default async function MockPage({
               <div className="card">
                 <div className="card-head">
                   <h3>Archived items (4)</h3>
-                  <span className="chart-note">Sample archive</span>
+                  <span className="chart-note">Mock archive · saved for later</span>
+                </div>
+                <div className="items-filters">
+                  <label>
+                    ค้นหา
+                    <input type="search" name="q" placeholder="Filter title/source…" />
+                  </label>
+                  <label>
+                    Source
+                    <select name="source" defaultValue="">
+                      <option value="">ทุกแหล่ง</option>
+                      {sources.map((source) => (
+                        <option key={source} value={source}>
+                          {mockSourceLabel(source)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button className="btn btn-primary" type="button">
+                    Filter
+                  </button>
+                  <button className="btn btn-ghost" type="button">
+                    Reset
+                  </button>
+                </div>
+                <div
+                  className="tbl-tabs"
+                  role="tablist"
+                  aria-label="Archive by source"
+                  style={{ marginBottom: 10 }}
+                >
+                  <a className="active" href="?view=archive" role="tab" aria-selected="true">
+                    All 4
+                  </a>
+                  {sources.slice(0, 3).map((source) => (
+                    <a key={source} href="?view=archive" role="tab" aria-selected="false">
+                      {mockSourceLabel(source)}{" "}
+                      {items.slice(0, 4).filter((item) => item.source === source).length}
+                    </a>
+                  ))}
                 </div>
                 <div className="tbl-scroll">
                   <Table rows={items.slice(0, 4)} />
+                </div>
+                <div className="pager">
+                  <span>Showing 1–4 of 4</span>
+                  <a className="active" href="?view=archive">
+                    1
+                  </a>
                 </div>
               </div>
             </section>
@@ -715,6 +1198,43 @@ export default async function MockPage({
                   </div>
                 ))}
               </div>
+              <div className="card" style={{ marginTop: 16 }}>
+                <div className="card-head">
+                  <h3>Lead pipeline</h3>
+                  <span className="chart-note">{MOCK_LEADS.length} leads · mock</span>
+                </div>
+                <div className="tbl-scroll">
+                  <table>
+                    <caption className="visually-hidden">Lead pipeline</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">Lead</th>
+                        <th scope="col">Source</th>
+                        <th scope="col">Owner</th>
+                        <th scope="col">Value</th>
+                        <th scope="col">Stage</th>
+                        <th scope="col">Next action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {MOCK_LEADS.map((lead) => (
+                        <tr key={lead.name}>
+                          <td>
+                            <b>{lead.name}</b>
+                          </td>
+                          <td>{lead.source}</td>
+                          <td>{lead.owner}</td>
+                          <td>{lead.value}</td>
+                          <td>
+                            <span className="pill pill-blue">{lead.stage}</span>
+                          </td>
+                          <td>{lead.next}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </section>
           )}
 
@@ -745,6 +1265,13 @@ export default async function MockPage({
                   <div className="big">Local SEO</div>
                   <div className="delta up">คู่แข่งยังไม่ทำ</div>
                 </div>
+              </div>
+              <div className="card" style={{ marginTop: 16 }}>
+                <div className="card-head">
+                  <h3>Share of voice</h3>
+                  <span className="chart-note">Mock · 5 แบรนด์</span>
+                </div>
+                <Bars share={MOCK_COMP_SOV} />
               </div>
               <div className="card" style={{ marginTop: 16 }}>
                 <div className="card-head">
@@ -868,6 +1395,53 @@ export default async function MockPage({
 
           {view === "tasks" && (
             <section className="page active">
+              <div className="kpis">
+                <div className="card kpi">
+                  <div className="label">งานทั้งหมด</div>
+                  <div className="big">
+                    {MOCK_TASKS.reduce((sum, column) => sum + column.tasks.length, 0)}
+                  </div>
+                  <div className="delta">
+                    <small>4 คอลัมน์</small>
+                  </div>
+                </div>
+                <div className="card kpi">
+                  <div className="label">Due วันนี้</div>
+                  <div className="big">2</div>
+                  <div className="delta up">ต้องส่งก่อน 18:00</div>
+                </div>
+                <div className="card kpi">
+                  <div className="label">เสร็จแล้ว</div>
+                  <div className="big">1</div>
+                  <div className="delta up">Content ส่งแล้ว</div>
+                </div>
+                <div className="card kpi">
+                  <div className="label">รอรีวิว</div>
+                  <div className="big">1</div>
+                  <div className="delta">
+                    <small>Founder review</small>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="tbl-tabs"
+                role="tablist"
+                aria-label="Task filters"
+                style={{ margin: "12px 0" }}
+              >
+                <a className="active" href="?view=tasks" role="tab" aria-selected="true">
+                  All
+                </a>
+                <a href="?view=tasks" role="tab" aria-selected="false">
+                  Mine
+                </a>
+                <a href="?view=tasks" role="tab" aria-selected="false">
+                  Due today
+                </a>
+                <a href="?view=tasks" role="tab" aria-selected="false">
+                  Overdue
+                </a>
+              </div>
               <div className="kanban" style={{ marginTop: 4 }}>
                 {MOCK_TASKS.map((column) => (
                   <div className="card kcol" key={column.stage}>
@@ -928,61 +1502,268 @@ export default async function MockPage({
                   ))}
                 </div>
               </div>
+              <div className="card" style={{ marginTop: 16 }}>
+                <div className="card-head">
+                  <h3>Report history</h3>
+                  <span className="chart-note">Mock archive</span>
+                </div>
+                <div className="tbl-scroll">
+                  <table>
+                    <caption className="visually-hidden">Report history</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">Report</th>
+                        <th scope="col">Period</th>
+                        <th scope="col">Owner</th>
+                        <th scope="col">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {MOCK_REPORTS_HISTORY.map((report) => (
+                        <tr key={report.name}>
+                          <td>
+                            <b>{report.name}</b>
+                          </td>
+                          <td>{report.period}</td>
+                          <td>{report.owner}</td>
+                          <td>
+                            <span className={`pill pill-${report.tone}`}>{report.status}</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </section>
           )}
 
           {view === "goals" && (
             <section className="page active">
-              <div className="card">
+              <div className="kpis">
+                <div className="card kpi">
+                  <div className="label">เป้าหมายทั้งหมด</div>
+                  <div className="big">{MOCK_GOALS_DETAIL.length}</div>
+                  <div className="delta">
+                    <small>5 ตัวชี้วัด</small>
+                  </div>
+                </div>
+                <div className="card kpi">
+                  <div className="label">On track</div>
+                  <div className="big">
+                    {MOCK_GOALS_DETAIL.filter((goal) => goal.status === "On track").length}
+                  </div>
+                  <div className="delta up">ตามแผน</div>
+                </div>
+                <div className="card kpi">
+                  <div className="label">At risk</div>
+                  <div className="big">
+                    {MOCK_GOALS_DETAIL.filter((goal) => goal.status === "At risk").length}
+                  </div>
+                  <div className="delta">
+                    <small>Leads ต่ำกว่าเป้า</small>
+                  </div>
+                </div>
+                <div className="card kpi">
+                  <div className="label">Exceeded</div>
+                  <div className="big">
+                    {MOCK_GOALS_DETAIL.filter((goal) => goal.status === "Exceeded").length}
+                  </div>
+                  <div className="delta up">ROAS + Retention</div>
+                </div>
+              </div>
+              <div className="card" style={{ marginTop: 16 }}>
                 <div className="card-head">
                   <h3>เป้าหมายลูกค้า vs ผลจริง</h3>
                   <span className="chart-note">Mock data</span>
                 </div>
-                {MOCK_GOALS.map((goal) => (
-                  <div className="progress-row" key={goal.name}>
-                    <span className="lbl">{goal.name}</span>
-                    <span className="bar">
-                      <i style={{ width: `${Math.min(goal.pct, 100)}%` }} />
-                    </span>
-                    <span className="pct">{goal.pct}%</span>
-                    <span className="chart-note">
-                      {goal.actual} / {goal.target}
-                    </span>
-                  </div>
-                ))}
+                <div className="tbl-scroll">
+                  <table>
+                    <caption className="visually-hidden">Goal tracker</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">Goal</th>
+                        <th scope="col">Owner</th>
+                        <th scope="col">Target</th>
+                        <th scope="col">Actual</th>
+                        <th scope="col">Progress</th>
+                        <th scope="col">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {MOCK_GOALS_DETAIL.map((goal) => (
+                        <tr key={goal.name}>
+                          <td>
+                            <b>{goal.name}</b>
+                          </td>
+                          <td>{goal.owner}</td>
+                          <td>{goal.target}</td>
+                          <td>{goal.actual}</td>
+                          <td>
+                            <span className="term-bar" style={{ display: "block", width: 140 }}>
+                              <i style={{ width: `${Math.min(goal.pct, 100)}%` }} />
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`pill pill-${goal.tone}`}>{goal.status}</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </section>
           )}
 
           {view === "settings" && (
             <section className="page active">
-              <div className="card">
-                <div className="card-head">
-                  <h3>Profiles</h3>
-                  <span className="chart-note">{MOCK_PROFILES.length} sample profiles</span>
-                </div>
-                <div className="terms">
-                  {MOCK_PROFILES.map((profile) => (
-                    <span className="term" key={profile.name}>
-                      {profile.name}
-                      <b>{profile.keywords.length}</b>
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div className="card" style={{ marginTop: 12 }}>
-                <div className="card-head">
-                  <h3>Data</h3>
-                  <span className="chart-note">Mock — nothing is stored</span>
-                </div>
-                <div className="metric-grid">
-                  <div className="m">
-                    <b>{items.length}</b>
-                    <span>Sample items</span>
+              <div className="set-grid">
+                <div className="set-col">
+                  <div className="card">
+                    <div className="card-head">
+                      <h3>Keyword profiles</h3>
+                      <span className="chart-note">{MOCK_PROFILES.length} profiles</span>
+                    </div>
+                    {MOCK_PROFILES.map((profile) => (
+                      <div className="set-row" key={profile.name}>
+                        <div className="t">
+                          <b>{profile.name}</b>
+                          <span>{profile.keywords.join(" · ")}</span>
+                        </div>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <button
+                            className="btn btn-ghost"
+                            type="button"
+                            style={{ padding: "6px 12px", fontSize: 12 }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="btn btn-ghost"
+                            type="button"
+                            style={{ padding: "6px 12px", fontSize: 12 }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    <div className="set-row wide">
+                      <div className="t">
+                        <b>เพิ่ม profile</b>
+                        <span>Mock only — nothing is saved</span>
+                      </div>
+                      <input
+                        className="set-input"
+                        type="text"
+                        placeholder="ชื่อ profile"
+                        aria-label="Mock profile name"
+                      />
+                    </div>
+                    <div className="set-row wide">
+                      <div className="t">
+                        <b>Keywords</b>
+                        <span>คั่นด้วย comma</span>
+                      </div>
+                      <textarea
+                        rows={3}
+                        defaultValue="Local SEO, LINE OA, Facebook Ads"
+                        aria-label="Mock profile keywords"
+                      />
+                    </div>
+                    <button className="btn btn-primary" type="button" style={{ marginTop: 8 }}>
+                      Add profile
+                    </button>
                   </div>
-                  <div className="m">
-                    <b>{sources.length}</b>
-                    <span>Sample sources</span>
+                </div>
+                <div className="set-col">
+                  <div className="card">
+                    <div className="card-head">
+                      <h3>Sources</h3>
+                      <span className="chart-note">Mock toggles</span>
+                    </div>
+                    {MOCK_SOURCE_HEALTH.map((source) => (
+                      <div className="set-row" key={source.name}>
+                        <div className="t">
+                          <b>
+                            <SourceIcon source={source.name} size={16} />{" "}
+                            {mockSourceLabel(source.name)}
+                          </b>
+                          <span>{source.note}</span>
+                        </div>
+                        <input
+                          type="checkbox"
+                          defaultChecked
+                          aria-label={`Enable ${source.name}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="card" style={{ marginTop: 12 }}>
+                    <div className="card-head">
+                      <h3>Data</h3>
+                      <span className="chart-note">Mock only</span>
+                    </div>
+                    <div className="set-row">
+                      <div className="t">
+                        <b>Export demo</b>
+                        <span>JSON snapshot</span>
+                      </div>
+                      <button className="btn btn-ghost" type="button">
+                        Export
+                      </button>
+                    </div>
+                    <div className="set-row">
+                      <div className="t">
+                        <b>Import demo</b>
+                        <span>JSON / ZIP</span>
+                      </div>
+                      <button className="btn btn-ghost" type="button">
+                        Import
+                      </button>
+                    </div>
+                    <div className="set-row">
+                      <div className="t">
+                        <b>Reset demo</b>
+                        <span>คืนค่า mock data</span>
+                      </div>
+                      <button className="btn btn-ghost" type="button">
+                        Reset
+                      </button>
+                    </div>
+                    <div className="metric-grid" style={{ marginTop: 12 }}>
+                      <div className="m">
+                        <b>{items.length}</b>
+                        <span>Sample items</span>
+                      </div>
+                      <div className="m">
+                        <b>{sources.length}</b>
+                        <span>Sample sources</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="card" style={{ marginTop: 12 }}>
+                    <div className="card-head">
+                      <h3>Appearance</h3>
+                    </div>
+                    <div className="set-row">
+                      <div className="t">
+                        <b>Theme</b>
+                        <span>Light / Dark</span>
+                      </div>
+                      <ThemeToggle />
+                    </div>
+                    <div className="set-row">
+                      <div className="t">
+                        <b>ภาษา</b>
+                        <span>ไทย / English</span>
+                      </div>
+                      <select defaultValue="th" aria-label="Language">
+                        <option value="th">ไทย</option>
+                        <option value="en">English</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
               </div>

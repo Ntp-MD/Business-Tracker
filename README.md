@@ -96,7 +96,7 @@ Copy `.env.example` to `.env.local` for the Python side. The Next app reads its 
 
 | Variant | URL | Data | Writes |
 |---|---|---|---|
-| `mockup` | `https://trendrail-mockup.vercel.app` | fixtures only | no |
+| `mockup` | `https://trendrail-mockup.vercel.app` | full static mock data | no |
 | `prod` | `https://trendrail.vercel.app` | Supabase | yes |
 | `live` | `https://trendrail-live.vercel.app` | same Supabase | no (read-only) |
 

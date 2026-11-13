@@ -10,6 +10,20 @@
 
 All three projects use root directory `apps/web`, framework Next.js, and deployment protection off.
 
+### Environment separation for demos
+
+| Environment | Use it for | Data source | Auth | Writes |
+|---|---|---|---|---|
+| `mockup` | presentations, screenshots, UX review | static fixtures in `apps/web/lib/mock/` | none | none |
+| `prod` | owner operations | Supabase service role | Supabase Auth | yes |
+| `live` | public read-only sharing | Supabase anon key + `live_items` views | none | none |
+
+- Demo on `https://trendrail-mockup.vercel.app` only. Never seed demo rows into prod or live.
+- The mockup project must have no Supabase env and no service key. `/live` and `/api` redirect to `/`.
+- Prod and live are separate Vercel projects; live cannot write even if the UI is bypassed.
+- Keep the environment label visible: mockup shows `MOCKUP`, prod root is a mock preview and
+  labels the real app at `/live`, live is read-only.
+
 - `APP_VARIANT` selects behavior: `mockup` → `/` only, `/live` + `/api` redirect to `/`; `live` → `/` redirects to `/live`, `/live/settings`, `/live/trash`, edit routes redirect, non-GET requests return 403; `prod` → full app (default when unset).
 - **mockup** has only `APP_VARIANT=mockup`; it must not receive Supabase keys.
 - **prod** has `APP_VARIANT=prod` for Production and `APP_VARIANT=live` for Preview, so preview deployments are read-only. Supabase env is available to Production + Preview.

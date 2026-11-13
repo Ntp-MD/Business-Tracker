@@ -44,9 +44,15 @@ class BrowserCase(unittest.TestCase):
 
 class ReadOnlyTests(BrowserCase):
     def test_mockup_root_and_live_redirect(self):
+        requests = []
+        self.page.on("request", lambda request: requests.append(request.url))
         response = self.page.goto(f"{MOCKUP_URL}/", wait_until="domcontentloaded")
         self.assertEqual(response.status, 200)
-        expect(self.page.locator("body")).to_contain_text("PROTOTYPE")
+        expect(self.page.locator("body")).to_contain_text("sample data")
+        self.assertFalse(
+            [url for url in requests if "supabase.co" in url or "/api/" in url],
+            "mockup must not call Supabase or the API",
+        )
 
         self.page.goto(f"{MOCKUP_URL}/live", wait_until="domcontentloaded")
         self.assertEqual(self.path(), "/")
