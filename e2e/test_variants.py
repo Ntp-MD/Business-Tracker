@@ -93,7 +93,7 @@ class ReadOnlyTests(BrowserCase):
 class ProdWriteTests(BrowserCase):
     def login(self):
         self.page.goto(f"{PROD_URL}/login?password=1&next=%2Flive", wait_until="domcontentloaded")
-        form = self.page.locator("form").nth(1)
+        form = self.page.locator("form").filter(has=self.page.locator("input[name=password]"))
         form.locator("input[name=email]").fill(PROD_EMAIL)
         form.locator("input[name=password]").fill(PROD_PASSWORD)
         form.get_by_role("button", name="Sign in with password").click()

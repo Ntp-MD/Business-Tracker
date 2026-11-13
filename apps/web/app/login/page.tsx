@@ -1,13 +1,15 @@
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-
+import { signOut } from "@/app/auth/actions";
 import { BrandLogo } from "@/components/brand-logo";
 import { CookieNotice } from "@/components/cookie-notice";
 import { DEFAULT_NEXT, loginPath, safeNext } from "@/lib/auth/next";
+import { isOwner } from "@/lib/auth/owner";
 import { createSupabaseServerClient } from "@/lib/supabase/ssr";
 import { appVariant } from "@/lib/variant";
 
-import { signInWithEmail, signInWithPassword } from "./actions";
+import { signInWithEmail, signInWithGoogle, signInWithPassword } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +45,7 @@ export default async function LoginPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (user) redirect(target);
+  if (isOwner(user?.id)) redirect(target);
 
   return (
     <>
@@ -125,8 +127,8 @@ export default async function LoginPage({
               <h2 id="login-title">Sign in to TrendRail</h2>
               <p>
                 {password
-                  ? "Use the owner email and password, or switch back to a magic link."
-                  : "Use the owner email. We send a one-time link — no password is stored."}
+                  ? "Continue with Google, or use the owner email and password."
+                  : "Continue with Google, or use the owner email. We send a one-time link — no password is stored."}
               </p>
             </div>
 
@@ -138,6 +140,17 @@ export default async function LoginPage({
             {error ? (
               <div className="login-alert login-alert-err" role="alert">
                 {error}
+              </div>
+            ) : null}
+
+            {user ? (
+              <div className="login-alert login-alert-err" role="alert">
+                This account does not have owner access.
+                <form action={signOut}>
+                  <button className="btn btn-ghost" type="submit">
+                    Sign out and switch account
+                  </button>
+                </form>
               </div>
             ) : null}
 
@@ -190,6 +203,19 @@ export default async function LoginPage({
             <div className="login-divider">
               <span>or</span>
             </div>
+
+            <form action={signInWithGoogle} className="login-form">
+              <input type="hidden" name="next" value={target} />
+              <button className="google-signin-btn" type="submit" aria-label="Sign in with Google">
+                <Image
+                  src="/assets/google-signin-button.png"
+                  alt=""
+                  width={180}
+                  height={40}
+                  unoptimized
+                />
+              </button>
+            </form>
 
             {password ? (
               <Link className="login-alt" href={loginPath({ next: target })}>

@@ -2551,6 +2551,16 @@
   justify-content: center;
 }
 
+.google-signin-btn {
+  justify-self: center;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  line-height: 0;
+  cursor: pointer;
+}
+
 .login-alert {
   margin: 0 0 16px;
   padding: 11px 13px;

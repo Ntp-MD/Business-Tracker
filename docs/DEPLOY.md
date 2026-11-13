@@ -71,6 +71,21 @@ exposes source health. Both are select-only for `anon`, so a code bypass still c
 
 Only the `prod` variant requires login. `mockup` and `live` stay public; `live` remains read-only.
 
+Production access is limited to the authenticated Supabase user whose UUID matches
+`SUPABASE_USER_ID`; a missing ID fails closed. Google sign-in uses the same owner account
+and `/auth/callback` as magic-link sign-in. A different Google identity must be linked
+to the existing owner user before it can access the console; do not change the owner ID
+or link identities without verifying the account. Magic link and password remain available.
+
+For Google sign-in, configure a web OAuth client with the production origin and the
+Supabase Google-provider callback, then store its client ID and secret in Supabase Auth's
+Google provider settings. Add the web app's `/auth/callback` to Supabase's allowed
+redirect URLs. Keep the client secret out of source control and chat. Deploy and verify
+the owner-only guard before enabling the provider; deployment and provider changes
+require the approvals in `AGENTS.md`. Test owner and non-owner accounts, magic-link and
+password fallback, logout, and the mockup/live variant boundaries. The Google sign-in
+button asset is from Google's official [branding package](https://developers.google.com/identity/branding-guidelines).
+
 ### Demo link
 
 The prod login shows a “ดูเดโม (mockup)” button. It links to `NEXT_PUBLIC_MOCKUP_URL`

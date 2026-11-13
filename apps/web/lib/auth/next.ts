@@ -3,7 +3,13 @@ export const DEFAULT_NEXT = "/live";
 /** Only allow same-origin absolute paths; never protocol-relative or external URLs. */
 export function safeNext(value: unknown): string {
   const next = typeof value === "string" ? value : String(value ?? "");
-  return next.startsWith("/") && !next.startsWith("//") ? next : DEFAULT_NEXT;
+  const hasUnsafeCharacter = [...next].some((char) => {
+    const code = char.charCodeAt(0);
+    return char === "\\" || code < 32 || code === 127;
+  });
+  return next.startsWith("/") && !next.startsWith("//") && !hasUnsafeCharacter
+    ? next
+    : DEFAULT_NEXT;
 }
 
 /** Keep `/login` clean: omit the default `/live` target and empty options. */

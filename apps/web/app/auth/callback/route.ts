@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { loginPath, safeNext } from "@/lib/auth/next";
+import { isOwner } from "@/lib/auth/owner";
 import { createSupabaseServerClient } from "@/lib/supabase/ssr";
 
 export async function GET(request: Request) {
@@ -22,12 +23,19 @@ export async function GET(request: Request) {
   }
 
   const supabase = await createSupabaseServerClient();
-  const { error } = code
+  const { data, error } = code
     ? await supabase.auth.exchangeCodeForSession(code)
     : await supabase.auth.verifyOtp({ token_hash: tokenHash!, type: otpType as "magiclink" });
   if (error) {
     return NextResponse.redirect(
       new URL(loginPath({ error: "This login link is invalid or expired.", next }), url.origin),
+    );
+  }
+
+  if (!isOwner(data.user?.id)) {
+    await supabase.auth.signOut({ scope: "local" });
+    return NextResponse.redirect(
+      new URL(loginPath({ error: "This account does not have owner access.", next }), url.origin),
     );
   }
 

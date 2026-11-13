@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 import { loginPath } from "@/lib/auth/next";
+import { isOwner } from "@/lib/auth/owner";
 
 type Variant = "prod" | "mockup" | "live";
 
@@ -77,6 +78,13 @@ async function handleRequest(request: NextRequest, requestId: string) {
 
   if (!needsAuth(pathname)) return NextResponse.next();
 
+  if (!process.env.SUPABASE_USER_ID) {
+    console.error(
+      JSON.stringify({ level: "error", event: "auth_owner_missing", request_id: requestId }),
+    );
+    return new NextResponse("Authentication is not configured", { status: 503 });
+  }
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) {
@@ -129,6 +137,10 @@ async function handleRequest(request: NextRequest, requestId: string) {
     }
     const login = new URL(loginPath({ next: `${pathname}${request.nextUrl.search}` }), request.url);
     return NextResponse.redirect(login);
+  }
+
+  if (!isOwner(user.id)) {
+    return new NextResponse("Access is limited to the owner", { status: 403 });
   }
 
   return response;

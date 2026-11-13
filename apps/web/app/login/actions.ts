@@ -4,7 +4,9 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { DEFAULT_NEXT, loginPath, safeNext } from "@/lib/auth/next";
+import { isOwner } from "@/lib/auth/owner";
 import { createSupabaseServerClient } from "@/lib/supabase/ssr";
+import { appVariant } from "@/lib/variant";
 
 function siteUrl(requestHeaders: Headers): string {
   const configured = process.env.NEXT_PUBLIC_SITE_URL;
@@ -14,6 +16,37 @@ function siteUrl(requestHeaders: Headers): string {
   if (!host) return "http://localhost:3000";
   const proto = requestHeaders.get("x-forwarded-proto") ?? "http";
   return `${proto}://${host}`;
+}
+
+export async function signInWithGoogle(form: FormData): Promise<void> {
+  const variant = appVariant();
+  if (variant !== "prod") redirect(variant === "mockup" ? "/" : "/live");
+
+  const next = safeNext(form.get("next"));
+  const requestHeaders = await headers();
+  const callback = new URL(`${siteUrl(requestHeaders)}/auth/callback`);
+  if (next !== DEFAULT_NEXT) callback.searchParams.set("next", next);
+
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: callback.toString(),
+      queryParams: { prompt: "select_account" },
+    },
+  });
+
+  if (error || !data.url) {
+    console.error("signInWithOAuth failed:", error?.message ?? "missing redirect URL");
+    redirect(
+      loginPath({
+        error: "Google sign-in is unavailable right now. Use email instead.",
+        next,
+      }),
+    );
+  }
+
+  redirect(data.url);
 }
 
 export async function signInWithEmail(form: FormData): Promise<void> {
@@ -58,11 +91,18 @@ export async function signInWithPassword(form: FormData): Promise<void> {
   }
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
     console.error("signInWithPassword failed:", error.message);
     redirect(loginPath({ error: "Invalid email or password.", password: true, next }));
+  }
+
+  if (!isOwner(data.user?.id)) {
+    await supabase.auth.signOut({ scope: "local" });
+    redirect(
+      loginPath({ error: "This account does not have owner access.", password: true, next }),
+    );
   }
 
   redirect(next);
