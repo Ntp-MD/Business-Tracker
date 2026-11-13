@@ -69,7 +69,7 @@ export default async function LoginPage({
               >
                 <path d="M20 6 9 17l-5-5" />
               </svg>
-              YouTube, Google News, TikTok, Meta and TikTok Ads
+              YouTube, Google News, TikTok, Facebook and TikTok Ads
             </li>
             <li>
               <svg
@@ -93,7 +93,7 @@ export default async function LoginPage({
               >
                 <path d="M20 6 9 17l-5-5" />
               </svg>
-              Magic-link access — no password stored
+              Magic-link access with password fallback
             </li>
           </ul>
           <div className="login-brand-foot">
@@ -189,7 +189,7 @@ export default async function LoginPage({
             )}
 
             <Link className="login-back" href="/">
-              ← Back to mockup
+              ← Back to home
             </Link>
           </div>
         </section>
