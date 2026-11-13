@@ -50,7 +50,7 @@ export function CookieNotice() {
           ใช้คุกกี้เพื่อการเข้าสู่ระบบและความปลอดภัยเท่านั้น ไม่มีการติดตาม วิเคราะห์ หรือโฆษณา
         </p>
         <div className="cookie-actions">
-          <Link className="cookie-more" href="/privacy#cookies">
+          <Link className="cookie-more" href="/privacy">
             รายละเอียด
           </Link>
           <button className="btn btn-primary cookie-accept" type="button" onClick={acknowledge}>
