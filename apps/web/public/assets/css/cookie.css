@@ -115,8 +115,8 @@
   margin: 0 calc(var(--login-pad) * -1) calc(var(--login-pad) * -1);
   padding: 16px var(--login-pad) 18px;
   border: 0;
-  border-radius: 14px 14px 0 0;
-  background: rgba(0, 0, 0, 0.2);
+  border-radius: 0;
+  background: transparent;
 }
 
 .cookie-brand .cookie-icon {
