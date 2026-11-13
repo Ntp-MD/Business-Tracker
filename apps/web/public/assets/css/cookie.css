@@ -113,7 +113,7 @@
 
 .cookie-brand {
   margin: 0 calc(var(--login-pad) * -1) calc(var(--login-pad) * -1);
-  padding: 16px var(--login-pad) 18px;
+  padding: 14px var(--login-pad) 16px;
   border: 0;
   border-radius: 0;
   background: transparent;

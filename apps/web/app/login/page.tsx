@@ -57,56 +57,58 @@ export default async function LoginPage({
           <div className="login-wordmark">
             <BrandLogo />
           </div>
-          <div className="login-brand-copy">
-            <span className="login-eyebrow">Social intelligence</span>
-            <h1 id="login-brand-title">
-              Every signal.
-              <br />
-              One rail.
-            </h1>
-            <p>
-              Trends, content, ads and leads for Thai brands — collected in one console and ready
-              for the next move.
-            </p>
+          <div className="login-brand-body">
+            <div className="login-brand-copy">
+              <span className="login-eyebrow">Social intelligence</span>
+              <h1 id="login-brand-title">
+                Every signal.
+                <br />
+                One rail.
+              </h1>
+              <p>
+                Trends, content, ads and leads for Thai brands — collected in one console and ready
+                for the next move.
+              </p>
+            </div>
+            <ul className="login-points">
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  aria-hidden="true"
+                >
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+                YouTube, Google News, TikTok, Facebook and TikTok Ads
+              </li>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  aria-hidden="true"
+                >
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+                Read-only live sharing for clients
+              </li>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  aria-hidden="true"
+                >
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+                Magic-link access with password fallback
+              </li>
+            </ul>
           </div>
-          <ul className="login-points">
-            <li>
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                aria-hidden="true"
-              >
-                <path d="M20 6 9 17l-5-5" />
-              </svg>
-              YouTube, Google News, TikTok, Facebook and TikTok Ads
-            </li>
-            <li>
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                aria-hidden="true"
-              >
-                <path d="M20 6 9 17l-5-5" />
-              </svg>
-              Read-only live sharing for clients
-            </li>
-            <li>
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                aria-hidden="true"
-              >
-                <path d="M20 6 9 17l-5-5" />
-              </svg>
-              Magic-link access with password fallback
-            </li>
-          </ul>
           <div className="login-brand-bottom">
             <div className="login-brand-foot">
               <span>TrendRail 0.2</span>
@@ -200,10 +202,10 @@ export default async function LoginPage({
             )}
 
             <div className="login-demo">
-              <Link className="btn btn-ghost login-bypass" href={mockupUrl}>
-                ดูเดโม (mockup)
+              <span className="login-demo-label">ยังไม่พร้อมเข้าสู่ระบบ?</span>
+              <Link className="login-demo-link" href={mockupUrl}>
+                ดู mockup <span aria-hidden="true">→</span>
               </Link>
-              <p className="login-demo-note">ข้อมูลตัวอย่าง · ไม่แตะ production</p>
             </div>
 
             <div className="login-foot-links">
