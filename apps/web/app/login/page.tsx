@@ -188,9 +188,14 @@ export default async function LoginPage({
               </Link>
             )}
 
-            <Link className="login-back" href="/">
-              ← Back to home
-            </Link>
+            <div className="login-foot-links">
+              <Link className="login-back" href="/">
+                ← Back to home
+              </Link>
+              <Link className="login-back" href="/privacy">
+                Privacy &amp; cookies
+              </Link>
+            </div>
           </div>
         </section>
       </main>

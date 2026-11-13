@@ -10,7 +10,9 @@ the remaining plan, post-cutover checks, and notes.
 | [AGENTS.md](../AGENTS.md) | Working rules, verification, failure protocol |
 | [DB.md](DB.md) | Supabase schema, mapping from `data/*.json`, dedup/upsert |
 | [DEPLOY.md](DEPLOY.md) | Vercel, Render, local worker, env vars |
+| [PRIVACY.md](PRIVACY.md) | PDPA notice, cookie inventory, owner review checklist |
 | [DESIGN.md](DESIGN.md) | Visual language and design system |
+| [TrendRail logo & CI exploration](brand/trendrail-logo-concepts.html) | 10 vector directions based on the product concept |
 
 ## Remaining work
 

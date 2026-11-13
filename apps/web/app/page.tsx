@@ -532,6 +532,9 @@ export default async function MockPage({
               {variant === "mockup" ? "MOCKUP · sample data" : "MOCK PREVIEW · real data at /live"}
             </span>
             <PatchNotes />
+            <Link className="ver-legal" href="/privacy">
+              Privacy &amp; cookies
+            </Link>
           </div>
         </aside>
 

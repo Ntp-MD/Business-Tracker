@@ -126,6 +126,9 @@ export function Sidebar({
             </button>
           </form>
         ) : null}
+        <Link className="ver-legal" href="/privacy">
+          Privacy &amp; cookies
+        </Link>
       </div>
     </aside>
   );
