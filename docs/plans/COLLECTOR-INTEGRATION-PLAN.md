@@ -5,6 +5,40 @@ bounded task at a time; finish its verification before starting another. An unch
 task is not authorization to change the source list, schema, API contract, deployment,
 business policy, or other items requiring approval under [AGENTS.md](../../AGENTS.md).
 
+## Status — 2026-11-13
+
+Packages 1–7 are implemented and pushed. This table is the status record; keep it here
+instead of a separate notes file.
+
+| # | Open item | Status | Next action |
+|---|---|---|---|
+| 1 | Live GDELT sample | **Blocked.** Every request from this network returns `HTTP 429 Too Many Requests`, even after 5 minutes. Mapping, gate, and one-retry behavior are covered by unit tests only. | Retry `python -m backend.collectors.dry_run --connector gdelt_doc --keyword SEO --show-sample 20` when GDELT responds. Review the sample before trusting writes. |
+| 2 | First real collect run | **Not run.** `COLLECTOR_WRITE_ENABLED=1` is set in the local `.env.local` (not committed), but no collect job has executed. | Start the worker, then use **Collect** in Settings or wait for the 24-hour schedule. Set `COLLECTOR_WRITE_ENABLED=0` to pause. |
+| 3 | Cancellation during work | **Not implemented.** The worker checks `cancel_requested` only before a job starts. | Needs a collector/API change; separate scope. |
+| 4 | Versioned backup of collector tables | **Not implemented by decision.** Existing JSON/CSV item export remains the backup; collector rows are reproducible from the source. | Revisit only if the owner wants collector records, links, and state restorable. |
+| 5 | Render API | **Still live.** `https://social-tracker-api.onrender.com/` returned 200 on 2026-11-13. | Disable it in the Render dashboard (owner; no credentials in this repo). |
+| 6 | AI export (package 9) | **Proposed.** No output format or sharing policy approved. | Confirm scope and format before implementation. |
+| 7 | Live RLS and migration history | **Unverified.** PostgREST with the service role bypasses RLS and cannot read migration history. | Check the Supabase dashboard or a database connection when needed. |
+| 8 | Monitoring window and restore drill | **Not due yet.** Monitor production through 2026-11-18; run the restore drill when scheduled. | Owner/ops follow-up. |
+
+### Decisions taken (2026-11-13)
+
+1. **First source:** `gdelt_doc`, keyword scope. It is the only enabled connector.
+2. **Rights:** store title, canonical URL, author display, engagement, timestamps, and an
+   excerpt of at most 280 characters. No full article body.
+3. **Persistence** (`backend/collectors/store.py`): `keywords_matched` is unioned across
+   runs and the first link keyword is kept; existing items refresh `score` and `metric`
+   only; trashed items are skipped; quarantine stays a drop; `source_status` is written
+   after every run; a failed run sets `last_status = error` with `last_error` and does not
+   advance the cursor; records and items are read in two batched requests per run;
+   same-day reports append; collectors are Supabase-only, with no JSON fallback.
+4. **Quality policy:** hard rejects and soft flags unchanged in
+   `backend/collectors/quality.py`. The owner reviews the 50–100 record dry-run sample.
+
+**Known risk:** GDELT relevance is not in the gate. A run only filters identity, URL, date
+window, language (Thai/English), spam phrases, and metric validity, so off-topic English
+articles can reach `items`. Review the first batch and trash what does not fit.
+
 ## Outcome and scope
 
 Make approved new sources available through the existing local worker and Python
@@ -25,8 +59,8 @@ in this review.
   and TikTok Ads collectors. Their current external availability has not been tested in
   this review. They do not use the new `backend/collectors/` quality gate.
 - `backend/collectors/` contains the registry, contract, HTTP helper, quality gate,
-  report, job validation, and Supabase persistence. No connector is enabled and the
-  adapter map is empty. `COLLECTOR_WRITE_ENABLED` defaults to off in code; the value in
+  report, job validation, and Supabase persistence. `gdelt_doc` is the only enabled
+  connector (see Status). `COLLECTOR_WRITE_ENABLED` defaults to off in code; the value in
   the deployed environment is unverified. The existing collectors are a separate path.
 - The worker dispatches `collect` to `/api/collect`, but the validator currently accepts
   only keyword scopes. Country, channel, and other scopes require a reviewed contract.

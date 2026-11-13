@@ -28,8 +28,7 @@ Supabase Google-provider configuration, and end-to-end OAuth verification are pe
 
 | Plan | Status |
 |---|---|
-| [plans/COLLECTOR-INTEGRATION-PLAN.md](plans/COLLECTOR-INTEGRATION-PLAN.md) | **Consolidated backlog.** Collector integration and the proposed AI analysis export |
-| [notes/COLLECTOR-ASSESSMENT.md](notes/COLLECTOR-ASSESSMENT.md) | **Remaining only.** Open collector items, blockers, and next actions |
+| [plans/COLLECTOR-INTEGRATION-PLAN.md](plans/COLLECTOR-INTEGRATION-PLAN.md) | **Consolidated backlog and status.** Collector integration, open items, and the proposed AI analysis export |
 | [plans/USER-DASHBOARD-SETTINGS-PLAN.md](plans/USER-DASHBOARD-SETTINGS-PLAN.md) | **Implemented 2026-11-13.** User menu, Account section, public and mock states |
 
 ## Post-cutover
@@ -59,7 +58,6 @@ Hacker News was removed on 2026-11-12.
 | Document | Use |
 |---|---|
 | [notes/SECURITY-AND-PROJECT-HEALTH.md](notes/SECURITY-AND-PROJECT-HEALTH.md) | Security, code quality, operational health, and handoff reminders |
-| [notes/COLLECTOR-ASSESSMENT.md](notes/COLLECTOR-ASSESSMENT.md) | Collector packages 1-2 assessment and decisions |
 
 ## Layout
 
@@ -71,5 +69,5 @@ docs/
   DESIGN.md
   plans/       COLLECTOR-INTEGRATION-PLAN.md, USER-DASHBOARD-SETTINGS-PLAN.md
   reference/   public_data_collector_agent_integration_guide.md
-  notes/       SECURITY-AND-PROJECT-HEALTH.md, COLLECTOR-ASSESSMENT.md
+  notes/       SECURITY-AND-PROJECT-HEALTH.md
 ```
