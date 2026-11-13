@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 import { loginPath } from "@/lib/auth/next";
-import { isOwner } from "@/lib/auth/owner";
+import { canAccess } from "@/lib/auth/owner";
 
 type Variant = "prod" | "mockup" | "live";
 
@@ -139,7 +139,7 @@ async function handleRequest(request: NextRequest, requestId: string) {
     return NextResponse.redirect(login);
   }
 
-  if (!isOwner(user.id)) {
+  if (!canAccess(user.id, user.email)) {
     return new NextResponse("Access is limited to the owner", { status: 403 });
   }
 

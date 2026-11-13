@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { loginPath, safeNext } from "@/lib/auth/next";
-import { isOwner } from "@/lib/auth/owner";
+import { canAccess } from "@/lib/auth/owner";
 import { createSupabaseServerClient } from "@/lib/supabase/ssr";
 
 export async function GET(request: Request) {
@@ -32,10 +32,10 @@ export async function GET(request: Request) {
     );
   }
 
-  if (!isOwner(data.user?.id)) {
+  if (!canAccess(data.user?.id, data.user?.email)) {
     await supabase.auth.signOut({ scope: "local" });
     return NextResponse.redirect(
-      new URL(loginPath({ error: "This account does not have owner access.", next }), url.origin),
+      new URL(loginPath({ error: "This account does not have access.", next }), url.origin),
     );
   }
 

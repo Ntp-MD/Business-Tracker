@@ -77,6 +77,23 @@ and `/auth/callback` as magic-link sign-in. A different Google identity must be 
 to the existing owner user before it can access the console; do not change the owner ID
 or link identities without verifying the account. Magic link and password remain available.
 
+### Invite-only team access (off by default)
+
+The owner is always allowed. To let invited people in:
+
+1. Supabase → Authentication → Settings: disable **Allow new users to sign up**.
+2. Supabase → Authentication → Users → **Invite user** with the person’s email.
+3. Set these server-only variables on the Vercel `trendrail` project:
+   - `ALLOW_INVITED_USERS=1`
+   - `INVITED_EMAILS=person1@example.com,person2@example.com`
+4. Redeploy. Google, magic link and password all use the same allowlist.
+
+Guests must sign in with the exact invited email; an unlisted Google/email account is
+signed out and cannot access `/live` or `/api`. Invited users share the owner’s data and
+currently have write access, so invite trusted people only. Turn the feature off by
+removing both variables (or setting `ALLOW_INVITED_USERS=0`) and redeploying. Never use
+`NEXT_PUBLIC_` for these values.
+
 For Google sign-in, configure a web OAuth client with the production origin and the
 Supabase Google-provider callback, then store its client ID and secret in Supabase Auth's
 Google provider settings. Add the web app's `/auth/callback` to Supabase's allowed

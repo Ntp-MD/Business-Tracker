@@ -4,7 +4,7 @@ import { signOut } from "@/app/auth/actions";
 import { BrandLogo } from "@/components/brand-logo";
 import { CookieNotice } from "@/components/cookie-notice";
 import { DEFAULT_NEXT, loginPath, safeNext } from "@/lib/auth/next";
-import { isOwner } from "@/lib/auth/owner";
+import { canAccess } from "@/lib/auth/owner";
 import { createSupabaseServerClient } from "@/lib/supabase/ssr";
 import { appVariant } from "@/lib/variant";
 
@@ -44,7 +44,7 @@ export default async function LoginPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (isOwner(user?.id)) redirect(target);
+  if (canAccess(user?.id, user?.email)) redirect(target);
 
   return (
     <>
@@ -144,7 +144,7 @@ export default async function LoginPage({
 
             {user ? (
               <div className="login-alert login-alert-err" role="alert">
-                This account does not have owner access.
+                This account does not have access. Ask the owner for an invite.
                 <form action={signOut}>
                   <button className="btn btn-ghost" type="submit">
                     Sign out and switch account

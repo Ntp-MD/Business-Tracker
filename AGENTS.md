@@ -53,7 +53,8 @@ python backend/pw_login.py facebook
 - **Vercel variants:** `mockup` has no Supabase env and serves `/` only; `live` is read-only
   and blocks non-GET; only `prod` may write. Never copy the service key into `mockup`.
 - **Prod auth:** only `prod` requires a Supabase Auth magic-link session. Do not add a bypass
-  to `/live` or `/api`; `mockup` and `live` stay public.
+  to `/live` or `/api`; `mockup` and `live` stay public. Invite-only access is opt-in via
+  `ALLOW_INVITED_USERS` + `INVITED_EMAILS`; it is off by default and remains owner-only.
 - **Live DB reads:** `live` uses `LIVE_READ_ANON=1` with the `live_items` /
   `live_source_status` views and the publishable key. Never add the service role key to `live`.
 - **Service role key stays server/worker side.** Never expose it to the browser, never prefix

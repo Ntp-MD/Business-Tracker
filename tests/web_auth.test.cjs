@@ -39,7 +39,7 @@ class Response {
 
 const next = load("apps/web/lib/auth/next.ts");
 const owner = load("apps/web/lib/auth/owner.ts");
-const config = ["APP_VARIANT", "SUPABASE_USER_ID", "NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY", "NEXT_PUBLIC_SITE_URL"];
+const config = ["APP_VARIANT", "SUPABASE_USER_ID", "NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY", "NEXT_PUBLIC_SITE_URL", "ALLOW_INVITED_USERS", "INVITED_EMAILS"];
 const initial = Object.fromEntries(config.map((key) => [key, process.env[key]]));
 test.after(() => {
   for (const key of config) {
@@ -80,6 +80,29 @@ test("prod allows the configured owner only and preserves variant boundaries", a
   assert.equal((await proxy(request("https://example.test/api/export"))).status, 307);
 });
 
+test("invite mode allows listed emails only", async () => {
+  process.env.APP_VARIANT = "prod";
+  process.env.SUPABASE_USER_ID = "owner-id";
+  process.env.NEXT_PUBLIC_SUPABASE_URL = "https://example.invalid";
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "test-key";
+  process.env.ALLOW_INVITED_USERS = "1";
+  process.env.INVITED_EMAILS = "invited@example.test, second@example.test";
+  let user = { id: "invited-id", email: "invited@example.test" };
+  const { proxy } = load("apps/web/proxy.ts", {
+    "next/server": { NextResponse: Response },
+    "@supabase/ssr": { createServerClient: () => ({ auth: { getUser: async () => ({ data: { user }, error: null }) } }) },
+    "@/lib/auth/next": next,
+    "@/lib/auth/owner": owner,
+  });
+  assert.equal((await proxy(request("https://example.test/live"))).status, 200);
+  user = { id: "unlisted-id", email: "other@example.test" };
+  assert.equal((await proxy(request("https://example.test/live"))).status, 403);
+  user = { id: "no-email-id" };
+  assert.equal((await proxy(request("https://example.test/live"))).status, 403);
+  delete process.env.ALLOW_INVITED_USERS;
+  delete process.env.INVITED_EMAILS;
+});
+
 test("callback keeps owner sessions and signs out other accounts", async () => {
   process.env.SUPABASE_USER_ID = "owner-id";
   let user = { id: "owner-id" };
@@ -102,12 +125,34 @@ test("callback keeps owner sessions and signs out other accounts", async () => {
   user = { id: "other-id" };
   const denied = await GET(request("https://example.test/auth/callback?code=valid"));
   assert.equal(new URL(denied.location).pathname, "/login");
-  assert.match(new URL(denied.location).searchParams.get("error"), /owner access/);
+  assert.match(new URL(denied.location).searchParams.get("error"), /does not have access/);
   assert.equal(signedOut, 1);
   assert.equal(signOutScope, "local");
   const otp = await GET(request("https://example.test/auth/callback?token_hash=valid&type=magiclink"));
   assert.equal(new URL(otp.location).pathname, "/login");
   assert.equal(signedOut, 2);
+});
+
+test("invite mode lets an allowlisted callback through", async () => {
+  process.env.SUPABASE_USER_ID = "owner-id";
+  process.env.ALLOW_INVITED_USERS = "1";
+  process.env.INVITED_EMAILS = "invited@example.test";
+  const user = { id: "invited-id", email: "invited@example.test" };
+  const auth = {
+    exchangeCodeForSession: async () => ({ data: { user }, error: null }),
+    verifyOtp: async () => ({ data: { user }, error: null }),
+    signOut: async () => {},
+  };
+  const { GET } = load("apps/web/app/auth/callback/route.ts", {
+    "next/server": { NextResponse: Response },
+    "@/lib/auth/next": next,
+    "@/lib/auth/owner": owner,
+    "@/lib/supabase/ssr": { createSupabaseServerClient: async () => ({ auth }) },
+  });
+  const response = await GET(request("https://example.test/auth/callback?code=valid"));
+  assert.equal(response.location, "https://example.test/live");
+  delete process.env.ALLOW_INVITED_USERS;
+  delete process.env.INVITED_EMAILS;
 });
 
 test("Google sign-in starts the PKCE flow with a safe callback", async () => {

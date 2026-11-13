@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { DEFAULT_NEXT, loginPath, safeNext } from "@/lib/auth/next";
-import { isOwner } from "@/lib/auth/owner";
+import { canAccess } from "@/lib/auth/owner";
 import { createSupabaseServerClient } from "@/lib/supabase/ssr";
 import { appVariant } from "@/lib/variant";
 
@@ -98,10 +98,14 @@ export async function signInWithPassword(form: FormData): Promise<void> {
     redirect(loginPath({ error: "Invalid email or password.", password: true, next }));
   }
 
-  if (!isOwner(data.user?.id)) {
+  if (!canAccess(data.user?.id, data.user?.email)) {
     await supabase.auth.signOut({ scope: "local" });
     redirect(
-      loginPath({ error: "This account does not have owner access.", password: true, next }),
+      loginPath({
+        error: "This account does not have access. Ask the owner for an invite.",
+        password: true,
+        next,
+      }),
     );
   }
 

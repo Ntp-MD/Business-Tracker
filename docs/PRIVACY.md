@@ -8,7 +8,8 @@ Public notice: `/privacy` (`apps/web/app/privacy/page.tsx`). Cookie notice:
 
 | Data | Purpose | Storage | Retention |
 |---|---|---|---|
-| Owner email | magic-link login | Supabase Auth | while the account is active |
+| Owner email | magic-link login, Google sign-in | Supabase Auth | while the account is active |
+| Invited user emails | invite-only access control | Supabase Auth + `INVITED_EMAILS` | while the invite is active |
 | Auth session cookies (`sb-*-auth-token*`) | keep the owner signed in / PKCE | browser | until logout or expiry |
 | IP + technical logs | security and operations | Vercel / Supabase | provider retention |
 | Keyword, URL, title, author, engagement | dashboard content | Supabase (`items`, `collector_records`) | until deleted; trash after 7 days |
