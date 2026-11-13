@@ -26,7 +26,11 @@
 
 .legal-brand .logo-img {
   width: 100%;
-  height: auto;
+  height: 52px;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 6px;
+
 }
 
 .legal-back {
