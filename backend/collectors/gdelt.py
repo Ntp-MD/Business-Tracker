@@ -3,16 +3,29 @@
 from __future__ import annotations
 
 import hashlib
+import time
 import urllib.parse
 from datetime import datetime, timezone
 
 from .contract import RawRecord
-from .http import fetch_json
+from .http import TransportError, fetch_json
 from .registry import Connector
 
 API = "https://api.gdeltproject.org/api/v2/doc/doc"
-TIMESPAN = "3d"
+TIMESPAN = "1d"
 MAX_RECORDS = 250
+RETRY_SECONDS = 6
+
+
+def _fetch(url: str) -> dict:
+    try:
+        return fetch_json(url)
+    except TransportError as exc:
+        # GDELT asks for one request every five seconds; retry a throttle once.
+        if "429" not in str(exc):
+            raise
+        time.sleep(RETRY_SECONDS)
+        return fetch_json(url)
 
 
 def _seen(value: object) -> str | None:
@@ -31,10 +44,10 @@ def fetch(keyword: str, limit: int, connector: Connector) -> list[RawRecord]:
             "format": "json",
             "maxrecords": min(max(limit, 1), MAX_RECORDS),
             "timespan": TIMESPAN,
-            "sort": "datedesc",
+            "sort": "hybridrel",
         }
     )
-    payload = fetch_json(f"{API}?{query}")
+    payload = _fetch(f"{API}?{query}")
     records: list[RawRecord] = []
     for article in payload.get("articles") or []:
         url = str(article.get("url") or "").strip()

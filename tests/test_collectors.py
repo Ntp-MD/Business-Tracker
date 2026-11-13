@@ -15,6 +15,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "backend"))
 from collectors import gdelt, store
 from collectors.contract import QUALITY_RULES_VERSION, RawRecord
 from collectors.dry_run import write_report
+from collectors.http import TransportError
 from collectors.job import validate_collect_payload
 from collectors.quality import canonicalize_url, gate
 from collectors.registry import Connector, get_connector
@@ -170,6 +171,19 @@ class GdeltAdapterTests(unittest.TestCase):
         self.assertEqual(len(outcome.accepted), 1)
         self.assertEqual(outcome.accepted[0].language, "en")
 
+    def test_retries_a_throttle_once(self):
+        with (
+            patch(
+                "collectors.gdelt.fetch_json",
+                side_effect=[TransportError("HTTP Error 429: Too Many Requests"), {"articles": []}],
+            ) as fake,
+            patch("collectors.gdelt.time.sleep") as sleep,
+        ):
+            records = gdelt.fetch("x", 1, self.connector)
+        self.assertEqual(records, [])
+        self.assertEqual(fake.call_count, 2)
+        sleep.assert_called_once()
+
 
 class ReportTests(unittest.TestCase):
     def test_report_contains_hashes_not_titles(self):
@@ -224,10 +238,11 @@ class JobPayloadTests(unittest.TestCase):
             )
 
     def test_rejects_writes(self):
-        with self.assertRaises(ValueError):
-            self.validate(
-                {"connector_id": "test_search", "scope": {"keyword": "x"}, "dry_run": False}
-            )
+        with patch.dict(os.environ, {"COLLECTOR_WRITE_ENABLED": "0"}):
+            with self.assertRaises(ValueError):
+                self.validate(
+                    {"connector_id": "test_search", "scope": {"keyword": "x"}, "dry_run": False}
+                )
 
     def test_allows_writes_when_enabled(self):
         with patch.dict(os.environ, {"COLLECTOR_WRITE_ENABLED": "1"}):

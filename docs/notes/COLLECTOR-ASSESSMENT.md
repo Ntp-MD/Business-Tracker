@@ -132,18 +132,19 @@ Applying it is an owner step before the GDELT adapter can write.
 - Package 4: done locally. Jobs are owner-scoped, leased for 60 minutes, retried up to
   3 attempts, and expired leases return to `queued`. Cancellation is still checked only
   before a job starts.
-- Package 5: `backend/collectors/gdelt.py` is implemented and `gdelt_doc` is enabled for
-  dry-run only. Unit tests cover mapping and the gate. A live sample could not be
-  collected because GDELT returned HTTP 429 from this network; rerun
-  `python -m backend.collectors.dry_run --connector gdelt_doc --keyword technology --show-sample 10`
-  from another network before enabling writes.
+- Package 5: `backend/collectors/gdelt.py` is implemented and `gdelt_doc` is enabled.
+  Unit tests cover mapping, the gate, and one 429 retry. Live GDELT requests still return
+  HTTP 429 from this network, so no live sample exists yet. The owner asked to finish the
+  setup, so `COLLECTOR_WRITE_ENABLED=1` is set in the local `.env.local` (not committed);
+  set it back to 0 to pause writes.
 - Package 6: `source_status` is written on every collector run and the Sources page reads
   it. Existing JSON/CSV item export is unchanged; collector records, links, and state are
   not part of the backup. That is accepted for now because the JSON files remain the
   version-1 backup and collector rows are reproducible from the source.
 - Package 7: Settings has a per-profile **Collect** button that queues one `collect` job
   per keyword. The worker can also self-schedule when `COLLECT_SCHEDULE_HOURS` is set;
-  it is off by default, so recurring collection needs an owner cadence decision.
+  the local `.env.local` uses 24 hours, so profile keywords are queued daily while the
+  worker runs. Repository defaults stay off.
 - Package 8: the Render API still needs to be disabled in its dashboard (owner action).
 - Package 9 (AI export): still proposed, no format approved.
 
