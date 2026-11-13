@@ -6,6 +6,7 @@ import { Bars } from "@/components/live/charts";
 import { PatchNotes } from "@/components/live/patch-notes";
 import { SourceIcon } from "@/components/live/source-icon";
 import { ThemeToggle } from "@/components/live/theme-toggle";
+import { UserMenu } from "@/components/live/user-menu";
 import {
   MOCK_ITEMS,
   MOCK_PROFILES,
@@ -500,6 +501,7 @@ export default async function MockPage({
       <link rel="stylesheet" href="/assets/css/base.css" />
       <link rel="stylesheet" href="/assets/css/component.css" />
       <link rel="stylesheet" href="/assets/css/layout.css" />
+      <link rel="stylesheet" href="/assets/css/user-menu.css" />
       <div className="app">
         <aside className="sidebar" aria-label="Primary">
           <div className="logo">
@@ -544,10 +546,7 @@ export default async function MockPage({
             <h1>Analytics</h1>
             <div className="top-actions">
               <ThemeToggle />
-              <div className="user">
-                <span className="avatar">IT</span>
-                <span className="uname">ITOPPLUS</span>
-              </div>
+              <UserMenu mode="mock" name="ITOPPLUS" email="demo@trendrail.app" />
             </div>
             <div className="page-sub">
               {variant === "mockup"

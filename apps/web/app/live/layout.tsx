@@ -5,8 +5,10 @@ import type { ReactNode } from "react";
 import { FetchStrip } from "@/components/live/fetch-strip";
 import { Sidebar } from "@/components/live/sidebar";
 import { ThemeToggle } from "@/components/live/theme-toggle";
+import { UserMenu } from "@/components/live/user-menu";
 import { getCounts } from "@/lib/data/counts";
 import { listProfiles } from "@/lib/data/live";
+import { createSupabaseServerClient } from "@/lib/supabase/ssr";
 import type { Profile } from "@/lib/types";
 import { appVariant, isWritable } from "@/lib/variant";
 
@@ -24,8 +26,29 @@ const MOBILE = [
 ];
 
 export default async function LiveLayout({ children }: { children: ReactNode }) {
-  if (appVariant() === "mockup") redirect("/");
+  const variant = appVariant();
+  if (variant === "mockup") redirect("/");
   const writable = isWritable();
+
+  let accountName = "";
+  let accountEmail = "";
+  if (variant === "prod") {
+    try {
+      const supabase = await createSupabaseServerClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const metadata = user?.user_metadata as Record<string, unknown> | undefined;
+      accountName =
+        (typeof metadata?.full_name === "string" && metadata.full_name) ||
+        (typeof metadata?.name === "string" && metadata.name) ||
+        user?.email?.split("@")[0] ||
+        "Account";
+      accountEmail = user?.email ?? "";
+    } catch {
+      // Auth is guarded by the proxy; keep the shell usable if lookup fails.
+    }
+  }
 
   let counts = { items: 0, sources: 0, archive: 0, ads: 0 };
   let profiles: Profile[] = [];
@@ -48,6 +71,7 @@ export default async function LiveLayout({ children }: { children: ReactNode }) 
       <link rel="stylesheet" href="/assets/css/base.css" />
       <link rel="stylesheet" href="/assets/css/component.css" />
       <link rel="stylesheet" href="/assets/css/layout.css" />
+      <link rel="stylesheet" href="/assets/css/user-menu.css" />
       <a className="skip-link" href="#live-content">
         Skip to content
       </a>
@@ -58,10 +82,11 @@ export default async function LiveLayout({ children }: { children: ReactNode }) 
             <h1>Analytics</h1>
             <div className="top-actions">
               <ThemeToggle />
-              <div className="user">
-                <span className="avatar">IT</span>
-                <span className="uname">ITOPPLUS</span>
-              </div>
+              <UserMenu
+                mode={variant === "prod" ? "prod" : "public"}
+                name={accountName}
+                email={accountEmail}
+              />
             </div>
           </div>
           <nav className="mobile-nav" aria-label="Mobile">

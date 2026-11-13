@@ -1,5 +1,7 @@
+import { isOwner } from "@/lib/auth/owner";
 import { getCounts } from "@/lib/data/counts";
 import { getSummary, sourceLabel } from "@/lib/data/live";
+import { createSupabaseServerClient } from "@/lib/supabase/ssr";
 
 import { createProfile, deleteProfile, importItems, pruneOld } from "./actions";
 
@@ -8,10 +10,58 @@ export const dynamic = "force-dynamic";
 export default async function SettingsPage() {
   const [summary, counts] = await Promise.all([getSummary(), getCounts()]);
 
+  let accountName = "—";
+  let accountEmail = "—";
+  let accountId: string | null = null;
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const metadata = user?.user_metadata as Record<string, unknown> | undefined;
+    accountName =
+      (typeof metadata?.full_name === "string" && metadata.full_name) ||
+      (typeof metadata?.name === "string" && metadata.name) ||
+      user?.email?.split("@")[0] ||
+      "—";
+    accountEmail = user?.email ?? "—";
+    accountId = user?.id ?? null;
+  } catch {
+    // The layout/proxy already guards this page; keep the section read-only.
+  }
+
+  const ownerLabel = isOwner(accountId) ? "Owner" : accountEmail !== "—" ? "Invited member" : "—";
+
   return (
     <section className="page active" id="page-settings">
       <h2 className="visually-hidden">Settings</h2>
-      <div className="card">
+      <div className="card account-card" id="account">
+        <div className="card-head">
+          <h3>Account</h3>
+          <span className="chart-note">Read-only</span>
+        </div>
+        <div className="account-grid">
+          <div>
+            <span className="account-label">Name</span>
+            <div className="account-value">{accountName}</div>
+          </div>
+          <div>
+            <span className="account-label">Email</span>
+            <div className="account-value">{accountEmail}</div>
+          </div>
+          <div>
+            <span className="account-label">Access</span>
+            <div className="account-value">{ownerLabel}</div>
+          </div>
+        </div>
+        <p className="account-note">
+          {ownerLabel === "Owner"
+            ? "You own this workspace and its data."
+            : "Invited members share this workspace and its data."}
+        </p>
+      </div>
+
+      <div className="card" style={{ marginTop: 12 }}>
         <div className="card-head">
           <h3>Profiles</h3>
           <span className="chart-note">{summary.profiles.length} saved</span>
