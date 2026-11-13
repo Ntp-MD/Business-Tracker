@@ -36,6 +36,19 @@
   color: #78350f;
 }
 
+.bypass-exit {
+  margin-left: auto;
+  color: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+.bypass-exit:hover {
+  color: #78350f;
+}
+
 [data-theme="dark"] .bypass-banner {
   border-color: #78350f;
   background: rgba(245, 158, 11, 0.1);

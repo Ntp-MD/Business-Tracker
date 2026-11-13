@@ -84,7 +84,12 @@ export default async function LiveLayout({ children }: { children: ReactNode }) 
           <FetchStrip profiles={profiles} enabled={writable} />
           {bypassLabel ? (
             <div className="bypass-banner" role="status">
-              <b>Demo mode</b> · อ่านอย่างเดียว · หมดอายุ {bypassLabel}
+              <span>
+                <b>Demo mode</b> · อ่านอย่างเดียว · หมดอายุ {bypassLabel}
+              </span>
+              <Link className="bypass-exit" href="/login">
+                กลับหน้า login
+              </Link>
             </div>
           ) : null}
           <div id="live-content">{children}</div>
