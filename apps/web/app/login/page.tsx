@@ -111,7 +111,7 @@ export default async function LoginPage({
           </div>
           <div className="login-brand-bottom">
             <div className="login-brand-foot">
-              <span>TrendRail 0.2</span>
+              <span>TrendRail 0.3</span>
               <span>Owner console</span>
             </div>
             <CookieNotice variant="brand" />

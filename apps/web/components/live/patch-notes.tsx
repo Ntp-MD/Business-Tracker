@@ -44,7 +44,7 @@ export function PatchNotes() {
                   <div className="loading-title" id="notesTitle">
                     Patch notes
                   </div>
-                  <div className="loading-sub">TrendRail 0.2 · 11 พ.ย. 2026</div>
+                  <div className="loading-sub">TrendRail 0.3 · 13 พ.ย. 2026</div>
                 </div>
                 <button
                   className="btn btn-ghost notes-close"
@@ -59,9 +59,23 @@ export function PatchNotes() {
               <ol className="timeline">
                 <li className="tl-item current">
                   <div className="tl-top">
+                    <b>0.3</b>
+                    <span className="tl-date">13 พ.ย. 2026</span>
+                    <span className="pill pill-green">current</span>
+                  </div>
+                  <p className="tl-note">Mockup เต็มรูปแบบ + login และ privacy พร้อมพรีเซนต์</p>
+                  <ul className="tl-list">
+                    <li>Mockup แยกจาก prod/live ชัดเจน พร้อมข้อมูลตัวอย่างครบ 14 เมนู</li>
+                    <li>หน้า login ใหม่, magic link + password fallback และ URL สะอาด</li>
+                    <li>ประกาศ PDPA ที่ /privacy และ cookie notice แบบจำเป็นเท่านั้น</li>
+                    <li>Live read-only ด้วย anon key + views, health alert และ E2E 3 variants</li>
+                    <li>ปุ่มดูเดโมเปิด mockup โดยไม่แตะข้อมูล production</li>
+                  </ul>
+                </li>
+                <li className="tl-item">
+                  <div className="tl-top">
                     <b>0.2</b>
                     <span className="tl-date">11 พ.ย. 2026</span>
-                    <span className="pill pill-green">current</span>
                   </div>
                   <p className="tl-note">ย้ายไป Next.js + Supabase + Vercel</p>
                   <ul className="tl-list">

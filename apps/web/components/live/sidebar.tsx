@@ -115,9 +115,9 @@ export function Sidebar({
       <div className="help-card ver-card">
         <div className="ver-top">
           <span className="ver-label">Version</span>
-          <span className="ver-num">0.2</span>
+          <span className="ver-num">0.3</span>
         </div>
-        <div className="ver-date">11 พ.ย. 2026</div>
+        <div className="ver-date">13 พ.ย. 2026</div>
         <PatchNotes />
         {writable ? (
           <form action={signOut}>

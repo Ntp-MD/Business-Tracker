@@ -5,7 +5,7 @@ export async function GET() {
   const payload = {
     format: "social-tracker.items",
     version: 1,
-    app_version: "0.2-next",
+    app_version: "0.3",
     exported_at: new Date().toISOString(),
     count: items.length,
     items,
