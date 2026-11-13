@@ -106,11 +106,11 @@ export default async function LoginPage({
             </li>
           </ul>
           <div className="login-brand-bottom">
-            <CookieNotice variant="brand" />
             <div className="login-brand-foot">
               <span>TrendRail 0.2</span>
               <span>Owner console</span>
             </div>
+            <CookieNotice variant="brand" />
           </div>
         </section>
 
