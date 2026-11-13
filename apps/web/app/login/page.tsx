@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { signOut } from "@/app/auth/actions";
@@ -206,14 +205,26 @@ export default async function LoginPage({
 
             <form action={signInWithGoogle} className="login-form">
               <input type="hidden" name="next" value={target} />
-              <button className="google-signin-btn" type="submit" aria-label="Sign in with Google">
-                <Image
-                  src="/assets/google-signin-button.png"
-                  alt=""
-                  width={180}
-                  height={40}
-                  unoptimized
-                />
+              <button className="google-signin-btn" type="submit">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path
+                    fill="#4285F4"
+                    d="M21.35 12.2c0-.7-.06-1.37-.18-2.02H12v3.82h5.24a4.48 4.48 0 0 1-1.94 2.94v2.45h3.14c1.84-1.7 2.91-4.2 2.91-7.19z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 21.6c2.62 0 4.82-.87 6.43-2.35l-3.14-2.45c-.87.58-1.98.93-3.29.93-2.53 0-4.67-1.71-5.44-4.01H3.32v2.52A9.72 9.72 0 0 0 12 21.6z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M6.56 13.72a5.84 5.84 0 0 1 0-3.44V7.76H3.32a9.72 9.72 0 0 0 0 8.48l3.24-2.52z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 6.27c1.42 0 2.7.49 3.71 1.45l2.78-2.78A9.3 9.3 0 0 0 12 2.4a9.72 9.72 0 0 0-8.68 5.36l3.24 2.52C7.33 7.98 9.47 6.27 12 6.27z"
+                  />
+                </svg>
+                Continue with Google
               </button>
             </form>
 
