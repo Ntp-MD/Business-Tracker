@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 
 import { BrandLogo } from "@/components/brand-logo";
 import { CookieNotice } from "@/components/cookie-notice";
-import { authBypassUntil } from "@/lib/auth/bypass";
 import { DEFAULT_NEXT, loginPath, safeNext } from "@/lib/auth/next";
 import { createSupabaseServerClient } from "@/lib/supabase/ssr";
 import { appVariant } from "@/lib/variant";
@@ -27,6 +26,7 @@ export default async function LoginPage({
 
   const { sent, error, next, password } = await searchParams;
   const target = safeNext(next);
+  const mockupUrl = process.env.NEXT_PUBLIC_MOCKUP_URL ?? "https://trendrail-mockup.vercel.app";
 
   // Old bookmarks such as /login?next=%2Flive should land on the clean /login.
   if (next && target === DEFAULT_NEXT) {
@@ -44,15 +44,6 @@ export default async function LoginPage({
     data: { user },
   } = await supabase.auth.getUser();
   if (user) redirect(target);
-
-  const bypassUntil = authBypassUntil();
-  const bypassLabel = bypassUntil
-    ? new Intl.DateTimeFormat("th-TH", {
-        dateStyle: "medium",
-        timeStyle: "short",
-        timeZone: "Asia/Bangkok",
-      }).format(bypassUntil)
-    : null;
 
   return (
     <>
@@ -208,14 +199,12 @@ export default async function LoginPage({
               </Link>
             )}
 
-            {bypassLabel ? (
-              <div className="login-demo">
-                <Link className="btn btn-ghost login-bypass" href={target}>
-                  ดูเดโม (อ่านอย่างเดียว)
-                </Link>
-                <p className="login-demo-note">ชั่วคราว · หมดอายุ {bypassLabel}</p>
-              </div>
-            ) : null}
+            <div className="login-demo">
+              <Link className="btn btn-ghost login-bypass" href={mockupUrl}>
+                ดูเดโม (mockup)
+              </Link>
+              <p className="login-demo-note">ข้อมูลตัวอย่าง · ไม่แตะ production</p>
+            </div>
 
             <div className="login-foot-links">
               <Link className="login-back" href="/">

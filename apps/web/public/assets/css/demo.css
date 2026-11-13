@@ -1,4 +1,4 @@
-.login-demo {
+﻿.login-demo {
   margin-top: 14px;
   padding-top: 14px;
   border-top: 1px dashed var(--line);
@@ -15,46 +15,4 @@
   color: var(--muted-2);
   font-size: 10.5px;
   text-align: center;
-}
-
-.bypass-banner {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  margin: 0 0 12px;
-  padding: 10px 12px;
-  border: 1px solid #fcd34d;
-  border-radius: 10px;
-  background: #fffbeb;
-  color: #92400e;
-  font-size: 11.5px;
-  line-height: 1.5;
-}
-
-.bypass-banner b {
-  color: #78350f;
-}
-
-.bypass-exit {
-  margin-left: auto;
-  color: inherit;
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  white-space: nowrap;
-}
-
-.bypass-exit:hover {
-  color: #78350f;
-}
-
-[data-theme="dark"] .bypass-banner {
-  border-color: #78350f;
-  background: rgba(245, 158, 11, 0.1);
-  color: #fcd34d;
-}
-
-[data-theme="dark"] .bypass-banner b {
-  color: #fde68a;
 }

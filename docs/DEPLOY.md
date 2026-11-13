@@ -71,33 +71,11 @@ exposes source health. Both are select-only for `anon`, so a code bypass still c
 
 Only the `prod` variant requires login. `mockup` and `live` stay public; `live` remains read-only.
 
-### Temporary read-only demo access
+### Demo link
 
-For presentations, the prod login can show a demo button when both server-only variables are set:
-
-- `AUTH_BYPASS=1`
-- `AUTH_BYPASS_UNTIL=2026-11-20T23:59:59+07:00` (ISO timestamp, Bangkok timezone accepted)
-
-The proxy allows `GET`/`HEAD` only, `isWritable()` returns false (no add/edit/delete UI or
-actions), and every dashboard page shows a “Demo mode · read-only” banner. The window expires
-automatically; after that, normal auth returns even if the variables remain.
-
-Disable immediately: remove both variables from the Vercel `trendrail` project and redeploy
-(or set `AUTH_BYPASS=0`). Never add these to `mockup`/`live`, never prefix them with
-`NEXT_PUBLIC_`, and do not leave the bypass on after the demo.
-
-- Provider: Supabase Auth magic link (PKCE, `@supabase/ssr`), with a password fallback for
-  email-quota outages. For production reliability, configure custom SMTP in Supabase.
-- Owner: `ntpsrm.md@gmail.com`.
-- Routes: `/login` (send link), `/auth/callback` (exchange code), `/auth/logout`.
-- Guard: `apps/web/proxy.ts` redirects unauthenticated `/live` + `/api` to `/login`;
-  non-GET returns 401. `/api/health` stays public.
-- Prod env: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (publishable),
-  `NEXT_PUBLIC_SITE_URL=https://trendrail.vercel.app`.
-- Supabase Dashboard → Authentication → URL Configuration:
-  - Site URL `https://trendrail.vercel.app`
-  - Redirect URLs `https://trendrail.vercel.app/auth/callback` and
-    `http://localhost:3000/auth/callback`
+The prod login shows a “ดูเดโม (mockup)” button. It links to `NEXT_PUBLIC_MOCKUP_URL`
+(default `https://trendrail-mockup.vercel.app`) and opens the static mockup — no auth,
+no Supabase, and no production data. There is no auth bypass.
 
 ## Local Python API + legacy UI
 
