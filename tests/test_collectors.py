@@ -17,6 +17,7 @@ from urllib.parse import parse_qs, urlparse
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "backend"))
 
 from collectors import dry_run, store
+from collectors import worker as collector_worker
 from collectors.adapters import gdelt, gnews
 from collectors.contract import QUALITY_RULES_VERSION, CancelledRun, RawRecord
 from collectors.dry_run import write_report
@@ -655,6 +656,126 @@ class StoreTests(unittest.TestCase):
 
         store.db._request = boom
         report(2)
+
+
+class PythonWorkerTests(unittest.TestCase):
+    """The in-process collect worker; every Supabase call is faked."""
+
+    def setUp(self):
+        self.calls = []
+        self.jobs = []
+        self.patches = []
+        self.orig = {
+            "request": collector_worker.db._request,
+            "user_id": collector_worker.db.user_id,
+            "configured": collector_worker.db.configured,
+            "writes": collector_worker.writes_enabled,
+            "validate": collector_worker.validate_collect_payload,
+            "run": collector_worker.dry_run.run,
+            "cancel": collector_worker.job_cancel_check,
+            "progress": collector_worker.job_progress,
+        }
+        collector_worker.db._request = self.fake_request
+        collector_worker.db.user_id = lambda: "user-1"
+        collector_worker.db.configured = lambda: True
+        collector_worker.writes_enabled = lambda: True
+        collector_worker.validate_collect_payload = lambda payload: payload
+        collector_worker.dry_run.run = lambda *args, **kwargs: {
+            "cancelled": False,
+            "counters": {"written": 1},
+        }
+        collector_worker.job_cancel_check = lambda _job_id: lambda: False
+        collector_worker.job_progress = lambda _job_id: lambda _step: None
+
+    def tearDown(self):
+        collector_worker.db._request = self.orig["request"]
+        collector_worker.db.user_id = self.orig["user_id"]
+        collector_worker.db.configured = self.orig["configured"]
+        collector_worker.writes_enabled = self.orig["writes"]
+        collector_worker.validate_collect_payload = self.orig["validate"]
+        collector_worker.dry_run.run = self.orig["run"]
+        collector_worker.job_cancel_check = self.orig["cancel"]
+        collector_worker.job_progress = self.orig["progress"]
+
+    def fake_request(self, method, path, payload=None, prefer="", **_kwargs):
+        self.calls.append((method, path, payload, prefer))
+        if method == "GET" and path.startswith("jobs?"):
+            return list(self.jobs)
+        if method == "PATCH" and "id=eq." in path:
+            self.patches.append(payload)
+            return [
+                {
+                    "id": 7,
+                    "payload": {"connector_id": "gnews_search", "scope": {"keyword": "SEO"}},
+                    "attempts": 1,
+                }
+            ]
+        return None
+
+    def job(self, attempts=0):
+        return {
+            "id": 7,
+            "payload": {
+                "connector_id": "gnews_search",
+                "scope": {"keyword": "SEO"},
+                "mode": "manual",
+                "dry_run": True,
+                "max_records": 20,
+            },
+            "attempts": attempts,
+        }
+
+    def test_idle_tick_only_claims_collect_jobs(self):
+        self.assertFalse(collector_worker.tick())
+        gets = [call for call in self.calls if call[0] == "GET" and call[1].startswith("jobs?")]
+        self.assertEqual(len(gets), 1)
+        self.assertIn("kind=eq.collect", gets[0][1])
+
+    def test_claim_sets_running_lease_and_attempt(self):
+        self.jobs = [self.job()]
+        claimed = collector_worker.claim()
+        self.assertEqual(claimed["id"], 7)
+        claimed_patch = self.patches[-1]
+        self.assertEqual(claimed_patch["status"], "running")
+        self.assertEqual(claimed_patch["attempts"], 1)
+        self.assertGreater(claimed_patch["lease_until"], collector_worker._now())
+
+    def test_run_job_marks_done_at_four_of_four(self):
+        collector_worker.run_job(self.job())
+        done = self.patches[-1]
+        self.assertEqual(done["status"], "done")
+        self.assertEqual((done["progress"], done["total"]), (4, 4))
+        self.assertIsNone(done["error"])
+
+    def test_run_job_records_cancellation_without_retry(self):
+        collector_worker.dry_run.run = lambda *args, **kwargs: {
+            "cancelled": True,
+            "counters": {"written": 0},
+        }
+        collector_worker.run_job(self.job())
+        cancelled = self.patches[-1]
+        self.assertEqual(cancelled["status"], "cancelled")
+        self.assertIn("0 written", cancelled["error"])
+
+    def test_run_job_requeues_then_errors_at_max_attempts(self):
+        def boom(*_args, **_kwargs):
+            raise RuntimeError("HTTP Error 429: Too Many Requests")
+
+        collector_worker.dry_run.run = boom
+        collector_worker.run_job(self.job(attempts=1))
+        self.assertEqual(self.patches[-1]["status"], "queued")
+
+        collector_worker.run_job(self.job(attempts=collector_worker.MAX_ATTEMPTS))
+        self.assertEqual(self.patches[-1]["status"], "error")
+        self.assertIn("429", self.patches[-1]["error"])
+
+    def test_run_job_cancels_before_fetch_when_requested(self):
+        ran = []
+        collector_worker.job_cancel_check = lambda _job_id: lambda: True
+        collector_worker.dry_run.run = lambda *args, **kwargs: ran.append(1) or {}
+        collector_worker.run_job(self.job())
+        self.assertEqual(ran, [])
+        self.assertEqual(self.patches[-1]["status"], "cancelled")
 
 
 class DryRunCancellationTests(unittest.TestCase):

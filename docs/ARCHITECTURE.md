@@ -10,7 +10,10 @@ the UI and worker, the Items list uses an explicit column projection, and `/api/
 has a short CDN cache. **Phase 1 is done:** `server.py` went 2,682 → 94 lines with the
 handler in `backend/api/`, services in `backend/services/`, and process state in
 `backend/runtime.py`, behavior unchanged (79 Python tests and a live endpoint smoke).
-Still open: the Python worker and applying the `record_id` / `keyword_key` migration
+`python -m backend.collectors.worker` now owns `collect` jobs and runs them in-process
+(live GNews job verified with no local API running); the Node worker keeps `fetch` /
+`refresh_views` and the recurring schedule. Still open: porting the remaining legacy
+sources onto the contract, and applying the `record_id` / `keyword_key` migration
 (`supabase/migrations/20261114000000_items_lineage.sql`, drafted but **not applied**).
 
 ## 1. Principles
@@ -71,7 +74,7 @@ backend/
     registry.py contract.py quality.py http.py
     adapters/                 gdelt.py, gnews.py, ... one module per source
     store.py                  only module that writes collector tables
-    worker.py                 (later) claim loop, cancellation, rate limiting, scheduling
+    worker.py                 collect claims + in-process runs (live); scheduling stays in Node
   db/
     client.py                 PostgREST transport (requests, retries, errors)
     repositories.py           row mapping per table; no business rules
@@ -174,7 +177,7 @@ time is needed; the current design overwrites mutable metrics and keeps no histo
 |---|---|---|
 | 0 | Freeze legacy features; keep the current green suite | No new code in `server.py` legacy paths |
 | 1 | Extract `server.py` into `api/` + `services/` with no behavior change — **done 2026-11-14** | Same routes, same responses, tests green |
-| 2 | Port gnews to the collector framework, then tiktok/fbads/ttads; move the worker to Python (`collectors/worker.py`) and delete the Node HTTP hop | Legacy sources produce through one contract; one worker |
+| 2 | Port gnews to the collector framework, then tiktok/fbads/ttads; move the worker to Python (`collectors/worker.py`) and delete the Node HTTP hop — **collect jobs moved 2026-11-14; fetch/refresh still in Node** | Legacy sources produce through one contract; one worker |
 | 3 | Data normalization: `record_id`, `keyword_key`, single projection writer, backfill legacy items | One writer per table; reconciliation view empty for new runs |
 | 4 | Serving performance: projections, caching, monitoring policy, backup/restore | Live p75 under the agreed budget; backups restore |
 | 5 | Retire Render and the legacy static UI | No traffic to retired surfaces |

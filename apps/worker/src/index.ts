@@ -71,8 +71,10 @@ async function claim(): Promise<Job | null> {
     },
   );
 
+  // `collect` jobs belong to the Python collector worker (backend/collectors/worker.py);
+  // this worker keeps the legacy fetch and refresh jobs.
   const list = await fetch(
-    `${SUPABASE_URL}/rest/v1/jobs?status=eq.queued&user_id=eq.${USER_ID}&order=created_at&limit=1&select=id,kind,payload,attempts`,
+    `${SUPABASE_URL}/rest/v1/jobs?status=eq.queued&kind=neq.collect&user_id=eq.${USER_ID}&order=created_at&limit=1&select=id,kind,payload,attempts`,
     {
       headers: headers(),
     },

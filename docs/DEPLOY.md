@@ -144,17 +144,22 @@ and TikTok/Facebook sessions need a persistent disk or public mode.
 The old Render service (`social-tracker-api`) may still be running; disable it in the Render
 dashboard when no longer needed.
 
-## Local worker (Search Now)
+## Local workers
 
-Search Now writes a `jobs` row; a local worker claims it and calls the Python API.
+The UI writes `jobs` rows; two local workers claim them by kind.
 
 1. Apply `supabase/migrations/20261111000000_jobs.sql` in the Supabase SQL editor (once).
-2. `python backend/server.py` — collectors + API on `127.0.0.1:8000`.
-3. `npm run build -w apps/worker`
-4. `node --env-file=.env.local apps/worker/dist/index.js` — polls every 3 s, writes a heartbeat.
+2. `python -m backend.collectors.worker` — owns `collect` jobs and runs the collector
+   in-process (no local HTTP hop); writes only when `COLLECTOR_WRITE_ENABLED=1`.
+   `--once` runs a single poll for a smoke check.
+3. `python backend/server.py` — legacy collectors + API on `127.0.0.1:8000`; needed for the
+   legacy fetch/refresh jobs and the legacy static UI, not for collector jobs.
+4. `npm run build -w apps/worker`, then
+   `node --env-file=.env.local apps/worker/dist/index.js` — handles `fetch` and
+   `refresh_views` jobs plus the recurring schedule; it no longer claims `collect` jobs.
 
-If the worker is offline, jobs stay `queued` and the UI says so. TikTok / FB Ads / TikTok Ads
-also need a logged-in session: `python backend/pw_login.py <platform>`.
+If a worker is offline its jobs stay `queued` and the UI says so. TikTok / FB Ads / TikTok
+Ads also need a logged-in session: `python backend/pw_login.py <platform>`.
 
 ## Collector persistence
 

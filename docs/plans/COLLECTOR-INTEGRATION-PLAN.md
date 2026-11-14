@@ -1,4 +1,4 @@
-﻿# TrendRail collector integration and remaining work
+# TrendRail collector integration and remaining work
 
 Updated: 2026-11-14. This is the single list of open collector work. Completed work is
 summarized once under [Completed](#completed-context). Nothing here authorizes a source,
@@ -53,7 +53,8 @@ and its approval list. Status history lives here instead of a separate notes fil
    upsert that violates the `items` NOT NULL columns. It now refreshes `score`/`metric`
    with grouped `PATCH` requests, and the tests cover it.
    `COLLECTOR_WRITE_ENABLED=1` is set in `.env.local` after verification; set it to `0` to
-   pause writes. The local API and worker must be running for any collect.
+   pause writes. A collect needs `python -m backend.collectors.worker`; the local API is
+   only needed for the legacy fetch/refresh jobs and the legacy static UI.
    Remaining: a GDELT live fetch and first-batch review once that provider stops
    throttling; GNews already collects live.
 
