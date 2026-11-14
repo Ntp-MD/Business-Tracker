@@ -7,8 +7,10 @@ schema, API, dependency, or deployment change; follow [AGENTS.md](../AGENTS.md).
 Progress 2026-11-14: `collectors/adapters/` exists with GDELT + GNews on one contract
 (live GNews collect verified), `COLLECT_CONNECTORS` replaces the hard-coded connector in
 the UI and worker, the Items list uses an explicit column projection, and `/api/health`
-has a short CDN cache. Still open: the `server.py` split, the Python worker, and the
-`record_id` / `keyword_key` migration.
+has a short CDN cache. `server.py` no longer owns process state (`backend/runtime.py`) or
+the legacy source collectors (`backend/services/sources.py`), dropping ~780 lines with
+behavior unchanged. Still open: the `api/` + remaining `services/` split, the Python
+worker, and the `record_id` / `keyword_key` migration.
 
 ## 1. Principles
 
@@ -42,19 +44,24 @@ Next app reads Supabase directly and the worker runs on the owner's PC.
 
 ## 3. Repository structure
 
-Current: `backend/server.py` (~2.4k lines) is HTTP server, legacy collectors, profile
-fetch, stats refresh, and static file serving at once; `backend/db.py` mixes transport and
-row mapping; collectors live in `backend/collectors/`; a Node worker calls the local HTTP
-API. Target: same repo, split by responsibility, no new services.
+Current: `backend/server.py` (~1.9k lines after the first extraction) is still HTTP
+server, item/archive/profile services, and static file serving; `backend/runtime.py` owns
+paths, env, locks, progress, and cancel state; `backend/services/sources.py` owns the
+legacy collectors; `backend/db.py` mixes transport and row mapping; collectors live in
+`backend/collectors/`; a Node worker calls the local HTTP API. Target: same repo, split by
+responsibility, no new services.
 
 ```
 apps/web/                     Next.js shell; variants by APP_VARIANT
 backend/
-  api/
+  runtime.py                  process state: paths, env, locks, progress, cancel, file helpers
+  api/                        (target; the handler still lives in server.py)
     server.py                 thin entrypoint: listen, route table, static files
     routes/                   one handler module per area (items, collect, export, jobs, health)
     http.py                   request parsing, JSON/CORS, error mapping
   services/                   use-cases shared by HTTP and the worker (no HTTP imports)
+    sources.py                legacy source collectors (ported one by one)  [current]
+    window.py                 fetch-window timestamp helpers                [current]
     fetch_profile.py          legacy source fan-out (until each source is ported)
     refresh_stats.py
     items.py                  list/create/update/archive/trash/import

@@ -35,60 +35,36 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import uuid
-import xml.etree.ElementTree as ElementTree
 import zipfile
 from collections import Counter
-from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
-from email.utils import parsedate_to_datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import db
+import runtime
 from collectors import dry_run as collector_dry_run
 from collectors.job import validate_collect_payload
 from collectors.store import job_cancel_check, job_progress
-
-ROOT = Path(__file__).resolve().parent.parent
-STATIC = ROOT / "legacy"
-APP = STATIC / "app"
-LIVE = STATIC / "live"
-DATA = ROOT / "data"
-ASSETS = STATIC / "assets"
-ITEMS_FILE = DATA / "items.json"
-INDEX_FILE = DATA / "index.json"
-ANALYSIS_FILE = DATA / "analysis.json"
-PROFILES_FILE = DATA / "profiles.json"
-SOURCE_LOG_FILE = DATA / "sources.json"
-ARCHIVE_FILE = DATA / "archive.json"
-TRASH_FILE = DATA / "trash.json"
-APP_VERSION = "0.1"
-EXPORT_FORMAT = "social-tracker.items"
-EXPORT_VERSION = 1
-TRASH_RETENTION_DAYS = 7  # 2.5 auto-purge: trash older than this is dropped at start + after delete
-CANCEL_LOCK = threading.Lock()
-CANCEL_EVENT = threading.Event()  # event of the fetch currently running
-
-
-def new_fetch_cancel() -> threading.Event:
-    """Fresh event per fetch: an old cancelled run keeps its set event, so it cannot resume."""
-    global CANCEL_EVENT
-    with CANCEL_LOCK:
-        CANCEL_EVENT = threading.Event()
-        return CANCEL_EVENT
-
-
-def cancel_fetch() -> None:
-    with CANCEL_LOCK:
-        CANCEL_EVENT.set()
-
-
-UA = (
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+from runtime import (
+    APP,
+    APP_VERSION,
+    DATA,
+    EXPORT_FORMAT,
+    EXPORT_VERSION,
+    HOST,
+    LIVE,
+    PORT,
+    ROOT,
+    STATIC,
+    TRASH_RETENTION_DAYS,
+    atomic_write,
+    ensure_data,
+    load_json,
+    now_iso,
 )
-HOST = os.environ.get("HOST", "127.0.0.1")
-PORT = int(os.environ.get("PORT", "8000"))
+from services.sources import COLLECTORS, save_thumbnail, youtube_video_stats
+from services.window import cutoff_iso, older_than
 
 EN_STOP = {
     "the",
@@ -124,788 +100,19 @@ SUGGESTIONS = [
 ]
 
 
-def now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
-
-
-def ensure_data() -> None:
-    DATA.mkdir(exist_ok=True)
-    ASSETS.mkdir(exist_ok=True)
-    for path, empty in (
-        (ITEMS_FILE, []),
-        (INDEX_FILE, {}),
-        (ANALYSIS_FILE, {}),
-        (PROFILES_FILE, []),
-        (SOURCE_LOG_FILE, {}),
-        (ARCHIVE_FILE, []),
-        (TRASH_FILE, []),
-    ):
-        if not path.exists():
-            path.write_text(json.dumps(empty, ensure_ascii=False), encoding="utf-8")
-    for orphan in (
-        DATA / "items.json.tmp",
-        DATA / "index.json.tmp",
-        DATA / "analysis.json.tmp",
-        DATA / "profiles.json.tmp",
-        DATA / "sources.json.tmp",
-        DATA / "archive.json.tmp",
-        DATA / "trash.json.tmp",
-    ):
-        orphan.unlink(missing_ok=True)
-
-
-def atomic_write(path: Path, obj) -> None:
-    if db.save(path, obj):
-        return
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(path.name + ".tmp")
-    tmp.write_text(json.dumps(obj, ensure_ascii=False, indent=1), encoding="utf-8")
-    for attempt in range(6):
-        try:
-            os.replace(tmp, path)
-            return
-        except PermissionError:
-            if attempt == 5:
-                raise
-            time.sleep(0.15)
-
-
-def load_json(path: Path, default):
-    if db.configured():
-        data = db.load(path, default)
-        if data is not None:
-            return data
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
-        return default
-
-
 # ---------------- COLLECT: YouTube (§9.2) ----------------
 
 
-def parse_views(text: str) -> int:
-    # hl=th renders Thai: "การดู 109,674 ครั้ง" (no K/M suffix). Strip prefix
-    # so the leading-number parse below works for both th and en output.
-    t = (text or "").replace(",", "").strip().lower()
-    if t.startswith("no views"):
-        return 0
-    t = re.sub(r"^\s*การ\s*ดู\s*", "", t)
-    t = re.sub(r"\s*(ครั้ง|views?|viewers?)\s*$", "", t).strip()
-    m = re.match(r"([\d.]+)\s*([kmb]?)", t)
-    if not m:
-        return 0
-    mult = {"k": 1_000, "m": 1_000_000, "b": 1_000_000_000}.get(m.group(2), 1)
-    try:
-        return int(float(m.group(1)) * mult)
-    except ValueError:
-        return 0
-
-
-def _runs_text(node) -> str:
-    if isinstance(node, dict):
-        if "simpleText" in node:
-            return str(node["simpleText"])
-        runs = node.get("runs") or []
-        return "".join(str(r.get("text", "")) for r in runs if isinstance(r, dict))
-    return ""
-
-
 # ---------------- FRESHNESS (fetch-time window) ----------------
-AGE_UNITS = {
-    "second": 0,
-    "sec": 0,
-    "minute": 0,
-    "min": 0,
-    "hour": 0,
-    "hr": 0,
-    "day": 1,
-    "week": 7,
-    "month": 30,
-    "year": 365,
-    "วินาที": 0,
-    "วิ": 0,
-    "นาที": 0,
-    "ชั่วโมง": 0,
-    "ชม": 0,
-    "วัน": 1,
-    "สัปดาห์": 7,
-    "เดือน": 30,
-    "ปี": 365,
-}
-GNEWS_WHEN = {
-    1: "when:7d",
-    3: "when:7d",
-    7: "when:7d",
-    15: "when:30d",
-    30: "when:30d",
-    365: "when:1y",
-}
-YT_SP = {
-    1: "EgIIAw==",
-    3: "EgIIAw==",
-    7: "EgIIAw==",
-    15: "EgIIBA==",
-    30: "EgIIBA==",
-    365: "EgIIBQ==",
-}  # week, month, year
 
-
-def parse_age_days(text: str):
-    """'2 days ago' / '3 สัปดาห์ที่แล้ว' -> 21 days. None when unparseable."""
-    if not text:
-        return None
-    m = re.search(r"(\d+)\s*([A-Za-z\u0E00-\u0E7F]+)", str(text).lower())
-    if not m:
-        return None
-    unit = m.group(2)
-    for key, days in AGE_UNITS.items():
-        if unit.startswith(key):
-            return int(m.group(1)) * days
-    return None
-
-
-def iso_days_ago(days: int) -> str:
-    return (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
-
-
-def cutoff_iso(max_age_days: int):
-    if max_age_days <= 0:
-        return None
-    return iso_days_ago(max_age_days)
-
-
-def older_than(published: str, cutoff) -> bool:
-    """True only when both timestamps exist and published < cutoff."""
-    if not cutoff or not published:
-        return False
-    try:
-        dt = datetime.fromisoformat(published)
-    except (TypeError, ValueError):
-        return False
-    if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
-    return dt < datetime.fromisoformat(cutoff)
-
-
-def collect_gnews(q: str, max_age_days: int = 0) -> tuple[list, list[str]]:
-    """Google News RSS (stdlib). author=google-news, score=0. Never raises.
-    max_age_days > 0 restricts results to that window (query operator + pubDate check)."""
-    cutoff = cutoff_iso(max_age_days)
-    when = GNEWS_WHEN.get(max_age_days, "")
-    query = f"{q} {when}".strip()
-    progress_stage("reading RSS")
-    try:
-        url = (
-            "https://news.google.com/rss/search?q="
-            + urllib.parse.quote_plus(query)
-            + "&hl=th&gl=TH&ceid=TH:th"
-        )
-        req = urllib.request.Request(url, headers={"User-Agent": UA})
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            data = resp.read()
-    except Exception as e:  # noqa: BLE001
-        return [], [f"gnews: {e}"]
-    try:
-        root = ElementTree.fromstring(data)
-    except Exception as e:  # noqa: BLE001
-        return [], [f"gnews: RSS parse failed: {e}"]
-    items = []
-    for item in root.iter("item"):
-        title = (item.findtext("title") or "").strip()
-        link = (item.findtext("link") or "").strip()
-        pub = (item.findtext("pubDate") or "").strip()
-        if not title or not link:
-            continue
-        published = ""
-        if pub:
-            try:
-                published = parsedate_to_datetime(pub).isoformat()
-            except (TypeError, ValueError):
-                published = ""
-        if older_than(published, cutoff):
-            continue
-        source_el = item.find("source")
-        channel_name = (source_el.text or "").strip() if source_el is not None else ""
-        channel_url = (source_el.get("url") or "").strip() if source_el is not None else ""
-        items.append(
-            {
-                "url": link,
-                "title": title,
-                "body": title[:500],
-                "source": "gnews",
-                "keyword": q,
-                "author": channel_name or "google-news",
-                "channel_url": channel_url,
-                "score": 0,
-                "views": None,
-                "metric": "none",
-                "created": pub,
-                "published": published,
-                "created_at": now_iso(),
-                "asset": None,
-            }
-        )
-        if len(items) >= 10:
-            break
-    return items, []
-
-
-PW_SESSIONS = ROOT / "sessions"
-PW_TIMEOUT_MS = 35000
-PW_LIMIT = 12
-PW_LOCK = threading.Lock()  # ทีละ 1 รอบ Playwright: กัน thread ชนกันและ profile dir ชนกัน
 
 # สถานะ fetch ล่าสุด — ให้หน้าเว็บ poll รู้ว่าเซิร์ฟเวอร์ยังทำงาน ไม่ใช่ค้าง
-PROGRESS_LOCK = threading.Lock()
-PROGRESS = {
-    "active": False,
-    "keyword": "",
-    "source": "",
-    "stage": "",
-    "done": 0,
-    "total": 0,
-    "started": 0.0,
-    "updated": 0.0,
-}
-
-
-def progress_set(**kw):
-    with PROGRESS_LOCK:
-        PROGRESS.update(kw)
-        PROGRESS["updated"] = time.time()
-
-
-def progress_stage(stage: str):
-    progress_set(stage=stage)
-
-
-def progress_get() -> dict:
-    with PROGRESS_LOCK:
-        out = dict(PROGRESS)
-    if out["active"]:
-        now = time.time()
-        out["elapsed"] = round(now - out["started"], 1)
-        out["since_update"] = round(now - out["updated"], 1)
-    return out
-
-
-class _PwPublicCtx:
-    """public ไม่ต้อง profile ถาวร — new_context ใช้ user_data_dir ชั่วคราวใน RAM"""
-
-    def __init__(self, browser, ctx):
-        self._browser, self._ctx = browser, ctx
-
-    def new_page(self):
-        return self._ctx.new_page()
-
-    def close(self):
-        for closer in (self._ctx.close, self._browser.close):
-            try:
-                closer()
-            except Exception:
-                pass
-
-
-def _playwright():
-    """Import Playwright lazily so the server also runs stdlib-only (YT/GNews)."""
-    try:
-        from playwright.sync_api import sync_playwright
-    except ImportError:
-        return (
-            None,
-            "playwright not installed — run: python -m pip install playwright && python -m playwright install chromium",
-        )
-    return sync_playwright, None
-
-
-@contextmanager
-def _pw_locked():
-    """ล็อกทั่วเซิร์ฟเวอร์ให้ทีละ 1 เลนส์ Playwright เท่านั้น"""
-    with PW_LOCK:
-        yield
-
-
-def _pw_context(playwright, kind: str):
-    """Start a persistent headless context for TikTok/Facebook.
-    First run needs one headed login by the owner (stored in user_data_dir)."""
-    if not (PW_SESSIONS / kind).exists():
-        return None, (
-            f"{kind}: no login session — run `python backend/pw_login.py {kind}`, "
-            "log in once in the opened browser, then fetch again"
-        )
-    browser = playwright.chromium.launch_persistent_context(
-        str(PW_SESSIONS / kind),
-        headless=True,
-        args=["--no-sandbox", "--disable-blink-features=AutomationControlled"],
-        user_agent=UA,
-        locale="th-TH",
-        timezone_id="Asia/Bangkok",
-        timeout=PW_TIMEOUT_MS,
-    )
-    return browser, None
-
-
-def _pw_public_context(playwright, kind: str):
-    """browser + context สด public ไม่ต้อง login — ไม่แตะ profile dir (ไม่ชนกันหลายโปรเซส)"""
-    try:
-        browser = playwright.chromium.launch(
-            headless=True,
-            args=["--no-sandbox", "--disable-blink-features=AutomationControlled"],
-            timeout=PW_TIMEOUT_MS,
-        )
-        ctx = browser.new_context(user_agent=UA, locale="en-US", timezone_id="Asia/Bangkok")
-        return _PwPublicCtx(browser, ctx), None
-    except Exception as e:  # noqa: BLE001
-        return None, f"{kind}: public browser failed: {e}"
-
-
-def _tiktok_search_json(page, q: str) -> list:
-    """Search TikTok like a human and capture the page's own JSON (no API key)."""
-    captured = []
-
-    def on_response(resp):
-        if "/api/search/general/full/" not in resp.url:
-            return
-        try:
-            captured.append(resp.json())
-        except Exception:  # noqa: BLE001
-            pass
-
-    page.on("response", on_response)
-    try:
-        page.goto(
-            "https://www.tiktok.com/search?q=" + urllib.parse.quote(q) + "&lang=en",
-            wait_until="domcontentloaded",
-            timeout=PW_TIMEOUT_MS,
-        )
-        page.wait_for_timeout(5000)
-        # accuracy over speed: scroll like a human so more items load
-        for _ in range(3):
-            page.mouse.wheel(0, 3500)
-            page.wait_for_timeout(2000)
-    finally:
-        page.remove_listener("response", on_response)
-    return captured
-
-
-def _tiktok_items(captured: list, q: str, max_age_days: int) -> list:
-    cutoff = cutoff_iso(max_age_days) if max_age_days > 0 else None
-    items, seen = [], set()
-    for payload in captured:
-        for entry in payload.get("data") or []:
-            item = (entry or {}).get("item") or {}
-            vid = str(item.get("id") or "")
-            if not vid or vid in seen:
-                continue
-            seen.add(vid)
-            published = ""
-            ts = item.get("createTime")
-            if ts:
-                try:
-                    published = datetime.fromtimestamp(int(ts), timezone.utc).isoformat()
-                except (TypeError, ValueError, OverflowError, OSError):
-                    published = ""
-            if older_than(published, cutoff):
-                continue
-            author = str((item.get("author") or {}).get("uniqueId") or "")
-            desc = str(item.get("desc") or "")
-            try:
-                score = int((item.get("stats") or {}).get("playCount") or 0)
-            except (TypeError, ValueError):
-                score = 0
-            items.append(
-                {
-                    "url": f"https://www.tiktok.com/@{author}/video/{vid}"
-                    if author
-                    else f"https://www.tiktok.com/video/{vid}",
-                    "title": desc[:500] or f"TikTok video {vid}",
-                    "body": desc[:500],
-                    "source": "tiktok",
-                    "keyword": q,
-                    "author": author,
-                    "channel_url": f"https://www.tiktok.com/@{author}" if author else "",
-                    "score": score,
-                    "views": score,
-                    "metric": "plays",
-                    "created": published,
-                    "published": published,
-                    "created_at": now_iso(),
-                    "asset": None,
-                }
-            )
-            if len(items) >= PW_LIMIT:
-                return items
-    return items
-
-
-def collect_tiktok(q: str, mode: str = "public", max_age_days: int = 0) -> tuple[list, list[str]]:
-    """TikTok search via Playwright (real browser, no API key). mode=public|session.
-    Public mode reads the search page's own JSON and filters by createTime. Fail-soft; never raises."""
-    sync_playwright, err = _playwright()
-    if err:
-        return [], [f"tiktok: {err}"]
-    tag = "tiktok(public)" if mode != "session" else "tiktok(session)"
-    last_err = None
-    for attempt in range(2):
-        try:
-            progress_stage("opening browser (or waiting for browser queue)")
-            with _pw_locked(), sync_playwright() as p:
-                if mode == "session":
-                    ctx, err = _pw_context(p, "tiktok")
-                else:
-                    ctx, err = _pw_public_context(p, "tiktok")
-                if err:
-                    return [], [err]
-                try:
-                    progress_stage("searching, waiting for results")
-                    captured = _tiktok_search_json(ctx.new_page(), q)
-                finally:
-                    ctx.close()
-            break
-        except Exception as e:  # noqa: BLE001
-            last_err = e
-            if "Connection" not in str(e) and attempt == 1:
-                break
-    else:
-        captured = []
-    if last_err and not captured:
-        return [], [f"{tag}: {last_err}"]
-    items = _tiktok_items(captured, q, max_age_days)
-    if items:
-        return items, []
-    raw = sum(len(p.get("data") or []) for p in captured)
-    win = f" within {max_age_days}d" if max_age_days > 0 else ""
-    if raw:
-        return [], [f"{tag}: {raw} results, none{win}"]
-    hint = (
-        "blocked or login wall"
-        if mode != "session"
-        else "login expired or blocked — re-run backend/pw_login.py"
-    )
-    return [], [f"{tag}: no videos{win} ({hint})"]
 
 
 # ---------------- AD LIBRARIES (public pages, no login) ----------------
 
-TTCC_PERIOD = {
-    1: 7,
-    3: 7,
-    7: 7,
-    15: 30,
-    30: 30,
-    365: 180,
-}  # TikTok CC supports 7/30/180 days
-
-
-def _parse_en_date(text: str) -> str:
-    for fmt in ("%d %b %Y", "%d %B %Y"):
-        try:
-            return (
-                datetime.strptime((text or "").strip(), fmt)
-                .replace(tzinfo=timezone.utc)
-                .isoformat()
-            )
-        except (TypeError, ValueError):
-            continue
-    return ""
-
-
-def collect_fbads(q: str, max_age_days: int = 0) -> tuple[list, list[str]]:
-    """Meta Ad Library: active ads for a keyword (country TH), public page. Fail-soft.
-    Ads are current by definition (active), so the freshness window is not applied."""
-    sync_playwright, err = _playwright()
-    if err:
-        return [], [f"fbads: {err}"]
-    raw, last_err = [], None
-    for attempt in range(2):
-        try:
-            progress_stage("opening browser (or waiting for browser queue)")
-            with _pw_locked(), sync_playwright() as p:
-                ctx, err = _pw_public_context(p, "fbads")
-                if err:
-                    return [], [err]
-                try:
-                    page = ctx.new_page()
-                    url = (
-                        "https://www.facebook.com/ads/library/?active_status=active"
-                        "&ad_type=all&country=TH&media_type=all&search_type=keyword_unordered"
-                        "&q=" + urllib.parse.quote_plus(q)
-                    )
-                    progress_stage("loading ad library")
-                    page.goto(url, wait_until="domcontentloaded", timeout=PW_TIMEOUT_MS)
-                    progress_stage("waiting 12s for ads to render")
-                    page.wait_for_timeout(12000)
-                    progress_stage("scrolling for more ads")
-                    for _ in range(3):
-                        page.mouse.wheel(0, 3000)
-                        page.wait_for_timeout(2500)
-                    progress_stage("reading ad cards")
-                    raw = page.evaluate("""() => {
-                        const out = [], seen = new Set();
-                        for (const el of document.querySelectorAll('div')) {
-                            const t = el.innerText || '';
-                            const m = t.match(/Library ID:\\s*(\\d+)/);
-                            if (!m || seen.has(m[1]) || !/Sponsored/.test(t) || t.length > 1400) continue;
-                            seen.add(m[1]);
-                            const adv = (t.match(/See ad details\\s+([\\s\\S]{1,120}?)\\s+Sponsored/) || [])[1] || '';
-                            const copy = ((t.split('Sponsored')[1] || '').split('Shop Now')[0] || '')
-                                .replace(/\\s+/g, ' ').trim().slice(0, 300);
-                            const started = (t.match(/Started running on ([0-9]{1,2} [A-Za-z]{3,} [0-9]{4})/) || [])[1] || '';
-                            out.push({id: m[1], adv: adv.trim(), copy, started});
-                        }
-                        return out.slice(0, 20);
-                    }""")
-                finally:
-                    ctx.close()
-            last_err = None
-            break
-        except Exception as e:  # noqa: BLE001
-            last_err = e
-            raw = []
-    if last_err is not None:
-        return [], [f"fbads: {last_err}"]
-    items = []
-    for r in raw or []:
-        adv = (r.get("adv") or "").strip()
-        copy = (r.get("copy") or "").strip()
-        if adv and copy:
-            title = f"{adv}: {copy}"
-        else:
-            title = copy or adv or "Facebook ad"
-        items.append(
-            {
-                "url": f"https://www.facebook.com/ads/library/?id={r['id']}",
-                "title": title[:500],
-                "body": copy,
-                "source": "fbads",
-                "keyword": q,
-                "author": adv,
-                "channel_url": "",
-                "score": 0,
-                "views": None,
-                "metric": "none",
-                "created": r.get("started") or "",
-                "published": _parse_en_date(r.get("started") or ""),
-                "created_at": now_iso(),
-                "asset": None,
-            }
-        )
-        if len(items) >= PW_LIMIT:
-            break
-    if items:
-        return items, []
-    return [], ["fbads: parsed 0 ads (page slow or markup changed — retry)"]
-
-
-def collect_ttads(q: str, max_age_days: int = 0) -> tuple[list, list[str]]:
-    """TikTok Creative Center Top Ads (TH, public, no login). Period = freshness window.
-    Top Ads is not keyword-filtered; the keyword tab still groups the results. Fail-soft."""
-    sync_playwright, err = _playwright()
-    if err:
-        return [], [f"ttads: {err}"]
-    period = TTCC_PERIOD.get(max_age_days, 30)
-    raw, last_err = [], None
-    for attempt in range(2):
-        try:
-            progress_stage("opening browser (or waiting for browser queue)")
-            with _pw_locked(), sync_playwright() as p:
-                ctx, err = _pw_public_context(p, "ttads")
-                if err:
-                    return [], [err]
-                try:
-                    page = ctx.new_page()
-                    url = (
-                        "https://ads.tiktok.com/business/creativecenter/inspiration/topads/pc/en"
-                        f"?period={period}&region=TH"
-                    )
-                    progress_stage("loading top ads")
-                    page.goto(url, wait_until="domcontentloaded", timeout=PW_TIMEOUT_MS)
-                    progress_stage("waiting 12s for cards to render")
-                    page.wait_for_timeout(12000)
-                    page.keyboard.press("Escape")  # promo modal blocks clicks
-                    page.wait_for_timeout(1000)
-                    progress_stage("reading ad cards")
-                    raw = page.evaluate("""() => {
-                        const out = [], seen = new Set();
-                        for (const c of document.querySelectorAll('div[class*="TopadsVideoCard_card__"]')) {
-                            const a = c.querySelector('a[href*="/topads/"]');
-                            if (!a || seen.has(a.href)) continue;
-                            seen.add(a.href);
-                            out.push({url: a.href, text: (c.innerText || '').replace(/\\s+/g, ' ').trim().slice(0, 300)});
-                        }
-                        return out.slice(0, 20);
-                    }""")
-                finally:
-                    ctx.close()
-            last_err = None
-            break
-        except Exception as e:  # noqa: BLE001
-            last_err = e
-            raw = []
-    if last_err is not None:
-        return [], [f"ttads: {last_err}"]
-    items = []
-    for r in raw or []:
-        text = r.get("text") or ""
-        m = re.search(r"(\d+)\s+Likes?", text)
-        score = int(m.group(1)) if m else 0
-        title = text.split(" Likes")[0] if " Likes" in text else text
-        title = re.sub(r"\s+\d+$", "", title).strip() or text[:80]
-        items.append(
-            {
-                "url": r["url"],
-                "title": title[:500],
-                "body": text,
-                "source": "ttads",
-                "keyword": q,
-                "author": "",
-                "channel_url": "",
-                "score": score,
-                "views": None,
-                "metric": "likes",
-                "created": "",
-                "published": "",
-                "created_at": now_iso(),
-                "asset": None,
-            }
-        )
-        if len(items) >= PW_LIMIT:
-            break
-    if items:
-        return items, []
-    return [], ["ttads: parsed 0 ads (page slow or markup changed — retry)"]
-
-
-def collect_youtube(q: str, max_age_days: int = 0) -> tuple[list, list[str]]:
-    """One YouTube search scrape. Returns (items, errors). Never raises.
-    max_age_days > 0 adds the upload-date filter and drops older videos."""
-    errors: list[str] = []
-    cutoff = cutoff_iso(max_age_days)
-    sp = YT_SP.get(max_age_days, "")
-    progress_stage("searching")
-    try:
-        url = (
-            "https://www.youtube.com/results?search_query="
-            + urllib.parse.quote_plus(q)
-            + "&hl=th"
-            + ("&sp=" + urllib.parse.quote(sp, safe="") if sp else "")
-        )
-        req = urllib.request.Request(
-            url,
-            headers={"User-Agent": UA, "Accept-Language": "th-TH,th;q=0.9,en;q=0.8"},
-        )
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            html = resp.read().decode("utf-8", "ignore")
-    except Exception as e:  # noqa: BLE001 - fail-soft per spec
-        return [], [f"youtube: {e}"]
-    m = re.search(r"ytInitialData\s*=\s*(\{.*?\});</script>", html, re.S)
-    if not m:
-        return [], ["youtube: ytInitialData not found (markup changed?)"]
-    try:
-        data = json.loads(m.group(1))
-    except Exception as e:  # noqa: BLE001
-        return [], [f"youtube: ytInitialData parse failed: {e}"]
-
-    renderers: list[dict] = []
-
-    def walk(node, depth: int) -> None:
-        if depth > 14:
-            return
-        if isinstance(node, dict):
-            for key, val in node.items():
-                if key == "videoRenderer" and isinstance(val, dict):
-                    renderers.append(val)
-                else:
-                    walk(val, depth + 1)
-        elif isinstance(node, list):
-            for val in node:
-                walk(val, depth + 1)
-
-    walk(data, 0)
-    items, seen = [], set()
-    for r in renderers:
-        vid = r.get("videoId") or ""
-        if not vid or vid in seen:
-            continue
-        seen.add(vid)
-        title = _runs_text(r.get("title", {})) or "Untitled"
-        owner = r.get("ownerText") or r.get("longBylineText") or {}
-        author = _runs_text(owner) or ""
-        channel_url = ""
-        runs = owner.get("runs") or []
-        if runs:
-            browse = (runs[0].get("navigationEndpoint") or {}).get("browseEndpoint") or {}
-            base = browse.get("canonicalBaseUrl") or ""
-            cid = browse.get("browseId") or ""
-            channel_url = (
-                f"https://www.youtube.com{base}"
-                if base
-                else f"https://www.youtube.com/channel/{cid}"
-                if cid
-                else ""
-            )
-        body = _runs_text(r.get("descriptionSnippet", {}))[:500]
-        pub_text = _runs_text(r.get("publishedTimeText", {})).strip()
-        age = parse_age_days(pub_text)
-        published = iso_days_ago(age) if age is not None else ""
-        if older_than(published, cutoff):
-            continue
-        views = parse_views(_runs_text(r.get("viewCountText", {})))
-        items.append(
-            {
-                "url": f"https://www.youtube.com/watch?v={vid}",
-                "title": title,
-                "body": body,
-                "source": "youtube",
-                "keyword": q,
-                "author": author,
-                "channel_url": channel_url,
-                "score": views,
-                "views": views,
-                "metric": "views",
-                "created": pub_text,
-                "published": published,
-                "created_at": now_iso(),
-                "asset": f"assets/{vid}.jpg",
-            }
-        )
-        if len(items) >= 12:
-            break
-    return items, errors
-
-
-COLLECTORS = {
-    "youtube": collect_youtube,
-    "gnews": collect_gnews,
-    "tiktok": collect_tiktok,
-    "fbads": collect_fbads,
-    "ttads": collect_ttads,
-}
-
 
 # ---------------- STORE: disk merge (§9.2/6.1) ----------------
-
-
-def save_thumbnail(vid: str) -> bool:
-    dest = ASSETS / f"{vid}.jpg"
-    if dest.exists():
-        return True
-    try:
-        req = urllib.request.Request(
-            f"https://i.ytimg.com/vi/{vid}/mqdefault.jpg", headers={"User-Agent": UA}
-        )
-        with urllib.request.urlopen(req, timeout=20) as resp:
-            data = resp.read()
-        dest.write_bytes(data)
-        if db.configured():
-            try:
-                db.upload_asset(f"{vid}.jpg", data)
-            except Exception as exc:  # noqa: BLE001 - thumbnail copy must not kill the fetch
-                print(f"[db] thumbnail upload {vid}.jpg failed: {exc}")
-        return True
-    except Exception:  # noqa: BLE001 - fail-soft, item is kept
-        return False
 
 
 DATED_SOURCES = {"youtube", "gnews", "tiktok"}  # ads are current by definition
@@ -967,14 +174,14 @@ def backfill_item(item: dict) -> bool:
 
 
 def migrate_items() -> bool:
-    items = load_json(ITEMS_FILE, [])
+    items = load_json(runtime.ITEMS_FILE, [])
     if not isinstance(items, list):
         return False
     changed = False
     for item in items:
         changed = backfill_item(item) or changed
     if changed:
-        atomic_write(ITEMS_FILE, items)
+        atomic_write(runtime.ITEMS_FILE, items)
     return changed
 
 
@@ -1054,7 +261,7 @@ def merge_items(
     near-duplicate (organic only). Same URL under another keyword is allowed (coverage).
     Returns (added, skipped_duplicates, errors)."""
     errors: list[str] = []
-    existing = load_json(ITEMS_FILE, [])
+    existing = load_json(runtime.ITEMS_FILE, [])
     if not isinstance(existing, list):
         existing = []
     if max_age_days > 0 and keyword:
@@ -1118,7 +325,7 @@ def merge_items(
             if not save_thumbnail(vid):
                 it["asset"] = None
                 errors.append(f"youtube thumb {vid}: failed")
-    atomic_write(ITEMS_FILE, existing + added_items)
+    atomic_write(runtime.ITEMS_FILE, existing + added_items)
     rebuild_index(existing + added_items)
     return len(added_items), skipped, errors
 
@@ -1138,7 +345,7 @@ def top_terms(items: list) -> list:
 
 
 def analyze(q: str, write: bool = False) -> dict:
-    all_items = load_json(ITEMS_FILE, [])
+    all_items = load_json(runtime.ITEMS_FILE, [])
     if not isinstance(all_items, list):
         all_items = []
     if q:
@@ -1158,11 +365,11 @@ def analyze(q: str, write: bool = False) -> dict:
         "suggestions": ([s.format(q=q) for s in SUGGESTIONS] if q else []),
     }
     if write and q:
-        prev = load_json(ANALYSIS_FILE, {})
+        prev = load_json(runtime.ANALYSIS_FILE, {})
         if not isinstance(prev, dict):
             prev = {}
         prev[q] = {k: v for k, v in out.items() if k != "items"}  # items already live in items.json
-        atomic_write(ANALYSIS_FILE, prev)
+        atomic_write(runtime.ANALYSIS_FILE, prev)
     return out
 
 
@@ -1180,14 +387,14 @@ def rebuild_index(items: list) -> None:
             "hot": kw_items[0].get("title", "") if kw_items else "",
             "top_terms": top_terms(kw_items[:100]),
         }
-    atomic_write(INDEX_FILE, index)
+    atomic_write(runtime.INDEX_FILE, index)
 
 
 # ---------------- EXPORT / IMPORT / MAINTENANCE ----------------
 
 
 def export_payload(q: str = "") -> dict:
-    items = [i for i in load_json(ITEMS_FILE, []) if isinstance(i, dict)]
+    items = [i for i in load_json(runtime.ITEMS_FILE, []) if isinstance(i, dict)]
     archive = [a for a in load_archive() if isinstance(a, dict)]
     trash = [t for t in load_trash() if isinstance(t, dict)]
     if q:
@@ -1224,7 +431,7 @@ def export_zip(payload: dict) -> bytes:
             asset = str(item.get("asset") or "")
             if not asset.startswith("assets/"):
                 continue
-            path = ASSETS / Path(asset).name
+            path = runtime.ASSETS / Path(asset).name
             if path.is_file() and asset not in packed:
                 z.write(path, asset)
                 packed.add(asset)
@@ -1258,7 +465,7 @@ def _clean_item(raw, fallback_keyword: str = "") -> dict | None:
     if views is None and metric in ("views", "plays"):
         views = score
     asset = str(raw.get("asset") or "").strip()
-    if asset and not (ASSETS / Path(asset).name).is_file():
+    if asset and not (runtime.ASSETS / Path(asset).name).is_file():
         asset = ""
     channel_url = text("channel_url", 300)
     if not channel_url and source == "tiktok" and text("author", 200):
@@ -1332,7 +539,7 @@ def import_payload(obj) -> tuple[dict, str | None]:
             known.add(key)
             archive_added += 1
         if archive_added:
-            atomic_write(ARCHIVE_FILE, archive)
+            atomic_write(runtime.ARCHIVE_FILE, archive)
     trash_added = 0
     if isinstance(obj.get("trash"), list):
         trash = load_trash()
@@ -1349,7 +556,7 @@ def import_payload(obj) -> tuple[dict, str | None]:
             known.add(key)
             trash_added += 1
         if trash_added:
-            atomic_write(TRASH_FILE, trash)
+            atomic_write(runtime.TRASH_FILE, trash)
     return {
         "added": total_added,
         "duplicates": total_skipped,
@@ -1367,13 +574,13 @@ def import_zip(raw: bytes) -> tuple[dict, str | None]:
                 payload = json.loads(z.read("items.json").decode("utf-8"))
             except KeyError:
                 return {}, "zip is missing items.json"
-            ASSETS.mkdir(exist_ok=True)
+            runtime.ASSETS.mkdir(exist_ok=True)
             for name in z.namelist():
                 if not name.startswith("assets/") or not name.lower().endswith(".jpg"):
                     continue
                 if ".." in name or not Path(name).name:
                     continue
-                target = ASSETS / Path(name).name
+                target = runtime.ASSETS / Path(name).name
                 if not target.exists():
                     target.write_bytes(z.read(name))
     except (zipfile.BadZipFile, OSError, ValueError) as e:
@@ -1384,9 +591,9 @@ def import_zip(raw: bytes) -> tuple[dict, str | None]:
 def prune_old(days: int) -> dict:
     """Delete dated organic items older than N days across all keywords; ads stay."""
     if days <= 0:
-        return {"removed": 0, "total": len(load_json(ITEMS_FILE, []))}
+        return {"removed": 0, "total": len(load_json(runtime.ITEMS_FILE, []))}
     cutoff = cutoff_iso(days)
-    items = load_json(ITEMS_FILE, [])
+    items = load_json(runtime.ITEMS_FILE, [])
     if not isinstance(items, list):
         items = []
     kept, affected = [], set()
@@ -1401,9 +608,9 @@ def prune_old(days: int) -> dict:
             kept.append(item)
     removed = len(items) - len(kept)
     if removed:
-        atomic_write(ITEMS_FILE, kept)
+        atomic_write(runtime.ITEMS_FILE, kept)
         rebuild_index(kept)
-        analysis = load_json(ANALYSIS_FILE, {})
+        analysis = load_json(runtime.ANALYSIS_FILE, {})
         if not isinstance(analysis, dict):
             analysis = {}
         for kw in affected:
@@ -1411,39 +618,9 @@ def prune_old(days: int) -> dict:
                 analysis[kw] = {k: v for k, v in analyze(kw, write=False).items() if k != "items"}
             else:
                 analysis.pop(kw, None)
-        atomic_write(ANALYSIS_FILE, analysis)
+        atomic_write(runtime.ANALYSIS_FILE, analysis)
         cleanup_orphan_assets(kept)
     return {"removed": removed, "total": len(kept), "days": days}
-
-
-def _http_get(url: str, timeout: int = 25) -> str:
-    req = urllib.request.Request(
-        url, headers={"User-Agent": UA, "Accept-Language": "th-TH,th;q=0.9,en;q=0.8"}
-    )
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        return resp.read().decode("utf-8", "ignore")
-
-
-def youtube_video_stats(vid: str) -> tuple[int | None, str, str]:
-    """Fresh view count + channel from a watch page (fail-soft: (None, '', ''))."""
-    try:
-        html = _http_get(f"https://www.youtube.com/watch?v={vid}")
-    except Exception:  # noqa: BLE001
-        return None, "", ""
-    views = None
-    m = re.search(r'"viewCount":"(\d+)"', html)
-    if m:
-        views = int(m.group(1))
-    cid = ""
-    m = re.search(r'"channelId":"(UC[\w-]{10,})"', html)
-    if m:
-        cid = m.group(1)
-    author = ""
-    m = re.search(r'"author":"([^"]{1,200})"', html)
-    if m:
-        author = m.group(1)
-    channel_url = f"https://www.youtube.com/channel/{cid}" if cid else ""
-    return views, channel_url, author
 
 
 def refresh_stats(
@@ -1461,7 +638,7 @@ def refresh_stats(
         wanted = set(sources or ["youtube", "tiktok", "ttads"])
     else:
         wanted = {"youtube"}  # keyword-less refresh: YouTube per-video stats only
-    all_items = load_json(ITEMS_FILE, [])
+    all_items = load_json(runtime.ITEMS_FILE, [])
     if not isinstance(all_items, list):
         all_items = []
     target = (
@@ -1497,7 +674,7 @@ def refresh_stats(
                 vid = m.group(1)
             if not vid:
                 continue
-            progress_set(source="youtube", stage=f"refreshing views {n}/{len(yt)}")
+            runtime.progress_set(source="youtube", stage=f"refreshing views {n}/{len(yt)}")
             views, channel_url, author = youtube_video_stats(vid)
             if views is not None:
                 item["views"] = views
@@ -1521,7 +698,7 @@ def refresh_stats(
         if cancel.is_set():
             cancelled = True
             break
-        progress_set(source=src, stage="refreshing stats")
+        runtime.progress_set(source=src, stage="refreshing stats")
         try:
             fresh, errs = fn(q, "public", 0) if src == "tiktok" else fn(q, 0)
         except Exception as e:  # noqa: BLE001
@@ -1548,7 +725,7 @@ def refresh_stats(
             updated += 1
             touched.add(item.get("keyword"))
 
-    atomic_write(ITEMS_FILE, all_items)
+    atomic_write(runtime.ITEMS_FILE, all_items)
     rebuild_index(all_items)
     for kw in touched:
         if kw:
@@ -1585,7 +762,7 @@ def _find_item(items: list, keyword: str, url: str):
 
 
 def update_item(keyword: str, url: str, patch: dict) -> tuple[dict, str | None]:
-    items = load_json(ITEMS_FILE, [])
+    items = load_json(runtime.ITEMS_FILE, [])
     if not isinstance(items, list):
         items = []
     idx, item = _find_item(items, keyword, url)
@@ -1627,17 +804,17 @@ def update_item(keyword: str, url: str, patch: dict) -> tuple[dict, str | None]:
         item["metric"] = patch["metric"]
     backfill_item(item)
     items[idx] = item
-    atomic_write(ITEMS_FILE, items)
+    atomic_write(runtime.ITEMS_FILE, items)
     rebuild_index(items)
     analyze(item["keyword"], write=True)
     if old_kw and old_kw != item["keyword"]:
         if any(isinstance(i, dict) and i.get("keyword") == old_kw for i in items):
             analyze(old_kw, write=True)
         else:
-            analysis = load_json(ANALYSIS_FILE, {})
+            analysis = load_json(runtime.ANALYSIS_FILE, {})
             if isinstance(analysis, dict):
                 analysis.pop(old_kw, None)
-                atomic_write(ANALYSIS_FILE, analysis)
+                atomic_write(runtime.ANALYSIS_FILE, analysis)
     return {"item": item}, None
 
 
@@ -1650,10 +827,10 @@ def delete_item(keyword: str, url: str) -> tuple[dict, str | None]:
 
 
 def _analysis_sync(keywords: set[str]) -> None:
-    analysis = load_json(ANALYSIS_FILE, {})
+    analysis = load_json(runtime.ANALYSIS_FILE, {})
     if not isinstance(analysis, dict):
         analysis = {}
-    items = load_json(ITEMS_FILE, [])
+    items = load_json(runtime.ITEMS_FILE, [])
     for kw in keywords:
         if not kw:
             continue
@@ -1661,7 +838,7 @@ def _analysis_sync(keywords: set[str]) -> None:
             analysis[kw] = {k: v for k, v in analyze(kw, write=False).items() if k != "items"}
         else:
             analysis.pop(kw, None)
-    atomic_write(ANALYSIS_FILE, analysis)
+    atomic_write(runtime.ANALYSIS_FILE, analysis)
 
 
 def _item_keys(raw_items) -> set[tuple[str, str]]:
@@ -1677,13 +854,13 @@ def _item_keys(raw_items) -> set[tuple[str, str]]:
 
 
 def load_archive() -> list:
-    data = load_json(ARCHIVE_FILE, [])
+    data = load_json(runtime.ARCHIVE_FILE, [])
     return data if isinstance(data, list) else []
 
 
 def archive_items(raw_items) -> dict:
     keys = _item_keys(raw_items)
-    items = load_json(ITEMS_FILE, [])
+    items = load_json(runtime.ITEMS_FILE, [])
     if not isinstance(items, list):
         items = []
     archive = load_archive()
@@ -1712,8 +889,8 @@ def archive_items(raw_items) -> dict:
         else:
             keep.append(item)
     if moved:
-        atomic_write(ITEMS_FILE, keep)
-        atomic_write(ARCHIVE_FILE, archive)
+        atomic_write(runtime.ITEMS_FILE, keep)
+        atomic_write(runtime.ARCHIVE_FILE, archive)
         rebuild_index(keep)
         _analysis_sync(affected)
         cleanup_orphan_assets(keep)
@@ -1722,7 +899,7 @@ def archive_items(raw_items) -> dict:
 
 def restore_archived(raw_items) -> dict:
     keys = _item_keys(raw_items)
-    items = load_json(ITEMS_FILE, [])
+    items = load_json(runtime.ITEMS_FILE, [])
     if not isinstance(items, list):
         items = []
     archive = load_archive()
@@ -1752,8 +929,8 @@ def restore_archived(raw_items) -> dict:
         affected.add(key[0])
         restored += 1
     if restored:
-        atomic_write(ITEMS_FILE, items)
-        atomic_write(ARCHIVE_FILE, keep)
+        atomic_write(runtime.ITEMS_FILE, items)
+        atomic_write(runtime.ARCHIVE_FILE, keep)
         rebuild_index(items)
         _analysis_sync(affected)
     return {"restored": restored, "skipped": skipped, "total_archive": len(keep)}
@@ -1772,7 +949,7 @@ def delete_archived(raw_items) -> dict:
     ]
     removed = len(archive) - len(kept)
     if removed:
-        atomic_write(ARCHIVE_FILE, kept)
+        atomic_write(runtime.ARCHIVE_FILE, kept)
         cleanup_orphan_assets()
     return {"removed": removed, "total_archive": len(kept)}
 
@@ -1781,7 +958,7 @@ def delete_archived(raw_items) -> dict:
 
 
 def load_trash() -> list:
-    data = load_json(TRASH_FILE, [])
+    data = load_json(runtime.TRASH_FILE, [])
     return data if isinstance(data, list) else []
 
 
@@ -1793,8 +970,8 @@ def trash_items(raw_items) -> dict:
     """Move matching active items into trash.json (soft delete). Returns trashed/total."""
     keys = _item_keys(raw_items)
     if not keys:
-        return {"trashed": 0, "total": len(load_json(ITEMS_FILE, []))}
-    items = load_json(ITEMS_FILE, [])
+        return {"trashed": 0, "total": len(load_json(runtime.ITEMS_FILE, []))}
+    items = load_json(runtime.ITEMS_FILE, [])
     if not isinstance(items, list):
         items = []
     trash = load_trash()
@@ -1819,8 +996,8 @@ def trash_items(raw_items) -> dict:
             known.add(key)
         trashed += 1
     if trashed:
-        atomic_write(ITEMS_FILE, keep)
-        atomic_write(TRASH_FILE, trash)
+        atomic_write(runtime.ITEMS_FILE, keep)
+        atomic_write(runtime.TRASH_FILE, trash)
         rebuild_index(keep)
         _analysis_sync(affected)
         cleanup_orphan_assets(keep)
@@ -1833,7 +1010,7 @@ def restore_trash(raw_items) -> dict:
     keys = _item_keys(raw_items)
     if not keys:
         return {"restored": 0, "skipped": 0, "total": len(load_trash())}
-    items = load_json(ITEMS_FILE, [])
+    items = load_json(runtime.ITEMS_FILE, [])
     if not isinstance(items, list):
         items = []
     active = {
@@ -1859,9 +1036,9 @@ def restore_trash(raw_items) -> dict:
         affected.add(key[0])
         restored += 1
     if restored or skipped:
-        atomic_write(TRASH_FILE, keep)
+        atomic_write(runtime.TRASH_FILE, keep)
         if restored:
-            atomic_write(ITEMS_FILE, items)
+            atomic_write(runtime.ITEMS_FILE, items)
             rebuild_index(items)
             _analysis_sync(affected)
     return {"restored": restored, "skipped": skipped, "total": len(keep)}
@@ -1881,7 +1058,7 @@ def purge_trash() -> int:
         else:
             kept.append(t)
     if removed:
-        atomic_write(TRASH_FILE, kept)
+        atomic_write(runtime.TRASH_FILE, kept)
         cleanup_orphan_assets()
         print(f"trash: auto-purged {removed} item(s) older than {TRASH_RETENTION_DAYS}d")
     return removed
@@ -1901,7 +1078,7 @@ def bulk_items(action: str, raw_items, to_keyword: str = "") -> tuple[dict, str 
             "trashed": out["trashed"],
             "total": out["total"],
         }, None
-    items = load_json(ITEMS_FILE, [])
+    items = load_json(runtime.ITEMS_FILE, [])
     if not isinstance(items, list):
         items = []
     keep, affected, changed = [], set(), 0
@@ -1927,7 +1104,7 @@ def bulk_items(action: str, raw_items, to_keyword: str = "") -> tuple[dict, str 
         keep.append(item)
     if not changed:
         return {}, "item not found"
-    atomic_write(ITEMS_FILE, keep)
+    atomic_write(runtime.ITEMS_FILE, keep)
     rebuild_index(keep)
     _analysis_sync(affected)
     cleanup_orphan_assets(keep)
@@ -1936,16 +1113,16 @@ def bulk_items(action: str, raw_items, to_keyword: str = "") -> tuple[dict, str 
 
 def clear_all_data() -> dict:
     """Wipe collected data + archive + trash + thumbnails. Profiles (user presets) are kept."""
-    items = load_json(ITEMS_FILE, [])
+    items = load_json(runtime.ITEMS_FILE, [])
     count = len(items) if isinstance(items, list) else 0
     archived = len(load_archive())
     trashed = len(load_trash())
-    atomic_write(ITEMS_FILE, [])
-    atomic_write(ARCHIVE_FILE, [])
-    atomic_write(TRASH_FILE, [])
-    atomic_write(INDEX_FILE, {})
-    atomic_write(ANALYSIS_FILE, {})
-    atomic_write(SOURCE_LOG_FILE, {})
+    atomic_write(runtime.ITEMS_FILE, [])
+    atomic_write(runtime.ARCHIVE_FILE, [])
+    atomic_write(runtime.TRASH_FILE, [])
+    atomic_write(runtime.INDEX_FILE, {})
+    atomic_write(runtime.ANALYSIS_FILE, {})
+    atomic_write(runtime.SOURCE_LOG_FILE, {})
     removed_assets = cleanup_orphan_assets([])
     return {
         "removed": count,
@@ -1957,33 +1134,33 @@ def clear_all_data() -> dict:
 
 
 def clear_keyword(q: str) -> dict:
-    items = load_json(ITEMS_FILE, [])
+    items = load_json(runtime.ITEMS_FILE, [])
     if not isinstance(items, list):
         items = []
     kept = [i for i in items if not (isinstance(i, dict) and i.get("keyword") == q)]
     removed = len(items) - len(kept)
     if removed:
-        atomic_write(ITEMS_FILE, kept)
+        atomic_write(runtime.ITEMS_FILE, kept)
         rebuild_index(kept)
         cleanup_orphan_assets(kept)
     # a keyword with 0 fetched items still has an analysis row: drop it too
-    analysis = load_json(ANALYSIS_FILE, {})
+    analysis = load_json(runtime.ANALYSIS_FILE, {})
     if isinstance(analysis, dict) and q in analysis:
         analysis.pop(q, None)
-        atomic_write(ANALYSIS_FILE, analysis)
+        atomic_write(runtime.ANALYSIS_FILE, analysis)
     return {"removed": removed, "total": len(kept)}
 
 
 def cleanup_orphan_assets(items: list | None = None) -> int:
     if items is None:
-        items = load_json(ITEMS_FILE, [])
+        items = load_json(runtime.ITEMS_FILE, [])
     pool = list(items) if isinstance(items, list) else []
     pool += [a for a in load_archive() if isinstance(a, dict)]
     pool += [t for t in load_trash() if isinstance(t, dict)]
     used = {Path(str(i.get("asset"))).name for i in pool if i.get("asset")}
     removed = 0
-    if ASSETS.is_dir():
-        for path in ASSETS.glob("*.jpg"):
+    if runtime.ASSETS.is_dir():
+        for path in runtime.ASSETS.glob("*.jpg"):
             if path.name not in used:
                 try:
                     path.unlink()
@@ -1994,21 +1171,21 @@ def cleanup_orphan_assets(items: list | None = None) -> int:
 
 
 def log_source(src: str, ok: bool, count: int, error: str = "") -> None:
-    log = load_json(SOURCE_LOG_FILE, {})
+    log = load_json(runtime.SOURCE_LOG_FILE, {})
     if not isinstance(log, dict):
         log = {}
     log[src] = {"at": now_iso(), "ok": ok, "count": count, "error": error[:300]}
-    atomic_write(SOURCE_LOG_FILE, log)
+    atomic_write(runtime.SOURCE_LOG_FILE, log)
 
 
 def status_payload() -> dict:
-    items = load_json(ITEMS_FILE, [])
+    items = load_json(runtime.ITEMS_FILE, [])
     if not isinstance(items, list):
         items = []
     data_bytes = (
         sum(p.stat().st_size for p in DATA.glob("*.json") if p.is_file()) if DATA.is_dir() else 0
     )
-    assets = list(ASSETS.glob("*.jpg")) if ASSETS.is_dir() else []
+    assets = list(runtime.ASSETS.glob("*.jpg")) if runtime.ASSETS.is_dir() else []
     return {
         "app_version": APP_VERSION,
         "backend": "supabase" if db.configured() else "json",
@@ -2021,14 +1198,14 @@ def status_payload() -> dict:
         "assets": len(assets),
         "assets_bytes": sum(p.stat().st_size for p in assets),
         "trash_count": len(load_trash()),
-        "sources": load_json(SOURCE_LOG_FILE, {}),
+        "sources": load_json(runtime.SOURCE_LOG_FILE, {}),
         "sessions": {k: (ROOT / "sessions" / k).is_dir() for k in ("tiktok", "facebook")},
     }
 
 
 def keyword_list() -> dict:
     """2.6 keyword suggestions: count + last fetch date, from items + archive."""
-    pool = [i for i in load_json(ITEMS_FILE, []) if isinstance(i, dict)]
+    pool = [i for i in load_json(runtime.ITEMS_FILE, []) if isinstance(i, dict)]
     pool += [a for a in load_archive() if isinstance(a, dict)]
     agg: dict[str, dict] = {}
     for item in pool:
@@ -2047,7 +1224,7 @@ def keyword_list() -> dict:
 
 
 def load_profiles() -> list:
-    data = load_json(PROFILES_FILE, [])
+    data = load_json(runtime.PROFILES_FILE, [])
     return data if isinstance(data, list) else []
 
 
@@ -2089,7 +1266,7 @@ def fetch_profile(
         if cancel.is_set():
             cancelled = True
             break
-        progress_set(keyword=kw, done=i, total=len(kws), source="", stage="next keyword")
+        runtime.progress_set(keyword=kw, done=i, total=len(kws), source="", stage="next keyword")
         kw_new, kw_errors = [], []
         for src in prof["sources"]:
             if cancel.is_set():
@@ -2099,7 +1276,7 @@ def fetch_profile(
             if fn is None:
                 kw_errors.append(f"{kw} {src}: not implemented yet")
                 continue
-            progress_set(source=src, stage="starting")
+            runtime.progress_set(source=src, stage="starting")
             if src == "tiktok":
                 items, errs = fn(kw, mode, max_age_days)
             else:
@@ -2276,7 +1453,7 @@ class Handler(BaseHTTPRequestHandler):
         elif path == "/api/profiles":
             _send_json(self, load_profiles())
         elif path == "/api/progress":
-            _send_json(self, progress_get())
+            _send_json(self, runtime.progress_get())
         elif path == "/api/status":
             _send_json(self, status_payload())
         elif path == "/api/archive":
@@ -2302,7 +1479,7 @@ class Handler(BaseHTTPRequestHandler):
                 )
         elif path.startswith("/fonts/"):
             rel = path[len("/fonts/") :]
-            found = _resolve(ASSETS / "fonts", rel)
+            found = _resolve(runtime.ASSETS / "fonts", rel)
             _send(self, found) if found else _send_json(self, {"error": "not found"}, 404)
         elif path.startswith("/assets/"):
             rel = path[len("/assets/") :]
@@ -2319,7 +1496,7 @@ class Handler(BaseHTTPRequestHandler):
                 if db.strict():
                     _send_json(self, {"error": "not found"}, 404)
                     return
-            found = _resolve(ASSETS, rel)
+            found = _resolve(runtime.ASSETS, rel)
             _send(self, found) if found else _send_json(self, {"error": "not found"}, 404)
         elif path.startswith("/app/"):
             found = _resolve(APP, path[len("/app/") :])
@@ -2361,8 +1538,8 @@ class Handler(BaseHTTPRequestHandler):
                 return
             _send_json(self, result)
         elif parsed.path == "/api/cancel":
-            cancel_fetch()
-            progress_stage("cancel requested")
+            runtime.cancel_fetch()
+            runtime.progress_stage("cancel requested")
             _send_json(self, {"cancelled": True})
         elif parsed.path == "/api/refresh-stats":
             raw_sources = body.get("sources")
@@ -2371,8 +1548,8 @@ class Handler(BaseHTTPRequestHandler):
                 if isinstance(raw_sources, list)
                 else ["youtube", "tiktok", "ttads"]
             )
-            cancel = new_fetch_cancel()
-            progress_set(
+            cancel = runtime.new_fetch_cancel()
+            runtime.progress_set(
                 active=True,
                 keyword=q or "all",
                 source="",
@@ -2389,7 +1566,7 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as e:  # noqa: BLE001
                 _send_json(self, {"error": f"refresh failed: {e}"}, 500)
             finally:
-                progress_set(active=False, stage="done")
+                runtime.progress_set(active=False, stage="done")
         elif parsed.path == "/api/trash/restore":
             raw = body.get("items")
             if not isinstance(raw, list) or not raw:
@@ -2478,7 +1655,7 @@ class Handler(BaseHTTPRequestHandler):
             )
             profiles = load_profiles()
             profiles.append(prof)
-            atomic_write(PROFILES_FILE, profiles)
+            atomic_write(runtime.PROFILES_FILE, profiles)
             _send_json(self, prof, 201)
         elif parsed.path == "/api/fetch" and str(body.get("profile_id") or "").strip():
             pid = str(body["profile_id"]).strip()
@@ -2490,8 +1667,8 @@ class Handler(BaseHTTPRequestHandler):
             if mode not in ("public", "session"):
                 _send_json(self, {"error": "bad mode (public|session)"}, 400)
                 return
-            cancel = new_fetch_cancel()
-            progress_set(
+            cancel = runtime.new_fetch_cancel()
+            runtime.progress_set(
                 active=True,
                 keyword=prof["keywords"][0],
                 source="",
@@ -2504,13 +1681,13 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 out = fetch_profile(prof, mode, max_age_days, cancel)
                 kw0 = prof["keywords"][0]
-                progress_set(source="analysis", stage="scoring items")
+                runtime.progress_set(source="analysis", stage="scoring items")
                 out.update(analyze(kw0, write=False))
                 out["per_keyword"] = out.get("per_keyword", [])
                 out["mode"] = mode
                 _send_json(self, out)
             finally:
-                progress_set(active=False, stage="done")
+                runtime.progress_set(active=False, stage="done")
         elif parsed.path == "/api/fetch":
             if not q:
                 _send_json(self, {"error": "missing q"}, 400)
@@ -2528,9 +1705,9 @@ class Handler(BaseHTTPRequestHandler):
                 _send_json(self, {"error": "bad mode (public|session)"}, 400)
                 return
             new_items, errors = [], []
-            cancel = new_fetch_cancel()
+            cancel = runtime.new_fetch_cancel()
             cancelled = False
-            progress_set(
+            runtime.progress_set(
                 active=True,
                 keyword=q,
                 source="",
@@ -2549,7 +1726,7 @@ class Handler(BaseHTTPRequestHandler):
                     if fn is None:
                         errors.append(f"{src}: not implemented yet")
                         continue
-                    progress_set(source=src, stage="starting", done=i, total=len(sources))
+                    runtime.progress_set(source=src, stage="starting", done=i, total=len(sources))
                     if src == "tiktok":
                         items, errs = fn(q, mode, max_age_days)
                     else:
@@ -2557,10 +1734,10 @@ class Handler(BaseHTTPRequestHandler):
                     log_source(src, not errs, len(items), "; ".join(errs))
                     new_items += items
                     errors += errs
-                progress_set(source="disk", stage="saving items")
+                runtime.progress_set(source="disk", stage="saving items")
                 added, skipped, thumb_errors = merge_items(new_items, q, max_age_days)
                 errors += thumb_errors
-                progress_set(source="analysis", stage="scoring items")
+                runtime.progress_set(source="analysis", stage="scoring items")
                 out = analyze(q, write=True)
                 out.update(
                     {
@@ -2575,7 +1752,7 @@ class Handler(BaseHTTPRequestHandler):
                 )
                 _send_json(self, out)
             finally:
-                progress_set(active=False, stage="done")
+                runtime.progress_set(active=False, stage="done")
         elif parsed.path == "/api/analyze":
             if not q:
                 _send_json(self, {"error": "missing q"}, 400)
@@ -2628,7 +1805,7 @@ class Handler(BaseHTTPRequestHandler):
             }
         )
         profiles[idx] = prof
-        atomic_write(PROFILES_FILE, profiles)
+        atomic_write(runtime.PROFILES_FILE, profiles)
         _send_json(self, prof)
 
     def do_DELETE(self):  # noqa: N802
@@ -2652,7 +1829,7 @@ class Handler(BaseHTTPRequestHandler):
         if parsed.path == "/api/trash":
             # 2.5 manual purge all trash
             trash = load_trash()
-            atomic_write(TRASH_FILE, [])
+            atomic_write(runtime.TRASH_FILE, [])
             cleanup_orphan_assets()
             _send_json(self, {"purged": len(trash)})
             return
@@ -2665,7 +1842,7 @@ class Handler(BaseHTTPRequestHandler):
         if len(kept) == len(profiles):
             _send_json(self, {"error": "profile not found"}, 404)
             return
-        atomic_write(PROFILES_FILE, kept)
+        atomic_write(runtime.PROFILES_FILE, kept)
         _send_json(self, {"ok": True})
 
 

@@ -8,6 +8,7 @@ import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "backend"))
 
+import runtime
 import server
 
 
@@ -20,7 +21,7 @@ class CoreTests(unittest.TestCase):
         server.db.configured = lambda: False
         server.db.save = lambda *args, **kwargs: False
         self.orig = {
-            k: getattr(server, k)
+            k: getattr(runtime, k)
             for k in (
                 "ITEMS_FILE",
                 "INDEX_FILE",
@@ -32,19 +33,19 @@ class CoreTests(unittest.TestCase):
                 "PROFILES_FILE",
             )
         }
-        server.ITEMS_FILE = self.tmp / "items.json"
-        server.INDEX_FILE = self.tmp / "index.json"
-        server.ANALYSIS_FILE = self.tmp / "analysis.json"
-        server.ARCHIVE_FILE = self.tmp / "archive.json"
-        server.TRASH_FILE = self.tmp / "trash.json"
-        server.SOURCE_LOG_FILE = self.tmp / "sources.json"
-        server.PROFILES_FILE = self.tmp / "profiles.json"
-        server.ASSETS = self.tmp / "assets"
-        server.ASSETS.mkdir()
+        runtime.ITEMS_FILE = self.tmp / "items.json"
+        runtime.INDEX_FILE = self.tmp / "index.json"
+        runtime.ANALYSIS_FILE = self.tmp / "analysis.json"
+        runtime.ARCHIVE_FILE = self.tmp / "archive.json"
+        runtime.TRASH_FILE = self.tmp / "trash.json"
+        runtime.SOURCE_LOG_FILE = self.tmp / "sources.json"
+        runtime.PROFILES_FILE = self.tmp / "profiles.json"
+        runtime.ASSETS = self.tmp / "assets"
+        runtime.ASSETS.mkdir()
 
     def tearDown(self):
         for key, value in self.orig.items():
-            setattr(server, key, value)
+            setattr(runtime, key, value)
         server.db.configured = self._db_configured
         server.db.save = self._db_save
         shutil.rmtree(self.tmp, ignore_errors=True)
@@ -130,12 +131,12 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(payload["format"], server.EXPORT_FORMAT)
         self.assertEqual(payload["count"], 1)
 
-        before = len(server.load_json(server.ITEMS_FILE, []))
+        before = len(server.load_json(runtime.ITEMS_FILE, []))
         result, err = server.import_payload(payload)
         self.assertIsNone(err)
         self.assertEqual(result["added"], 0)
         self.assertEqual(result["duplicates"], 1)
-        self.assertEqual(len(server.load_json(server.ITEMS_FILE, [])), before)
+        self.assertEqual(len(server.load_json(runtime.ITEMS_FILE, [])), before)
 
     def test_import_rejects_bad_format(self):
         result, err = server.import_payload({"items": []})
@@ -152,7 +153,7 @@ class CoreTests(unittest.TestCase):
         )
         out = server.clear_keyword("kw")
         self.assertEqual(out["removed"], 1)
-        left = server.load_json(server.ITEMS_FILE, [])
+        left = server.load_json(runtime.ITEMS_FILE, [])
         self.assertEqual([i["keyword"] for i in left], ["keep"])
 
     def test_prune_old_dated_items(self):
@@ -164,7 +165,7 @@ class CoreTests(unittest.TestCase):
         server.merge_items([new], "kw", 0, fetch_thumbs=False)
         out = server.prune_old(90)
         self.assertEqual(out["removed"], 1)
-        left = server.load_json(server.ITEMS_FILE, [])
+        left = server.load_json(runtime.ITEMS_FILE, [])
         self.assertEqual([i["url"] for i in left], ["https://example.com/new"])
 
     def test_item_crud(self):
@@ -182,7 +183,7 @@ class CoreTests(unittest.TestCase):
 
         result, err = server.delete_item("kw", "https://example.com/crud")
         self.assertIsNone(err)
-        self.assertEqual(server.load_json(server.ITEMS_FILE, []), [])
+        self.assertEqual(server.load_json(runtime.ITEMS_FILE, []), [])
 
     def test_archive_restore_and_bulk(self):
         server.merge_items(
@@ -198,11 +199,11 @@ class CoreTests(unittest.TestCase):
         out = server.archive_items(keys)
         self.assertEqual(out["archived"], 1)
         self.assertEqual(len(server.load_archive()), 1)
-        self.assertEqual(len(server.load_json(server.ITEMS_FILE, [])), 1)
+        self.assertEqual(len(server.load_json(runtime.ITEMS_FILE, [])), 1)
 
         out = server.restore_archived(keys)
         self.assertEqual(out["restored"], 1)
-        self.assertEqual(len(server.load_json(server.ITEMS_FILE, [])), 2)
+        self.assertEqual(len(server.load_json(runtime.ITEMS_FILE, [])), 2)
         self.assertEqual(len(server.load_archive()), 0)
 
         out, err = server.bulk_items(
@@ -210,7 +211,7 @@ class CoreTests(unittest.TestCase):
         )
         self.assertIsNone(err)
         self.assertEqual(out["changed"], 1)
-        keywords = [i["keyword"] for i in server.load_json(server.ITEMS_FILE, [])]
+        keywords = [i["keyword"] for i in server.load_json(runtime.ITEMS_FILE, [])]
         self.assertIn("moved", keywords)
 
     def test_export_import_archive(self):
@@ -230,9 +231,9 @@ class CoreTests(unittest.TestCase):
         )
         result = server.clear_all_data()
         self.assertEqual(result["removed"], 1)
-        self.assertEqual(server.load_json(server.ITEMS_FILE, []), [])
-        self.assertEqual(server.load_json(server.INDEX_FILE, {}), {})
-        self.assertEqual(server.load_json(server.ANALYSIS_FILE, {}), {})
+        self.assertEqual(server.load_json(runtime.ITEMS_FILE, []), [])
+        self.assertEqual(server.load_json(runtime.INDEX_FILE, {}), {})
+        self.assertEqual(server.load_json(runtime.ANALYSIS_FILE, {}), {})
 
     def test_trash_delete_restore(self):
         server.merge_items(
@@ -247,12 +248,12 @@ class CoreTests(unittest.TestCase):
         out, err = server.bulk_items("delete", [{"keyword": "kw", "url": "https://example.com/t1"}])
         self.assertIsNone(err)
         self.assertEqual(out["trashed"], 1)
-        self.assertEqual(len(server.load_json(server.ITEMS_FILE, [])), 1)
+        self.assertEqual(len(server.load_json(runtime.ITEMS_FILE, [])), 1)
         self.assertEqual(len(server.load_trash()), 1)
         self.assertEqual(server.load_trash()[0]["url"], "https://example.com/t1")
         r = server.restore_trash([{"keyword": "kw", "url": "https://example.com/t1"}])
         self.assertEqual(r["restored"], 1)
-        self.assertEqual(len(server.load_json(server.ITEMS_FILE, [])), 2)
+        self.assertEqual(len(server.load_json(runtime.ITEMS_FILE, [])), 2)
         self.assertEqual(len(server.load_trash()), 0)
 
     def test_trash_restore_conflict_skipped(self):
@@ -278,7 +279,7 @@ class CoreTests(unittest.TestCase):
             server.datetime.now(server.timezone.utc)
             - server.timedelta(days=server.TRASH_RETENTION_DAYS + 1)
         ).isoformat()
-        server.atomic_write(server.TRASH_FILE, trash)
+        server.atomic_write(runtime.TRASH_FILE, trash)
         self.assertEqual(server.purge_trash(), 1)
         self.assertEqual(len(server.load_trash()), 0)
 
