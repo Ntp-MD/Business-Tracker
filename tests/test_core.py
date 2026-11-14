@@ -10,6 +10,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "backend"))
 
 import runtime
 import server
+import services.items as items_service
 
 
 class CoreTests(unittest.TestCase):
@@ -342,12 +343,12 @@ class CoreTests(unittest.TestCase):
             0,
             fetch_thumbs=False,
         )
-        original = server.youtube_video_stats
-        server.youtube_video_stats = lambda _vid: (321, None, None)
+        original = items_service.youtube_video_stats
+        items_service.youtube_video_stats = lambda _vid: (321, None, None)
         try:
             out = server.refresh_stats("", ["youtube"])
         finally:
-            server.youtube_video_stats = original
+            items_service.youtube_video_stats = original
         self.assertEqual(out["updated"], 1)
         self.assertEqual(out["total"], 1)
 

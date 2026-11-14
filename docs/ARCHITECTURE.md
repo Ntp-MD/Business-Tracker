@@ -7,10 +7,10 @@ schema, API, dependency, or deployment change; follow [AGENTS.md](../AGENTS.md).
 Progress 2026-11-14: `collectors/adapters/` exists with GDELT + GNews on one contract
 (live GNews collect verified), `COLLECT_CONNECTORS` replaces the hard-coded connector in
 the UI and worker, the Items list uses an explicit column projection, and `/api/health`
-has a short CDN cache. `server.py` no longer owns process state (`backend/runtime.py`) or
-the legacy source collectors (`backend/services/sources.py`), dropping ~780 lines with
-behavior unchanged. Still open: the `api/` + remaining `services/` split, the Python
-worker, and the `record_id` / `keyword_key` migration.
+has a short CDN cache. **Phase 1 is done:** `server.py` went 2,682 → 94 lines with the
+handler in `backend/api/`, services in `backend/services/`, and process state in
+`backend/runtime.py`, behavior unchanged (79 Python tests and a live endpoint smoke).
+Still open: the Python worker and the `record_id` / `keyword_key` migration.
 
 ## 1. Principles
 
@@ -44,32 +44,33 @@ Next app reads Supabase directly and the worker runs on the owner's PC.
 
 ## 3. Repository structure
 
-Current: `backend/server.py` (~1.9k lines after the first extraction) is still HTTP
-server, item/archive/profile services, and static file serving; `backend/runtime.py` owns
-paths, env, locks, progress, and cancel state; `backend/services/sources.py` owns the
-legacy collectors; `backend/db.py` mixes transport and row mapping; collectors live in
-`backend/collectors/`; a Node worker calls the local HTTP API. Target: same repo, split by
-responsibility, no new services.
+The first extraction is done (2026-11-14): `backend/server.py` is a 94-line entrypoint,
+`backend/api/` holds the HTTP handler and static/JSON helpers, `backend/services/` holds
+item, archive, profile, and status use-cases plus the legacy collectors, and
+`backend/runtime.py` owns paths, env, locks, progress, and cancel state. `backend/db.py`
+still mixes transport and row mapping; a Node worker still calls the local HTTP API.
+Target: same repo, split by responsibility, no new services.
 
 ```
 apps/web/                     Next.js shell; variants by APP_VARIANT
 backend/
+  server.py                   entrypoint: `python backend/server.py` + test re-exports
   runtime.py                  process state: paths, env, locks, progress, cancel, file helpers
-  api/                        (target; the handler still lives in server.py)
-    server.py                 thin entrypoint: listen, route table, static files
-    routes/                   one handler module per area (items, collect, export, jobs, health)
-    http.py                   request parsing, JSON/CORS, error mapping
+  api/
+    server.py                 HTTP handler (do_GET/do_POST/...) + listen loop
+    http.py                   JSON/static/CORS response helpers
+    routes/                   (later) one handler module per area if server.py grows again
   services/                   use-cases shared by HTTP and the worker (no HTTP imports)
-    sources.py                legacy source collectors (ported one by one)  [current]
-    window.py                 fetch-window timestamp helpers                [current]
-    fetch_profile.py          legacy source fan-out (until each source is ported)
-    refresh_stats.py
-    items.py                  list/create/update/archive/trash/import
+    items.py                  items, archive/trash, import/export, analyze, refresh
+    profiles.py               profile validation + keyword/source fan-out
+    status.py                 source log, status payload, keyword list
+    sources.py                legacy source collectors (ported one by one)
+    window.py                 fetch-window timestamp helpers
   collectors/
     registry.py contract.py quality.py http.py
     adapters/                 gdelt.py, gnews.py, ... one module per source
     store.py                  only module that writes collector tables
-    worker.py                 claim loop, cancellation, rate limiting, scheduling
+    worker.py                 (later) claim loop, cancellation, rate limiting, scheduling
   db/
     client.py                 PostgREST transport (requests, retries, errors)
     repositories.py           row mapping per table; no business rules
@@ -78,8 +79,9 @@ tests/                        Python unit tests + Node fixture/contract tests
 docs/                         reference, plans, notes
 ```
 
-Dependency rule: `routes -> services -> collectors/db`; `collectors -> adapters`;
-`worker -> collectors + db`. Nothing imports `api/`, and collectors never import services.
+Dependency rule: `api -> services -> collectors/db`; `collectors -> adapters`;
+`worker -> collectors + db`. Services never import `api/`, and collectors never import
+services.
 
 ## 4. Data model
 
@@ -170,7 +172,7 @@ time is needed; the current design overwrites mutable metrics and keeps no histo
 | Phase | Work | Acceptance |
 |---|---|---|
 | 0 | Freeze legacy features; keep the current green suite | No new code in `server.py` legacy paths |
-| 1 | Extract `server.py` into `api/` + `services/` with no behavior change | Same routes, same responses, tests green |
+| 1 | Extract `server.py` into `api/` + `services/` with no behavior change — **done 2026-11-14** | Same routes, same responses, tests green |
 | 2 | Port gnews to the collector framework, then tiktok/fbads/ttads; move the worker to Python (`collectors/worker.py`) and delete the Node HTTP hop | Legacy sources produce through one contract; one worker |
 | 3 | Data normalization: `record_id`, `keyword_key`, single projection writer, backfill legacy items | One writer per table; reconciliation view empty for new runs |
 | 4 | Serving performance: projections, caching, monitoring policy, backup/restore | Live p75 under the agreed budget; backups restore |
