@@ -29,8 +29,8 @@ export function sourceHealth(status: SourceStatus | undefined, now = Date.now())
   if (!status) {
     return {
       state: "not_run",
-      label: "Not run",
-      detail: "No run recorded on this project.",
+      label: "Not collected",
+      detail: "No collector run recorded yet.",
       stale: false,
     };
   }
@@ -43,7 +43,7 @@ export function sourceHealth(status: SourceStatus | undefined, now = Date.now())
       ? {
           state: "ok",
           label: "OK",
-          detail: `Last run wrote ${status.count.toLocaleString("en-US")} record(s).`,
+          detail: `Last run wrote ${status.count.toLocaleString("en-US")} ${status.count === 1 ? "record" : "records"}.`,
           stale,
         }
       : { state: "empty", label: "Empty", detail: "Last run wrote 0 records.", stale };

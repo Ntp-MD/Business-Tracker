@@ -24,7 +24,6 @@ export type Summary = {
   sampleSize: number;
   sampled: boolean;
   topTerms: [string, number][];
-  suggestions: string[];
   profiles: Profile[];
 };
 
@@ -38,12 +37,6 @@ type SummaryRow = {
   score: number | string | null;
   views: number | string | null;
 };
-
-const SUGGESTIONS = [
-  "30-sec clip: open on the pain behind {q}, demo the fix, close with one LINE CTA.",
-  'SEO post: answer "{q}" in one clear headline + hashtags + a single CTA.',
-  "3-part FAQ: three shorts answering the most-asked questions about {q}.",
-];
 
 export function topTerms(items: Item[], limit = 12): [string, number][] {
   const counts = new Map<string, number>();
@@ -145,7 +138,6 @@ export async function getSummary(q = ""): Promise<Summary> {
     sampleSize: items.length,
     sampled: (count ?? rows.length) > items.length,
     topTerms: topTerms(items),
-    suggestions: q ? SUGGESTIONS.map((s) => s.replace("{q}", q)) : [],
     profiles: (profileRes.data ?? []) as Profile[],
   };
 }

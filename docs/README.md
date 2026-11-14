@@ -44,6 +44,11 @@ enabled (`COLLECTOR_WRITE_ENABLED=1`); `COLLECT_CONNECTORS` selects what the Col
 runs. Collection is manual-only: no scheduler and no `scheduled` job mode. See the collector
 plan for details.
 
+UI/UX pass v0.4 (2026-11-14): the topbar names the current page, the mobile nav scrolls and
+highlights the active page, locked menus (Calendar, Reports) are clearly disabled, Content
+Ideas uses collected items instead of templates, Sources shows readable status and relative
+time, and the cookie banner, tables, and KPI grid follow the CSS token system on phones.
+
 ## Post-cutover
 
 Migration completed 2026-11-11:

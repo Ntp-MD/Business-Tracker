@@ -1,8 +1,9 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { FetchStrip } from "@/components/live/fetch-strip";
+import { MobileNav } from "@/components/live/mobile-nav";
+import { PageTitle } from "@/components/live/page-title";
 import { Sidebar } from "@/components/live/sidebar";
 import { ThemeToggle } from "@/components/live/theme-toggle";
 import { UserMenu } from "@/components/live/user-menu";
@@ -13,17 +14,6 @@ import type { Profile } from "@/lib/types";
 import { appVariant, isWritable } from "@/lib/variant";
 
 export const dynamic = "force-dynamic";
-
-const MOBILE = [
-  { href: "/live", label: "Overview" },
-  { href: "/live/sources", label: "Sources" },
-  { href: "/live/terms", label: "Top Terms" },
-  { href: "/live/ideas", label: "Ideas" },
-  { href: "/live/items", label: "Items" },
-  { href: "/live/archive", label: "Archive" },
-  { href: "/live/ads", label: "Ads" },
-  { href: "/live/settings", label: "Settings" },
-];
 
 export default async function LiveLayout({ children }: { children: ReactNode }) {
   const variant = appVariant();
@@ -79,7 +69,7 @@ export default async function LiveLayout({ children }: { children: ReactNode }) 
         <Sidebar counts={counts} writable={writable} />
         <div className="main" id="top">
           <div className="topbar">
-            <h1>Analytics</h1>
+            <PageTitle />
             <div className="top-actions">
               <ThemeToggle />
               <UserMenu
@@ -89,13 +79,7 @@ export default async function LiveLayout({ children }: { children: ReactNode }) 
               />
             </div>
           </div>
-          <nav className="mobile-nav" aria-label="Mobile">
-            {MOBILE.filter((item) => writable || item.href !== "/live/settings").map((item) => (
-              <Link key={item.href} href={item.href}>
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          <MobileNav writable={writable} />
           <FetchStrip profiles={profiles} enabled={writable} />
           <div id="live-content">{children}</div>
         </div>

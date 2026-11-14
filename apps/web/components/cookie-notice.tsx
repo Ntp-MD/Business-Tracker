@@ -62,7 +62,7 @@ export function CookieNotice({ variant = "bar" }: { variant?: "bar" | "brand" })
             Details
           </Link>
           <button className="btn btn-primary cookie-accept" type="button" onClick={acknowledge}>
-            Got it
+            Accept
           </button>
         </div>
       </section>

@@ -29,7 +29,8 @@ function status(over = {}) {
 test("missing status is not run", () => {
   const health = sourceHealth(undefined, NOW);
   assert.equal(health.state, "not_run");
-  assert.match(health.detail, /No run recorded/);
+  assert.equal(health.label, "Not collected");
+  assert.match(health.detail, /No collector run recorded/);
   assert.equal(health.stale, false);
 });
 

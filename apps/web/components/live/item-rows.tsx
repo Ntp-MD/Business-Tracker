@@ -32,12 +32,28 @@ export function ItemRows({
               <SelectAll />
             </th>
           )}
-          <th scope="col">Source</th>
-          <th scope="col">Title</th>
-          <th scope="col">Metric</th>
-          {withSignal && <th scope="col">Signal</th>}
-          <th scope="col">Link</th>
-          {actions && <th scope="col">Actions</th>}
+          <th scope="col" className="col-source">
+            Source
+          </th>
+          <th scope="col" className="col-title">
+            Title
+          </th>
+          <th scope="col" className="col-metric">
+            Metric
+          </th>
+          {withSignal && (
+            <th scope="col" className="col-signal">
+              Signal
+            </th>
+          )}
+          <th scope="col" className="col-link">
+            Link
+          </th>
+          {actions && (
+            <th scope="col" className="col-actions">
+              Actions
+            </th>
+          )}
         </tr>
       </thead>
       <tbody>
@@ -57,13 +73,13 @@ export function ItemRows({
                   </label>
                 </td>
               )}
-              <td>
+              <td className="col-source">
                 <span className="src-cell">
                   <SourceIcon source={item.source} />
                   <span className="src-name">{sourceLabel(item.source)}</span>
                 </span>
               </td>
-              <td title={item.title}>
+              <td className="col-title" title={item.title}>
                 <a className="row-title" href={item.url} target="_blank" rel="noopener noreferrer">
                   {item.title}
                 </a>
@@ -73,15 +89,15 @@ export function ItemRows({
                   </div>
                 )}
               </td>
-              <td>
+              <td className="col-metric">
                 <b>{formatScore(item)}</b>
               </td>
               {withSignal && (
-                <td>
+                <td className="col-signal">
                   <span className={`pill ${band.cls}`}>{band.label}</span>
                 </td>
               )}
-              <td>
+              <td className="col-link">
                 <a
                   className="row-open"
                   href={item.url}
@@ -92,7 +108,7 @@ export function ItemRows({
                   Open →
                 </a>
               </td>
-              {actions && <td>{actions(item)}</td>}
+              {actions && <td className="col-actions">{actions(item)}</td>}
             </tr>
           );
         })}

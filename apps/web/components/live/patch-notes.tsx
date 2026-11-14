@@ -44,7 +44,7 @@ export function PatchNotes() {
                   <div className="loading-title" id="notesTitle">
                     Patch notes
                   </div>
-                  <div className="loading-sub">TrendRail 0.3 · 13 พ.ย. 2026</div>
+                  <div className="loading-sub">TrendRail 0.4 · 14 พ.ย. 2026</div>
                 </div>
                 <button
                   className="btn btn-ghost notes-close"
@@ -59,9 +59,26 @@ export function PatchNotes() {
               <ol className="timeline">
                 <li className="tl-item current">
                   <div className="tl-top">
+                    <b>0.4</b>
+                    <span className="tl-date">14 พ.ย. 2026</span>
+                    <span className="pill pill-green">current</span>
+                  </div>
+                  <p className="tl-note">UX pass: อ่านง่ายขึ้นบนเดสก์ท็อปและมือถือ</p>
+                  <ul className="tl-list">
+                    <li>Topbar บอกชื่อหน้าปัจจุบัน และเมนูมือถือเลื่อนแนวนอนพร้อมไฮไลต์หน้าปัจจุบัน</li>
+                    <li>เมนูล็อกเหลือ Calendar / Reports พร้อมไอคอนกุญแจและ tooltip “Coming soon”</li>
+                    <li>Content Ideas ใช้รายการที่เก็บจริงแทนเทมเพลต, เพิ่มการ์ด Latest saved</li>
+                    <li>Sources โชว์สถานะ/เวลาสั้นๆ และสีหัวการ์ดตามสุขภาพจริง</li>
+                    <li>
+                      มือถือ: KPI สองคอลัมน์, ตารางพอดีจอ, ปุ่มขั้นต่ำ 44px; cookie banner ใช้ design tokens
+                    </li>
+                    <li>ปิด auto collect: เก็บข้อมูลเมื่อสั่งเท่านั้น</li>
+                  </ul>
+                </li>
+                <li className="tl-item">
+                  <div className="tl-top">
                     <b>0.3</b>
                     <span className="tl-date">13 พ.ย. 2026</span>
-                    <span className="pill pill-green">current</span>
                   </div>
                   <p className="tl-note">Mockup เต็มรูปแบบ + login และ privacy พร้อมพรีเซนต์</p>
                   <ul className="tl-list">

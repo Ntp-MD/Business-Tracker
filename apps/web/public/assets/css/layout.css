@@ -2783,3 +2783,147 @@
     padding: 22px;
   }
 }
+
+/* UX polish 2026-11-15: tokens only, no new colours or sizes outside the scale. */
+.nav .locked .lock-ico {
+  margin-left: 4px;
+}
+.latest-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.latest-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-2);
+}
+.latest-list li.empty {
+  padding: 14px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.latest-list a {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.latest-list a:hover,
+.latest-list a:focus-visible {
+  color: var(--link);
+}
+.latest-list span {
+  color: var(--muted);
+  font-size: 11px;
+}
+.src-grid .src-detail.src-status {
+  white-space: normal;
+  overflow: visible;
+}
+@media (max-width: 600px) {
+  .kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .kpi-donut,
+  .kpi-top {
+    grid-column: 1 / -1;
+  }
+  .mobile-nav {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 0 0 12px;
+    scrollbar-width: none;
+  }
+  .mobile-nav::-webkit-scrollbar {
+    display: none;
+  }
+  .mobile-nav a,
+  .mobile-nav .locked {
+    flex: 0 0 auto;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--panel);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .mobile-nav a.active {
+    border-color: var(--link);
+    background: var(--side-active-bg);
+    color: var(--side-active-text);
+  }
+  .mobile-nav .locked {
+    border-style: dashed;
+    color: var(--muted-2);
+    background: var(--panel-2);
+    cursor: not-allowed;
+  }
+  .tbl-scroll {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  /* The old mobile rule forced 480px, which clipped titles on a 390px phone. */
+  .tbl-scroll table:not(.heatmap) {
+    min-width: 0;
+  }
+}
+
+/* Source cards: colour the top accent by real health, not by "a card exists". */
+.src-card::before {
+  background: var(--line);
+}
+.src-card.src-ok::before {
+  background: var(--green);
+}
+.src-card.src-rate_limited::before,
+.src-card.src-parsing::before {
+  background: var(--yellow);
+}
+.src-card.src-error::before,
+.src-card.src-blocked::before {
+  background: var(--red);
+}
+@media (max-width: 600px) {
+  /* Mobile tables: keep Source (icon) + Title + Link; metric/signal stay one tap away. */
+  .tbl-scroll .col-metric,
+  .tbl-scroll .col-signal {
+    display: none;
+  }
+  .tbl-scroll .col-source .src-name,
+  .tbl-scroll .col-link {
+    display: none;
+  }
+  .tbl-scroll th,
+  .tbl-scroll td {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+  .tbl-scroll .row-title {
+    display: -webkit-box;
+    overflow: hidden;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}

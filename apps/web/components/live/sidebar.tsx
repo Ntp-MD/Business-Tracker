@@ -28,7 +28,16 @@ const ITEMS = [
 ];
 
 // Only the two roadmap menus stay as locked teasers (owner decision 2026-11-14).
-const LOCKED = [{ label: "Content Calendar" }, { label: "Reports" }];
+const LOCKED = [
+  {
+    label: "Content Calendar",
+    icon: "M3 4h18v18H3zM8 2v4M16 2v4M3 10h18",
+  },
+  {
+    label: "Reports",
+    icon: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M9 15l2 2 4-4",
+  },
+];
 
 export function Sidebar({
   counts,
@@ -57,7 +66,6 @@ export function Sidebar({
             </svg>
             {item.label}
             {item.href === "/live/sources" && <span className="badge-n">{counts.sources}</span>}
-            {item.href === "/live/ideas" && <span className="badge-n">{counts.items ? 3 : 0}</span>}
             {item.href === "/live/items" && <span className="badge-n">{counts.items}</span>}
             {item.href === "/live/archive" && <span className="badge-n">{counts.archive}</span>}
           </Link>
@@ -75,8 +83,19 @@ export function Sidebar({
           Ads Manager<span className="badge-n">{counts.ads}</span>
         </Link>
         {LOCKED.map((item) => (
-          <span key={item.label} className="locked" aria-disabled="true" title="not compatible">
+          <span key={item.label} className="locked" aria-disabled="true" title="Coming soon">
             <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden="true"
+            >
+              <path d={item.icon} />
+            </svg>
+            {item.label}
+            <svg
+              className="lock-ico"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -86,7 +105,6 @@ export function Sidebar({
               <rect x="4" y="10.5" width="16" height="9.5" rx="2" />
               <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" />
             </svg>
-            {item.label}
           </span>
         ))}
         <hr className="divider" />
@@ -109,9 +127,9 @@ export function Sidebar({
       <div className="help-card ver-card">
         <div className="ver-top">
           <span className="ver-label">Version</span>
-          <span className="ver-num">0.3</span>
+          <span className="ver-num">0.4</span>
         </div>
-        <div className="ver-date">13 พ.ย. 2026</div>
+        <div className="ver-date">14 พ.ย. 2026</div>
         <PatchNotes />
         {writable ? (
           <form action={signOut}>

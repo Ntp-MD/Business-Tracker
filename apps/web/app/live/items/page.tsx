@@ -65,10 +65,10 @@ export default async function ItemsPage({
 
   const today = isoDate("Asia/Bangkok");
   const quickRanges = [
-    { key: "all", label: "ทั้งหมด", from: "", to: "" },
-    { key: "today", label: "วันนี้", from: today, to: today },
-    { key: "7d", label: "7 วัน", from: shiftDate(today, -6), to: today },
-    { key: "30d", label: "30 วัน", from: shiftDate(today, -29), to: today },
+    { key: "all", label: "All time", from: "", to: "" },
+    { key: "today", label: "Today", from: today, to: today },
+    { key: "7d", label: "7 days", from: shiftDate(today, -6), to: today },
+    { key: "30d", label: "30 days", from: shiftDate(today, -29), to: today },
   ];
   const activeRange = quickRanges.find((range) => range.from === from && range.to === to)?.key;
 
@@ -115,13 +115,13 @@ export default async function ItemsPage({
 
         <form className="items-filters" action="/live/items" method="get">
           <label>
-            ค้นหา
-            <input type="search" name="q" defaultValue={q} placeholder="Filter title/source…" />
+            Search
+            <input type="search" name="q" defaultValue={q} placeholder="Title or source…" />
           </label>
           <label>
-            แพลตฟอร์ม
+            Source
             <select name="source" defaultValue={source}>
-              <option value="">ทุกแพลตฟอร์ม</option>
+              <option value="">All sources</option>
               {sources.map((item) => (
                 <option key={item} value={item}>
                   {sourceLabel(item)}
@@ -130,7 +130,7 @@ export default async function ItemsPage({
             </select>
           </label>
           <label>
-            เรียงตาม
+            Sort
             <select name="sort" defaultValue={sort}>
               {SORTS.map((item) => (
                 <option key={item.key} value={item.key}>
@@ -140,22 +140,22 @@ export default async function ItemsPage({
             </select>
           </label>
           <label>
-            ทิศทาง
+            Direction
             <select name="dir" defaultValue={dir}>
-              <option value="desc">มาก → น้อย</option>
-              <option value="asc">น้อย → มาก</option>
+              <option value="desc">High → low</option>
+              <option value="asc">Low → high</option>
             </select>
           </label>
           <label>
-            ตั้งแต่
+            From
             <input type="date" name="from" defaultValue={from} />
           </label>
           <label>
-            ถึง
+            To
             <input type="date" name="to" defaultValue={to} />
           </label>
           <label>
-            ต่อหน้า
+            Per page
             <select name="size" defaultValue={String(pageSize)}>
               {PAGE_SIZES.map((size) => (
                 <option key={size} value={size}>
@@ -197,7 +197,7 @@ export default async function ItemsPage({
             <form action={createItem} className="item-form">
               <label>
                 Keyword
-                <input name="keyword" placeholder="เช่น AI agent" required />
+                <input name="keyword" placeholder="e.g. AI agent" required />
               </label>
               <label>
                 Source
@@ -215,11 +215,11 @@ export default async function ItemsPage({
               </label>
               <label>
                 Title
-                <input name="title" placeholder="หัวข้อที่ต้องการบันทึก" required />
+                <input name="title" placeholder="Title to save" required />
               </label>
               <label>
                 Channel / page
-                <input name="author" placeholder="ชื่อช่องหรือเพจ" />
+                <input name="author" placeholder="Channel or page" />
               </label>
               <label>
                 Score
@@ -324,7 +324,11 @@ export default async function ItemsPage({
               <button className="btn btn-ghost" type="submit" formAction={bulkDelete}>
                 Delete selected
               </button>
-              <input name="to_keyword" placeholder="ย้ายไป keyword…" aria-label="Move to keyword" />
+              <input
+                name="to_keyword"
+                placeholder="Move to keyword…"
+                aria-label="Move to keyword"
+              />
               <button className="btn btn-ghost" type="submit" formAction={bulkMove}>
                 Move
               </button>
@@ -334,7 +338,7 @@ export default async function ItemsPage({
 
         <div className="pager">
           <span>
-            Page {data.page} / {data.pages} · {pageSize} แถว
+            Page {data.page} / {data.pages} · {pageSize} rows
           </span>
           <div className="pager-btns">
             {data.page > 1 && <Link href={link({ page: data.page - 1 })}>← Prev</Link>}

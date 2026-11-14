@@ -32,6 +32,9 @@ export default async function OverviewPage({
   const high = scores[0] ?? 0;
   const low = scores[scores.length - 1] ?? 0;
   const topItem = data.items[0];
+  const latest = [...data.items]
+    .sort((a, b) => (Date.parse(b.published || "") || 0) - (Date.parse(a.published || "") || 0))
+    .slice(0, 3);
 
   function href(nextPlatform: string) {
     const params = new URLSearchParams();
@@ -173,20 +176,35 @@ export default async function OverviewPage({
           </div>
           <div className="card">
             <div className="card-head">
-              <h3>Content ideas (summary)</h3>
+              <h3>Latest saved</h3>
               <Link
                 className="btn btn-ghost"
-                href="/live/ideas"
+                href="/live/items"
                 style={{ padding: "6px 12px", fontSize: 12 }}
               >
-                All ideas →
+                All items →
               </Link>
             </div>
-            <ul className="suggest">
-              {data.suggestions.length ? (
-                data.suggestions.map((idea) => <li key={idea}>{idea}</li>)
+            <ul className="latest-list">
+              {latest.length ? (
+                latest.map((item) => (
+                  <li key={item.id ?? item.url}>
+                    <a href={item.url} target="_blank" rel="noopener noreferrer">
+                      {item.title}
+                    </a>
+                    <span>
+                      {sourceLabel(item.source)}
+                      {item.published
+                        ? ` · ${new Date(item.published).toLocaleDateString("en-GB", {
+                            day: "2-digit",
+                            month: "short",
+                          })}`
+                        : ""}
+                    </span>
+                  </li>
+                ))
               ) : (
-                <li className="empty">No ideas yet — pick a keyword first</li>
+                <li className="empty">No items yet — run a manual collect first.</li>
               )}
             </ul>
           </div>
@@ -248,17 +266,6 @@ export default async function OverviewPage({
             </div>
           </div>
         </div>
-      </div>
-
-      <div className="deep">
-        {["Follower growth (30 days)", "Engagement rate", "Sentiment"].map((title) => (
-          <div className="card" key={title}>
-            <div className="card-head">
-              <h3>{title}</h3>
-            </div>
-            <div className="empty">No data yet. Fetch data to see this chart.</div>
-          </div>
-        ))}
       </div>
     </section>
   );
