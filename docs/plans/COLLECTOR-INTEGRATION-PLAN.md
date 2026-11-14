@@ -77,18 +77,22 @@ and its approval list. Status history lives here instead of a separate notes fil
    (`server: uvicorn`). Owner action: disable it in the Render dashboard; no credentials
    are in this repo.
 
-9. **Live RLS and migration history are unverified.**
-   PostgREST with the service role bypasses RLS and cannot read migration history.
-   Next: check the Supabase dashboard or a database connection and record the applied
-   migrations plus policies.
+9. **RLS probed; migration history still unverified.**
+   2026-11-14 anon-key probe: `items`, `jobs`, `collector_records`,
+   `collector_item_links`, `collector_state`, `source_status`, and `profiles` returned 0
+   rows, while `live_items` and `live_source_status` returned rows. This checks the public
+   boundary, not every authenticated-owner policy or the applied migration list.
+   Next: check the dashboard or a database connection for migration history and owner
+   policies.
 
-10. **Monitoring window and restore drill are in progress.**
-    2026-11-14 snapshot: live `/api/health` returned
-    `{"ok":true,"items":{"active":324,"archived":0,"trash":0},"worker":null}`; prod
-    `/live` → 307 `/login`; live `/live` 200 and `/live/settings` → 307 `/live`; mockup
-    `/` 200 and `/live` → 307 `/`. The worker heartbeat is `null`.
-    Next: keep the window open through 2026-11-18 and run the quarterly restore drill when
-    due.
+10. **Monitoring is automated; the restore drill needs access.**
+    The scheduled **Health** workflow checks prod and live every 30 minutes, opens or
+    updates a GitHub issue on failure, and closes it on recovery; the last recorded run
+    succeeded on 2026-11-14T02:53Z. A 2026-11-14 snapshot also showed live `/api/health`
+    `{"ok":true,"items":{"active":324,...}}`, prod `/live` → 307 `/login`, live `/live` 200
+    and `/live/settings` → 307 `/live`, mockup `/` 200 and `/live` → 307 `/`.
+    Still open: keep the 2026-11-18 window and run the quarterly restore drill when
+    database/backup access is available.
 
 11. **Recurring collection is coded but disabled.**
     The worker supports `COLLECT_SCHEDULE_HOURS`, active-job dedupe, and schedule keys;
