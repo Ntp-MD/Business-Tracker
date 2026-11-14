@@ -10,7 +10,7 @@ from collections.abc import Callable
 from datetime import datetime, timezone
 from pathlib import Path
 
-from . import gdelt
+from .adapters import gdelt, gnews
 from .contract import QUALITY_RULES_VERSION, CancelledRun, GateOutcome, utc_now
 from .quality import gate
 from .registry import get_connector
@@ -18,9 +18,10 @@ from .registry import get_connector
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_REPORT_DIR = ROOT / "data" / "reports"
 
-# Registered adapters. A source is registered here only after its access/rights/quality
-# review. GDELT is the first approved source (owner decision 2026-11-13).
-ADAPTERS: dict[str, object] = {"gdelt_doc": gdelt}
+# Registered adapters. A source gets an adapter only after its access/rights/quality
+# review. GDELT is the approved new source; GNews is the existing source moved onto the
+# same pipeline with its current behavior and rights unchanged.
+ADAPTERS: dict[str, object] = {"gdelt_doc": gdelt, "gnews_search": gnews}
 
 
 def _url_hash(url: str) -> str:

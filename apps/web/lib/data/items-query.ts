@@ -4,6 +4,10 @@ import { aggregateCollectorStats, type SourceStats } from "@/lib/data/collector-
 import { itemsTable, sourceStatusTable } from "@/lib/data/read-tables";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import type { Item } from "@/lib/types";
+
+/** Columns the list/table renders; `body` is only read by the editor detail page. */
+const ITEM_LIST_COLUMNS =
+  "id,keyword,source,url,canonical_url,title,author,channel_url,score,metric,views,published,asset_path,archived_at,deleted_at,created_at,updated_at";
 import { isWritable } from "@/lib/variant";
 
 export type ItemState = "active" | "archived" | "trash";
@@ -32,7 +36,7 @@ export async function queryItems({
   from = "",
   to = "",
 }: ItemQuery): Promise<{ items: Item[]; total: number; page: number; pages: number }> {
-  let query = supabaseAdmin().from(itemsTable()).select("*", { count: "exact" });
+  let query = supabaseAdmin().from(itemsTable()).select(ITEM_LIST_COLUMNS, { count: "exact" });
 
   if (state === "active") query = query.is("deleted_at", null).is("archived_at", null);
   else if (state === "archived")
@@ -58,8 +62,9 @@ export async function queryItems({
 
   if (error) throw new Error(`items: ${error.message}`);
   const total = count ?? 0;
+  // List rows omit `body` (ITEM_LIST_COLUMNS); nothing on the list/table renders it.
   return {
-    items: (data ?? []) as Item[],
+    items: (data ?? []) as unknown as Item[],
     total,
     page,
     pages: Math.max(1, Math.ceil(total / pageSize)),

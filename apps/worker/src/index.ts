@@ -15,6 +15,10 @@ const POLL_MS = Number(process.env.WORKER_POLL_MS ?? 3000);
 const LEASE_MS = Number(process.env.WORKER_LEASE_MS ?? 3_600_000);
 const MAX_ATTEMPTS = Number(process.env.WORKER_MAX_ATTEMPTS ?? 3);
 const SCHEDULE_HOURS = Number(process.env.COLLECT_SCHEDULE_HOURS ?? 0);
+const CONNECTORS = (process.env.COLLECT_CONNECTORS ?? "gnews_search")
+  .split(",")
+  .map((value) => value.trim())
+  .filter(Boolean);
 const COLLECTOR_WRITES = ["1", "true", "yes"].includes(
   (process.env.COLLECTOR_WRITE_ENABLED ?? "0").toLowerCase(),
 );
@@ -125,18 +129,20 @@ async function scheduleCollect(): Promise<void> {
   if (!keywords.length) return;
 
   const window = Math.floor(Date.now() / (SCHEDULE_HOURS * 3_600_000));
-  const rows = keywords.map((keyword) => ({
-    user_id: USER_ID,
-    kind: "collect",
-    payload: {
-      connector_id: "gdelt_doc",
-      scope: { keyword },
-      mode: "scheduled",
-      dry_run: true,
-      max_records: 50,
-    },
-    schedule_key: `gdelt:${window}:${keyword}`,
-  }));
+  const rows = keywords.flatMap((keyword) =>
+    CONNECTORS.map((connector) => ({
+      user_id: USER_ID,
+      kind: "collect",
+      payload: {
+        connector_id: connector,
+        scope: { keyword },
+        mode: "scheduled",
+        dry_run: true,
+        max_records: 50,
+      },
+      schedule_key: `${connector}:${window}:${keyword}`,
+    })),
+  );
   // The schedule_key index is partial, so ignore a duplicate-key response instead of
   // using on_conflict.
   await fetch(`${SUPABASE_URL}/rest/v1/jobs`, {

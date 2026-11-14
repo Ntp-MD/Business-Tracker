@@ -64,7 +64,7 @@ CONNECTORS: dict[str, Connector] = {
         source="gnews",
         scope="keyword",
         record_kind="content",
-        enabled=False,
+        enabled=True,
         dry_run=True,
         rights="existing",
     ),

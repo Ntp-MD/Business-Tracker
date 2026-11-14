@@ -4,6 +4,8 @@ import { appVariant } from "@/lib/variant";
 
 const WORKER_STALE_MS = 5 * 60 * 1000;
 
+export const dynamic = "force-dynamic";
+
 /** Read-only smoke check: proves the server can reach Supabase and the worker is alive. */
 export async function GET() {
   const requestId = crypto.randomUUID();
@@ -29,7 +31,13 @@ export async function GET() {
 
     return Response.json(
       { ok: true, items: { active, archived, trash }, worker },
-      { headers: { "x-request-id": requestId } },
+      {
+        headers: {
+          "x-request-id": requestId,
+          // The scheduled health check and dashboards can share a short cache.
+          "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
+        },
+      },
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown error";

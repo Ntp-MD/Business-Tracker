@@ -158,12 +158,15 @@ also need a logged-in session: `python backend/pw_login.py <platform>`.
 
 ## Collector persistence
 
-The collector framework and schema are installed. GDELT (`gdelt_doc`) is the first approved
-source and runs dry-run by default; other connectors stay disabled. Apply
-`20261113000000_collector_sources.sql` before enabling GDELT writes.
+The collector framework and schema are installed. Enabled keyword connectors: `gnews_search`
+(Google News RSS, live) and `gdelt_doc` (approved, currently throttled by the provider);
+other connectors stay disabled. Apply `20261113000000_collector_sources.sql` before enabling
+GDELT/GNews writes.
 `COLLECTOR_WRITE_ENABLED` stays 0 until a dry-run sample is reviewed; set it to 1 only then.
-Records, keyword items, links and state upsert by stable keys; rejected records are never
-stored. See `backend/collectors/`.
+`COLLECT_CONNECTORS` (comma-separated registry ids, default `gnews_search`) drives both the
+Settings **Collect** button and the worker's recurring schedule. Records, keyword items,
+links and state upsert by stable keys; rejected records are never stored. See
+`backend/collectors/`.
 
 ## Backups and retention
 

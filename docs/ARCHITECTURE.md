@@ -4,6 +4,12 @@ Status: **proposal, 2026-11-14**. It describes where the project should go for
 normalization, practice, performance, and serving. It does not authorize a framework,
 schema, API, dependency, or deployment change; follow [AGENTS.md](../AGENTS.md).
 
+Progress 2026-11-14: `collectors/adapters/` exists with GDELT + GNews on one contract
+(live GNews collect verified), `COLLECT_CONNECTORS` replaces the hard-coded connector in
+the UI and worker, the Items list uses an explicit column projection, and `/api/health`
+has a short CDN cache. Still open: the `server.py` split, the Python worker, and the
+`record_id` / `keyword_key` migration.
+
 ## 1. Principles
 
 1. **One writer per table.** Every table has exactly one code path that mutates it.

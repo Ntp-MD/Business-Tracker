@@ -7,9 +7,9 @@ import time
 import urllib.parse
 from datetime import datetime, timezone
 
-from .contract import RawRecord
-from .http import TransportError, fetch_json
-from .registry import Connector
+from ..contract import RawRecord
+from ..http import TransportError, fetch_json
+from ..registry import Connector
 
 API = "https://api.gdeltproject.org/api/v2/doc/doc"
 TIMESPAN = "1d"

@@ -13,6 +13,14 @@ function userId(): string {
   return id;
 }
 
+/** Collectors the worker should run from this button; same list the worker schedules. */
+function collectConnectors(): string[] {
+  return (process.env.COLLECT_CONNECTORS ?? "gnews_search")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
 function list(value: FormDataEntryValue | null): string[] {
   return String(value ?? "")
     .split(",")
@@ -62,17 +70,24 @@ export async function collectProfile(id: string): Promise<void> {
     .maybeSingle();
   if (error) throw new Error(error.message);
   const keywords = ((data as { keywords?: string[] } | null)?.keywords ?? []).filter(Boolean);
+  const connectors = collectConnectors();
+  const jobs = [];
   for (const keyword of keywords) {
-    await createCollectJob({
-      connector_id: "gdelt_doc",
-      scope: { keyword },
-      mode: "manual",
-      dry_run: true,
-      max_records: 50,
-    });
+    for (const connector_id of connectors) {
+      jobs.push(
+        createCollectJob({
+          connector_id,
+          scope: { keyword },
+          mode: "manual",
+          dry_run: true,
+          max_records: 50,
+        }),
+      );
+    }
   }
+  await Promise.all(jobs);
   revalidatePath("/live/settings");
-  redirect(`/live/settings?collect=${keywords.length}`);
+  redirect(`/live/settings?collect=${jobs.length}`);
 }
 
 export async function cancelJob(form: FormData): Promise<void> {

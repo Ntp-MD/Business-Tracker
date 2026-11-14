@@ -26,10 +26,21 @@ and its approval list. Status history lives here instead of a separate notes fil
    Next: when GDELT answers again, capture a 50–100 record sample across the owner's
    keywords with the new query and review it before trusting a live write.
 
-2. **First real collect run — write path verified; live provider fetch still throttled.**
-   Because the provider blocked new queries, the 2026-11-14 verification stubbed only the
-   HTTP transport with a payload captured from a live `200` earlier that day; adapter
-   mapping, gate, worker, API, and Supabase writes ran for real. Results:
+2. **First real collect run — live GNews run succeeded; GDELT still throttled.**
+   GNews moved onto the collector contract on 2026-11-14 (same feed, locale, and rights as
+   the legacy `collect_gnews`). A live manual collect then ran end to end:
+   `gnews_search` job 11 finished `done` 4/4 in one attempt, fetching 20 Google News items;
+   the gate accepted 8 (7 `th`, 1 `en`) and rejected 12 `out_of_window`, and it wrote 8
+   `collector_records`, 8 links, and 8 `items` rows (gnews 130 → 138). `source_status`
+   `gnews ok count 8`, `collector_state` ok, and deployed `live` moved 325 → **333**
+   active items. Relevance matched the existing behavior: several Thai SEO/marketing
+   stories plus some name matches ("Seo Ye Ji", "Seo Kang Joon") that the owner can trash.
+   The Settings **Collect** button and the recurring schedule now read `COLLECT_CONNECTORS`
+   (default `gnews_search`, see `.env.example`), so a GDELT restore only needs
+   `gnews_search,gdelt_doc` there.
+   The earlier GDELT write-path check stubbed only the HTTP transport with a payload
+   captured from a live `200`, because that provider blocked new queries; adapter mapping,
+   gate, worker, API, and Supabase writes ran for real. Results:
    - Job 9 (`SEO`, manual, max 100) finished `done` 4/4 in one attempt: `collector_records`
      1 (en), `collector_item_links` 1, one `items` row for keyword `SEO`, `collector_state`
      `last_status: ok` with `fetched 2 · accepted 1 · rejected unsupported_language 1 ·
@@ -43,7 +54,8 @@ and its approval list. Status history lives here instead of a separate notes fil
    with grouped `PATCH` requests, and the tests cover it.
    `COLLECTOR_WRITE_ENABLED=1` is set in `.env.local` after verification; set it to `0` to
    pause writes. The local API and worker must be running for any collect.
-   Remaining: a live provider fetch and a first-batch review once GDELT stops throttling.
+   Remaining: a GDELT live fetch and first-batch review once that provider stops
+   throttling; GNews already collects live.
 
 ### B. Finish and deploy the two local features
 
@@ -56,7 +68,8 @@ and its approval list. Status history lives here instead of a separate notes fil
    Verified again 2026-11-14 through the real worker → API → Supabase job path (job 10,
    captured payload because the provider throttled): 2/4, "cancelled; 0 written; rerun is
    safe", attempts 1, and no `collector_state`/`source_status` change.
-   Next: repeat with a live provider fetch when GDELT answers.
+   Next: repeat against GDELT when it answers; its slow fetch is the natural window for a
+   checkpoint cancel (GNews finishes too fast to cancel mid-run).
 
 4. **Deployment — web app deployed; worker code is local.**
    Vercel deployed 2026-11-14. Live export smoke passed: 324-row CSV with the expected
@@ -76,10 +89,11 @@ and its approval list. Status history lives here instead of a separate notes fil
    the owner also sees latest-run accepted/rejected totals and reasons, summed across keyword
    scopes from `collector_state`; public `live` intentionally omits those owner-only counters.
    Counters appear after a write run; dry runs do not write `collector_state`.
-   Verified 2026-11-14 with the first write run: `source_status` shows `gdelt` `ok` with
-   `count: 1`, `collector_state` counters show accepted 1 and `unsupported_language` 1, and
-   the anon `live_source_status` view exposes the row (`ok`, count, checked-at).
-   Remaining: confirm the owner-only counters in `prod` after a live provider fetch.
+   Verified 2026-11-14 with the write runs: `source_status` shows `gdelt` `ok` `count: 1`
+   and `gnews` `ok` `count: 8` (live provider run), `collector_state` counters show
+   accepted 1 / `unsupported_language` 1 for GDELT and accepted 8 / `out_of_window` 12 for
+   GNews, and the anon `live_source_status` view exposes both rows.
+   Remaining: confirm the owner-only counters in `prod` after the next live run.
 
 6. **Mid-job progress — implemented, deployed, and observed with a local fixture.**
    The collector PATCHes the owner-scoped `jobs.progress`/`total` at fetch, gate, and
@@ -105,11 +119,14 @@ and its approval list. Status history lives here instead of a separate notes fil
    from that workspace). Do not suspend `Mod-Vite`.
 
 9. **Monitoring is automated; backups and the restore drill are not available.**
-   The scheduled **Health** workflow checks prod and live every 30 minutes, opens or
-   updates a GitHub issue on failure, and closes it on recovery; the last recorded run
-   succeeded on 2026-11-14T02:53Z. A 2026-11-14 snapshot also showed live `/api/health`
-   `{"ok":true,"items":{"active":324,...}}`, prod `/live` → 307 `/login`, live `/live` 200
-   and `/live/settings` → 307 `/live`, mockup `/` 200 and `/live` → 307 `/`.
+   The scheduled **Health** workflow is configured every 30 minutes, but GitHub ran it
+   about every 7 hours on 2026-11-13/14 (observed runs 01:44Z, 09:00Z, 17:18Z, 22:44Z,
+   02:53Z, 09:45Z), so treat the interval as best-effort. It opens or updates a GitHub
+   issue on failure and closes it on recovery. The check fails while the local worker is
+   stale, so an owner PC that is off will raise the issue; decide whether that is intended
+   or whether the worker should be a warning. A 2026-11-14 snapshot showed prod `/live` →
+   307 `/login`, live `/live` 200 and `/live/settings` → 307 `/live`, mockup `/` 200 and
+   `/live` → 307 `/`; live `/api/health` has since moved to 333 active items.
    The Supabase dashboard shows **LAST BACKUP: No backups**, so the quarterly restore
    drill cannot run until a backup exists (manual dump or a plan with backups).
    Still open: finish the 2026-11-18 window and run the drill once a backup is available.
@@ -122,7 +139,10 @@ and its approval list. Status history lives here instead of a separate notes fil
 11. **Next source and existing-source policy need an owner decision.**
     GDELT is the only approved new source. Choose the next candidate and its order; decide
     whether Google News and the Playwright ad collectors keep their current behavior or
-    follow a separately approved policy.
+    follow a separately approved policy. GNews now runs through the collector contract with
+    its legacy behavior and `rights: existing`, but the feed's terms state personal,
+    non-commercial use only, so the owner should confirm that this remains acceptable for
+    the product before relying on it.
 
 ## Completed (context)
 
@@ -160,6 +180,17 @@ and its approval list. Status history lives here instead of a separate notes fil
   counters; 5 worker), web/worker typecheck, worker build, Python compile, and an end-to-end
   fixture run with a real worker: cancelled at 2/4, normal done at 4/4, no writes, test jobs
   deleted.
+- **Collectors package + GNews (2026-11-14):** [`backend/collectors/adapters/`](../../backend/collectors/adapters)
+  now holds one module per provider; GDELT moved there and GNews was ported from the
+  legacy `collect_gnews` to the same contract (same RSS feed and locale, rights unchanged,
+  language left to the gate's title-script check). `gnews_search` is enabled and both
+  adapters are registered. 79 Python tests, including new GNews mapping/limit/dedupe/XML
+  tests; the live collect in item 2 used this pipeline.
+- **Collect connector list (2026-11-14):** `COLLECT_CONNECTORS` (default `gnews_search`)
+  drives both the Settings **Collect** button and the worker's recurring schedule; the
+  hard-coded `gdelt_doc` is gone, so restoring GDELT is one env value.
+- **Serving quick wins (2026-11-14):** the Items list selects explicit columns (no `body`)
+  and `/api/health` is an explicit dynamic route with a 30 s CDN cache.
 - **Collector write fix (2026-11-14):** the first write run exposed that the item metric
   refresh used a partial PostgREST upsert, which violates the `items` NOT NULL columns
   (`source`, `url`, ...). It now refreshes `score`/`metric` with one grouped `PATCH` per

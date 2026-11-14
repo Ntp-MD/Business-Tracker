@@ -16,7 +16,8 @@ from urllib.parse import parse_qs, urlparse
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "backend"))
 
-from collectors import dry_run, gdelt, store
+from collectors import dry_run, store
+from collectors.adapters import gdelt, gnews
 from collectors.contract import QUALITY_RULES_VERSION, CancelledRun, RawRecord
 from collectors.dry_run import write_report
 from collectors.http import TransportError
@@ -136,7 +137,9 @@ class GdeltAdapterTests(unittest.TestCase):
     connector = get_connector("gdelt_doc")
 
     def fetch(self, articles, limit=10):
-        with patch("collectors.gdelt.fetch_json", return_value={"articles": articles}) as fake:
+        with patch(
+            "collectors.adapters.gdelt.fetch_json", return_value={"articles": articles}
+        ) as fake:
             records = gdelt.fetch("Thailand", limit, self.connector)
         return records, fake.call_args[0][0]
 
@@ -191,13 +194,13 @@ class GdeltAdapterTests(unittest.TestCase):
         self.assertEqual(outcome.accepted[0].language, "en")
 
     def test_query_is_a_sanitized_exact_phrase(self):
-        with patch("collectors.gdelt.fetch_json", return_value={"articles": []}) as fake:
+        with patch("collectors.adapters.gdelt.fetch_json", return_value={"articles": []}) as fake:
             gdelt.fetch('digital marketing" OR sourcelang:serbian', 5, self.connector)
         query = parse_qs(urlparse(fake.call_args[0][0]).query)["query"][0]
         self.assertEqual(query, '"digital marketing OR sourcelang:serbian"')
 
     def test_single_word_query_requires_repeated_mentions(self):
-        with patch("collectors.gdelt.fetch_json", return_value={"articles": []}) as fake:
+        with patch("collectors.adapters.gdelt.fetch_json", return_value={"articles": []}) as fake:
             gdelt.fetch("SEO", 5, self.connector)
         query = parse_qs(urlparse(fake.call_args[0][0]).query)["query"][0]
         self.assertEqual(query, '"SEO" repeat2:"SEO"')
@@ -205,10 +208,10 @@ class GdeltAdapterTests(unittest.TestCase):
     def test_retries_a_throttle_once(self):
         with (
             patch(
-                "collectors.gdelt.fetch_json",
+                "collectors.adapters.gdelt.fetch_json",
                 side_effect=[TransportError("HTTP Error 429: Too Many Requests"), {"articles": []}],
             ) as fake,
-            patch("collectors.gdelt.time.sleep") as sleep,
+            patch("collectors.adapters.gdelt.time.sleep") as sleep,
         ):
             records = gdelt.fetch("x", 1, self.connector)
         self.assertEqual(records, [])
@@ -218,14 +221,84 @@ class GdeltAdapterTests(unittest.TestCase):
     def test_retries_a_transient_transport_error_once(self):
         with (
             patch(
-                "collectors.gdelt.fetch_json",
+                "collectors.adapters.gdelt.fetch_json",
                 side_effect=[TransportError("handshake operation timed out"), {"articles": []}],
             ) as fake,
-            patch("collectors.gdelt.time.sleep"),
+            patch("collectors.adapters.gdelt.time.sleep"),
         ):
             records = gdelt.fetch("x", 1, self.connector)
         self.assertEqual(records, [])
         self.assertEqual(fake.call_count, 2)
+
+
+GNEWS_FEED = """<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel><title>"SEO" - Google News</title>
+<item><title>ทำไมบริการรับทำ SEO ถึงสำคัญกับธุรกิจ - Brand Inside</title>
+<link>https://news.google.com/rss/articles/abc</link>
+<pubDate>Sat, 14 Nov 2026 10:00:00 GMT</pubDate>
+<source url="https://www.brandinside.asia">Brand Inside</source></item>
+<item><title>Second marketing story - Example</title>
+<link>https://news.google.com/rss/articles/def</link>
+<pubDate>Fri, 13 Nov 2026 09:00:00 GMT</pubDate>
+<source url="https://example.com">Example</source></item>
+<item><title>missing link</title></item>
+</channel></rss>"""
+
+
+class GnewsAdapterTests(unittest.TestCase):
+    connector = get_connector("gnews_search")
+
+    def fetch(self, xml, limit=10):
+        with patch("collectors.adapters.gnews._fetch", return_value=xml.encode("utf-8")) as fake:
+            return gnews.fetch("SEO", limit, self.connector), fake
+
+    def test_maps_feed_items(self):
+        records, _ = self.fetch(GNEWS_FEED)
+        self.assertEqual(len(records), 2)
+        first = records[0]
+        self.assertEqual(first.source, "gnews")
+        self.assertEqual(first.title, "ทำไมบริการรับทำ SEO ถึงสำคัญกับธุรกิจ - Brand Inside")
+        self.assertEqual(first.published_at, "2026-11-14T10:00:00+00:00")
+        self.assertEqual(first.author_display, "Brand Inside")
+        self.assertEqual(first.author_id, "https://www.brandinside.asia")
+        self.assertEqual(first.raw_source_ref["channel_url"], "https://www.brandinside.asia")
+        self.assertEqual(len(first.source_item_id), 64)
+
+    def test_respects_limit_and_dedupes_urls(self):
+        records, _ = self.fetch(GNEWS_FEED, limit=1)
+        self.assertEqual(len(records), 1)
+
+        duplicated = GNEWS_FEED.replace("articles/def", "articles/abc")
+        records, _ = self.fetch(duplicated)
+        self.assertEqual(len(records), 1)
+
+    def test_bad_pub_date_is_none(self):
+        xml = GNEWS_FEED.replace("Sat, 14 Nov 2026 10:00:00 GMT", "not a date")
+        records, _ = self.fetch(xml)
+        self.assertIsNone(records[0].published_at)
+
+    def test_invalid_xml_raises_transport_error(self):
+        with patch("collectors.adapters.gnews._fetch", return_value=b"<rss"):
+            with self.assertRaises(TransportError):
+                gnews.fetch("SEO", 10, self.connector)
+
+    def test_gate_accepts_feed_titles(self):
+        records, _ = self.fetch(GNEWS_FEED)
+        outcome = gate(
+            records, self.connector, now=datetime(2026, 11, 15, 12, 0, tzinfo=timezone.utc)
+        )
+        self.assertEqual({record.language for record in outcome.accepted}, {"th", "en"})
+
+    def test_feed_request_uses_headline_locale(self):
+        with patch("collectors.adapters.gnews.urllib.request.urlopen") as urlopen:
+            urlopen.return_value.__enter__.return_value.read.return_value = GNEWS_FEED.encode(
+                "utf-8"
+            )
+            gnews.fetch("SEO", 5, self.connector)
+        url = urlopen.call_args[0][0].full_url
+        self.assertIn("q=SEO", url)
+        self.assertIn("hl=th", url)
+        self.assertIn("ceid=TH%3Ath", url)
 
 
 class ReportTests(unittest.TestCase):

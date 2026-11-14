@@ -29,16 +29,18 @@ Supabase Google-provider configuration, and end-to-end OAuth verification are pe
 
 | Plan | What is left |
 |---|---|
-| [plans/COLLECTOR-INTEGRATION-PLAN.md](plans/COLLECTOR-INTEGRATION-PLAN.md) | **Open collector work.** Quality rules shipped (exact phrase, `repeat2`, provider language) and the first Supabase write and cancel paths are verified with a captured payload; GDELT throttles new queries from this network (429), so a live fetch and first-batch review are pending. Then: Render (different workspace), backups/restore drill, monitoring window, recurring schedule, next source |
+| [plans/COLLECTOR-INTEGRATION-PLAN.md](plans/COLLECTOR-INTEGRATION-PLAN.md) | **Open collector work.** GNews now collects live through the new pipeline (8 records written, source health ok); GDELT quality rules shipped but the provider still throttles this network (429), so its live sample is pending; writes and cancellation are verified. Then: Render (different workspace), backups/restore drill, monitoring window, recurring schedule, next source |
 | [plans/USER-DASHBOARD-SETTINGS-PLAN.md](plans/USER-DASHBOARD-SETTINGS-PLAN.md) | **Implemented 2026-11-13.** Only the menu decisions remain: editing scope, public/mock confirmation, duplicate sign-out, deployment check |
 
 Deployed to Vercel on 2026-11-14: the AI analysis export, cancel control, source health
 (including owner-only reject counters), and job progress. The live export smoke passed, and
 the worker pipeline was exercised with a local fixture (cancel at 2/4, normal at 4/4). The
-collector write path now also runs against Supabase (one GDELT record under `SEO`, source
-health `ok`, cancel at 2/4), verified with a captured payload because GDELT returns `429`
-for new queries from this network. Collector writes are enabled (`COLLECTOR_WRITE_ENABLED=1`);
-the live sample review is the remaining collector step. See the collector plan for details.
+collector path now also runs against Supabase with a live provider: GNews collected 8 items
+through the worker → API → gate → `items` (source health `ok`, live 325 → 333), and
+cancellation was verified at 2/4 with no writes. GDELT still returns `429` for new queries
+from this network, so its live sample review is pending. Collector writes are enabled
+(`COLLECTOR_WRITE_ENABLED=1`); `COLLECT_CONNECTORS` selects what the Collect button runs.
+See the collector plan for details.
 
 ## Post-cutover
 
@@ -51,10 +53,10 @@ Migration completed 2026-11-11:
 - Open ops actions (Render API, monitoring window, restore drill) are tracked in the
   collector plan, not duplicated here.
 
-Collector progress: framework, persistence, the GDELT adapter, and the Supabase write/cancel
-paths are implemented and verified locally; GDELT's public API throttles new queries from
-this network, so the live sample review is open (see the collector plan). The next source is
-undecided; Hacker News was removed on 2026-11-12.
+Collector progress: framework, persistence, the GDELT and GNews adapters, and the Supabase
+write/cancel paths are implemented; GNews runs live while GDELT's public API throttles new
+queries from this network (see the collector plan). The next source is undecided; Hacker News
+was removed on 2026-11-12.
 
 ## Reference input
 
