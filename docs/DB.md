@@ -66,7 +66,9 @@ SUPABASE_SERVICE_ROLE_KEY=...   # server only
 SUPABASE_USER_ID=<auth user uuid>
 ```
 
-With all three set, `backend/server.py` reads/writes Supabase instead of `data/*.json`; with any missing it keeps the JSON files (safe fallback). Import the old data once:
+With all three set, the Python entrypoint (`backend/server.py` → `backend/api/` +
+`backend/services/`) reads/writes Supabase instead of `data/*.json`; with any missing it
+keeps the JSON files (safe fallback). Import the old data once:
 
 ```
 python scripts/import_to_supabase.py --dry-run
@@ -77,9 +79,30 @@ Thumbnails are copied to `storage://thumbnails/<user_id>/<file>.jpg`; `items.ass
 
 `SUPABASE_STRICT=1` (default): a Supabase error raises and the request fails loudly instead of writing local JSON. Set `0` only for a planned offline run.
 
+## Collector tables and item lineage (applied 2026-11-14)
+
+The collector framework writes canonical rows first, then the `items` projection:
+
+| Table | Role |
+|---|---|
+| `collector_records` | Canonical provider record; unique `(user_id, source, source_item_id)` |
+| `collector_item_links` | Record ↔ keyword item link; unique `(record_id, item_id)` |
+| `collector_state` | Cursor, health, counters per owner/connector/scope |
+| `source_status` | Last run per source (owner + public live view) |
+
+`supabase/migrations/20261114000000_items_lineage.sql` is applied:
+
+- `items.keyword_key` is a generated column (`btrim` + collapse spaces + `lower`).
+  `keyword` stays the display value.
+- `items.record_id` references `collector_records(id)`; the collector projection fills it
+  on insert and repairs null lineage for linked rows on the next run
+  (`python scripts/backfill_record_ids.py` for old rows).
+- The unique `(user_id, keyword_key, canonical_url)` index is still disabled: five legacy
+  pairs use `Nvidia` and `nvidia` for the same URL and need a data decision first.
+
 ## Notes
 
-- Fetcher (`backend/server.py` / Playwright) should use the service role key; the browser client uses anon key and RLS.
+- Fetcher (Python `services/sources.py` / Playwright) should use the service role key; the browser client uses anon key and RLS.
 - Realtime is off by default; enable it only for `items` if another device must see fetches live.
 - Trash purge: `pg_cron` job at the bottom of the migration (commented).
 - Local single-user mode: `user_id` defaults to `auth.uid()`, so no code change is needed once auth is added.

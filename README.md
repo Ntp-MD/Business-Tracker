@@ -24,27 +24,33 @@ requirements vary. The mockup uses fixtures and does not connect to production d
 
 ## Architecture
 
-The web application is built with Next.js. Supabase stores the live data and job queue,
-while a local TypeScript worker dispatches collection jobs to the Python API. The legacy
-static dashboard remains available through the Python server.
+Next.js serves the three Vercel variants and reads Supabase directly. Supabase also holds
+the job queue. Collection is **manual-only**: clicking Collect (or calling the API/script)
+creates a job, and the Python worker `python -m backend.collectors.worker` runs it
+in-process. There is no scheduler and no auto search/collect. A small TypeScript worker
+still handles the legacy `fetch` / `refresh_views` jobs, and the legacy static dashboard
+remains available through the Python server. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Layout
 
 ```
 apps/
   web/        Next.js app; 3 Vercel variants via APP_VARIANT (mockup/prod/live)
-  worker/     TypeScript worker: claims Supabase jobs, calls the local collector
-backend/      Python collector API (`server.py`, `db.py`, `pw_login.py`)
+  worker/     Legacy TypeScript worker: fetch / refresh_views jobs only
+backend/
+  server.py   Entrypoint (`python backend/server.py`) + test re-exports
+  runtime.py  Paths, env, locks, progress, cancel state
+  api/        HTTP handler and JSON/static response helpers
+  services/   Items, archive/trash, import/export, profiles, status, legacy sources
+  collectors/ registry, adapters (gdelt, gnews), quality gate, store, Python worker
+  db.py       Supabase PostgREST/Storage adapter
 legacy/       Old static dashboard served by the Python API at `/` and `/live/`
-  index.html  mock `/`
-  live/       live `/live/`
-  assets/     CSS, fonts, icons, runtime thumbnails
-  app/        logo
-supabase/     SQL migrations
-scripts/      One-off import / baseline capture tools
-tests/        Python unittest suite
+supabase/     SQL migrations (append-only)
+scripts/      Health check, backups, record-id backfill, import, baseline capture
+tests/        Python unittest + Node fixture/contract tests
+e2e/          Read-only Playwright variant tests (CI)
 docs/         Documentation and plans (see docs/README.md)
-data/         Runtime JSON cache (gitignored)
+data/         Runtime only: reports, logical backups (gitignored)
 sessions/     Playwright login sessions (gitignored)
 ```
 
@@ -58,10 +64,13 @@ Node 22 and Python 3.12 are the pinned runtimes. Configure the environment using
 npm ci
 npm run dev                 # http://localhost:3000
 
-# Python collector API (used by Search Now)
+# Python API + legacy static UI (Search Now / Refresh views need it)
 python backend/server.py    # http://127.0.0.1:8000
 
-# Worker (separate terminal)
+# Collector worker: runs queued collect jobs in-process (manual collections only)
+python -m backend.collectors.worker
+
+# Legacy worker (separate terminal; fetch / refresh_views jobs only)
 npm run build:worker
 node --env-file=.env.local apps/worker/dist/index.js
 
@@ -100,23 +109,28 @@ URLs default to the Vercel deployments; override with `E2E_MOCKUP_URL`, `E2E_LIV
 
 ## Collector framework
 
-`backend/collectors/` keeps the registry, quality gate, dry-run report and targeted
-persistence. GDELT (`gdelt_doc`) is the first approved source and is enabled for dry-run;
-every other connector stays disabled.
+`backend/collectors/` keeps the registry, per-provider adapters, quality gate, dry-run
+writing, targeted persistence, and the Python worker. Enabled keyword connectors are
+`gnews_search` (Google News RSS, live) and `gdelt_doc` (approved; the provider currently
+throttles this network with HTTP 429). Other connectors stay disabled.
 
 ```bash
-python -m backend.collectors.dry_run --connector gdelt_doc --keyword technology --show-sample 10
+python -m backend.collectors.dry_run --connector gnews_search --keyword SEO --limit 20 --show-sample 5
 ```
 
-`20261113000000_collector_sources.sql` adds `gdelt` to the item/source checks. Writes stay
-off unless `COLLECTOR_WRITE_ENABLED=1`.
+Collections are manual-only — no scheduler and no `scheduled` job mode. Options that matter:
+`COLLECTOR_WRITE_ENABLED=1` to allow writes, `COLLECT_CONNECTORS` for what the Collect button
+enqueues. `20261113000000_collector_sources.sql` adds `gdelt` to the item/source checks and
+`20261114000000_items_lineage.sql` adds `items.record_id` / `keyword_key`.
 
 ## Observability
 
 - `GET /api/health` reports item counts and the worker heartbeat (`stale` after 5 minutes).
 - The Next proxy and the Python API emit JSON logs with a `request_id` per request.
-- `.github/workflows/health.yml` runs every 30 minutes against prod + live, opens or updates
-  a `Health check failing` issue on failure, and closes it after recovery.
+- `.github/workflows/health.yml` runs on a GitHub schedule (best-effort; observed gaps are
+  hours, not exactly 30 minutes) against prod + live, opens or updates a
+  `Health check failing` issue on endpoint failure, and closes it after recovery. A stopped
+  local worker is only a warning.
 - To test the alert path: `gh workflow run health.yml -f simulate_failure=true`.
 
 Copy `.env.example` to `.env.local` for the Python side. The Next app reads its env from

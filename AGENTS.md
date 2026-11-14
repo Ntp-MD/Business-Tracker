@@ -10,8 +10,8 @@ when planning, implementing, reviewing, and handing off work.
 | Part | What it is |
 |---|---|
 | `apps/web/` | Next.js App Router; three Vercel variants (`mockup`, `prod`, `live`) selected by `APP_VARIANT` |
-| `apps/worker/` | TypeScript worker on the owner's PC; claims Supabase `jobs` and calls the local collector |
-| `backend/` | Python stdlib HTTP API + collectors (`server.py`, `db.py`, `pw_login.py`); serves the legacy static app |
+| `apps/worker/` | Legacy TypeScript worker on the owner's PC; `fetch` / `refresh_views` jobs (collect jobs run in Python) |
+| `backend/` | Python stdlib API + collector framework (`server.py` entrypoint, `api/`, `services/`, `collectors/`, `runtime.py`, `db.py`, `pw_login.py`); serves the legacy static app |
 | `legacy/` | Old static UI served by `backend/server.py` at `/` and `/live/` |
 | `supabase/migrations/` | Postgres schema, RLS, storage |
 | `data/`, `sessions/` | Runtime only; gitignored |
@@ -40,7 +40,10 @@ python -m py_compile backend/server.py backend/db.py backend/pw_login.py
 npx tsc --noEmit -p apps/web/tsconfig.json
 npm run typecheck             # worker
 
-# Worker (after build; from repo root)
+# Collector worker: collect jobs, in-process (no local HTTP API needed)
+python -m backend.collectors.worker          # add --once for one poll
+
+# Legacy worker (after build): fetch / refresh_views jobs only
 node --env-file=.env.local apps/worker/dist/index.js
 
 # Playwright session login
@@ -112,17 +115,25 @@ If a check fails, report it. Never claim done with a failing check.
 | Path | Purpose |
 |---|---|
 | `apps/web/` | Next.js app; Vercel root directory |
-| `apps/worker/` | Supabase job worker; local Playwright |
-| `backend/server.py` | API, collectors, routing, legacy static serving |
+| `apps/worker/` | Legacy Supabase job worker (fetch / refresh_views); collect jobs run in Python |
+| `backend/server.py` | Entrypoint (`python backend/server.py`) + test re-exports |
+| `backend/api/` | HTTP handler and JSON/static response helpers |
+| `backend/services/` | Items, archive/trash, import/export, profiles, status, legacy sources |
+| `backend/collectors/` | Collector framework: registry, adapters (`gdelt`, `gnews`), gate, store, Python worker |
+| `backend/runtime.py` | Paths, env, locks, progress, cancel state |
 | `backend/db.py` | Supabase PostgREST/Storage adapter |
 | `backend/pw_login.py` | One-time headed login for TikTok/FB sessions |
 | `legacy/` | Static mock + live pages, CSS, icons, logo |
-| `supabase/migrations/` | Schema, RLS, storage bucket |
+| `supabase/migrations/` | Schema, RLS, storage bucket, items lineage |
 | `scripts/import_to_supabase.py` | One-time JSON/thumbnail import |
 | `scripts/capture_baseline.py` | Parity screenshots of legacy pages |
-| `tests/test_core.py` | Python unittest suite |
-| `Dockerfile`, `render.yaml` | Render API deployment |
-| `docs/` | DB, deploy, design, plans, reference, notes (index: `docs/README.md`) |
+| `scripts/backup_supabase.py` | Logical PostgREST backup to ignored `data/backups/` |
+| `scripts/backfill_record_ids.py` | Fill `items.record_id` from existing item links |
+| `scripts/check_health.py` | Deployed health check used by the GitHub workflow |
+| `tests/` | Python unittest suite + Node fixture/contract tests |
+| `e2e/` | Read-only Playwright variant tests (CI only) |
+| `Dockerfile`, `render.yaml` | Legacy Render deployment; the service may still run (see plan) |
+| `docs/` | DB, architecture, deploy, design, plans, reference, notes (index: `docs/README.md`) |
 
 ## 7. Report
 

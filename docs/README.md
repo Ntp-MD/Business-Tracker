@@ -29,18 +29,20 @@ Supabase Google-provider configuration, and end-to-end OAuth verification are pe
 
 | Plan | What is left |
 |---|---|
-| [plans/COLLECTOR-INTEGRATION-PLAN.md](plans/COLLECTOR-INTEGRATION-PLAN.md) | **Open collector work.** GNews now collects live through the new pipeline (8 records written, source health ok); GDELT quality rules shipped but the provider still throttles this network (429), so its live sample is pending; writes and cancellation are verified. Then: Render (different workspace), backups/restore drill, monitoring window, recurring schedule, next source |
+| [plans/COLLECTOR-INTEGRATION-PLAN.md](plans/COLLECTOR-INTEGRATION-PLAN.md) | **Open collector work.** GNews collects live (source health ok) and the lineage migration is applied; auto search/collect was removed by owner decision (manual-only). GDELT quality rules shipped but the provider throttles this network (429), so its live sample is pending. Then: Render (different workspace), backups/restore drill, monitoring window, next source |
 | [plans/USER-DASHBOARD-SETTINGS-PLAN.md](plans/USER-DASHBOARD-SETTINGS-PLAN.md) | **Implemented 2026-11-13.** Only the menu decisions remain: editing scope, public/mock confirmation, duplicate sign-out, deployment check |
 
 Deployed to Vercel on 2026-11-14: the AI analysis export, cancel control, source health
 (including owner-only reject counters), and job progress. The live export smoke passed, and
 the worker pipeline was exercised with a local fixture (cancel at 2/4, normal at 4/4). The
-collector path now also runs against Supabase with a live provider: GNews collected 8 items
-through the worker → API → gate → `items` (source health `ok`, live 325 → 333), and
-cancellation was verified at 2/4 with no writes. GDELT still returns `429` for new queries
-from this network, so its live sample review is pending. Collector writes are enabled
-(`COLLECTOR_WRITE_ENABLED=1`); `COLLECT_CONNECTORS` selects what the Collect button runs.
-See the collector plan for details.
+collector path now also runs against Supabase with a live provider: GNews ran through the
+worker → gate → `items` several times (SEO and Digital Marketing, later nvidia; live active
+333 → 357) with source health `ok`, and cancellation was verified at 2/4 with no writes.
+`items.record_id` now carries collector lineage (33 linked rows). GDELT still returns `429`
+for new queries from this network, so its live sample review is pending. Collector writes are
+enabled (`COLLECTOR_WRITE_ENABLED=1`); `COLLECT_CONNECTORS` selects what the Collect button
+runs. Collection is manual-only: no scheduler and no `scheduled` job mode. See the collector
+plan for details.
 
 ## Post-cutover
 
@@ -69,6 +71,7 @@ was removed on 2026-11-12.
 | Document | Use |
 |---|---|
 | [notes/SECURITY-AND-PROJECT-HEALTH.md](notes/SECURITY-AND-PROJECT-HEALTH.md) | Security, code quality, operational health, and handoff reminders |
+| [notes/STRUCTURE-AUDIT.md](notes/STRUCTURE-AUDIT.md) | Layout audit, dead-code/clutter cleanup, invariants, and open structure findings |
 
 ## Layout
 
@@ -81,5 +84,5 @@ docs/
   DESIGN.md
   plans/       COLLECTOR-INTEGRATION-PLAN.md, USER-DASHBOARD-SETTINGS-PLAN.md
   reference/   public_data_collector_agent_integration_guide.md
-  notes/       SECURITY-AND-PROJECT-HEALTH.md
+  notes/       SECURITY-AND-PROJECT-HEALTH.md, STRUCTURE-AUDIT.md
 ```

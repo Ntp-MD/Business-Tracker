@@ -10,6 +10,8 @@ baseline-shots/
 legacy/assets/*.jpg
 sessions/
 __pycache__/
+.ruff_cache/
+.pytest_cache/
 # Supabase secrets (service role key, owner uuid)
 .env.local
 .env

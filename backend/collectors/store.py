@@ -404,21 +404,3 @@ def _save_data(
     _post("collector_item_links", link_rows, "record_id,item_id", resolution="ignore-duplicates")
 
     return stats
-
-
-def load_state(connector_id: str, keyword: str) -> dict | None:
-    if not db.configured():
-        return None
-    user = db.user_id()
-    rows = (
-        db._request(
-            "GET",
-            "collector_state?select=*"
-            f"&user_id=eq.{quote(user)}"
-            f"&connector_id=eq.{quote(connector_id)}"
-            f"&scope_key=eq.{quote(scope_key(keyword))}"
-            "&limit=1",
-        )
-        or []
-    )
-    return rows[0] if rows else None
