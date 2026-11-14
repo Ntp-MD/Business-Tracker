@@ -20,7 +20,7 @@ package 9 was implemented locally on 2026-11-14.
 |---|---|---|---|
 | 1 | Live GDELT sample | **Blocked.** Every request from this network returns `HTTP 429 Too Many Requests`; rechecked 2026-11-14 and it is unchanged after the 2026-11-13 record. Mapping, gate, and one-retry behavior are covered by unit tests only. | Retry `python -m backend.collectors.dry_run --connector gdelt_doc --keyword SEO --show-sample 20` from a network GDELT does not throttle. Review the sample before trusting writes. |
 | 2 | First real collect run | **Not run, and not runnable as noted.** `COLLECTOR_WRITE_ENABLED=1` was recorded in a local `.env.local` (not committed), but on 2026-11-14 that file is absent from this checkout and no worker process is running. | Owner restores `.env.local` with real Supabase credentials, starts the worker, then uses **Collect** in Settings or waits for the 24-hour schedule. Set `COLLECTOR_WRITE_ENABLED=0` to pause. |
-| 3 | Cancellation during work | **Not implemented.** The worker checks `cancel_requested` only before a job starts. | Needs a collector/API change; separate scope. |
+| 3 | Cancellation during work | **Design proposed 2026-11-14; not implemented.** The worker checks `cancel_requested` once before starting, and the collector keeps running if the request is dropped. See [Cancellation during work](#cancellation-during-work--design-proposed-2026-11-14). | Owner approves the additive payload field and partial-write policy; implementation is a separate task. |
 | 4 | Versioned backup of collector tables | **Not implemented by decision.** Existing JSON/CSV item export remains the backup; collector rows are reproducible from the source. | Revisit only if the owner wants collector records, links, and state restorable. |
 | 5 | Render API | **Still live.** `https://social-tracker-api.onrender.com/` returned 200 again on 2026-11-14 06:56 UTC (`server: uvicorn`). | Disable it in the Render dashboard (owner; no credentials in this repo). |
 | 6 | AI export (package 9) | **Implemented locally 2026-11-14.** The Items page offers active rows matching the current filters as CSV, plus a Markdown guide and sample prompt. No schema or API-contract change; selected rows, imported AI results, and automatic provider calls remain out of scope. | Owner reviews the files; deploy only with the approval required by `AGENTS.md`. |
@@ -176,6 +176,81 @@ and disposable data; record its results separately from the local test suite.
 **Acceptance:** focused tests simulate owner mismatch, failed HTTP calls, long-running
 work, cancellation, and restart without live services. Worker typecheck passes. Lease
 or job schema changes require separate approval before implementation or application.
+
+### Cancellation during work — design proposed 2026-11-14
+
+Status: **proposed, not implemented.** This is status item 3. No API, collector, worker,
+or schema change is authorized until the owner approves the contract items below.
+
+**Current behavior.** `apps/worker/src/index.ts` checks `jobs.cancel_requested` once,
+after claiming and before calling `POST /api/collect`. A running request is never checked
+again. Dropping the HTTP request would not stop `backend/collectors/dry_run.py`, and
+`backend/collectors/store.py` could still write records, items, links, state, and source
+status. The job row allows the terminal status `cancelled`.
+
+**Proposed first version: cooperative checkpoints in the collector.**
+
+1. The worker adds the claimed `job_id` (positive integer) to the collect payload it sends
+   to `/api/collect`. The strict validator in `backend/collectors/job.py` accepts that
+   optional field; all other unknown fields stay rejected.
+2. `/api/collect` passes a `cancel_check` callback into the dry run. The callback reads
+   the owner-scoped `jobs` row by `id` and `user_id` and returns `cancel_requested`. It is
+   throttled to at most one query every 2 seconds and returns false when Supabase is not
+   configured, so the CLI and dry runs keep working.
+3. The collector checks cancellation before the provider fetch, after the quality gate,
+   before persistence, and between persistence stages. Cancellation applies at the next
+   checkpoint, not mid-HTTP and not mid-request.
+4. If cancelled before persistence, nothing is written. If cancelled during persistence,
+   the current table write finishes and the remaining stages stop. In both cases the run
+   returns its counters without advancing `collector_state` or `source_status`, because a
+   cancelled run is not a source success or failure.
+5. The worker treats a `{cancelled: true, counters}` response as terminal: it sets the job
+   to `cancelled` with a short `error` note (for example "cancelled; 12 written; rerun is
+   safe") and does not retry it. A cancellation requested before start keeps the existing
+   terminal behavior.
+
+**Why not abort the HTTP request.** The local server is threaded, but aborting the client
+request would leave the collector's thread writing to Supabase while the job claims to be
+cancelled. Job status and stored data would disagree, and counters would be lost.
+Cancellation state stays in Supabase, so it also survives an API restart; no local cancel
+endpoint or in-memory flag is added.
+
+**Partial-write policy.** Collector writes are idempotent upserts (`resolution=merge-duplicates`
+or `ignore-duplicates`); no stage deletes unrelated rows. A rerun after a cancelled run is
+therefore safe and refreshes mutable metrics. Records written before cancellation may
+exist without their item/link stage; a rerun completes them. Archived and trashed items
+are never relinked or overwritten by this path. The job row, not source health, records the
+cancelled outcome; `collector_state.cursor` is not advanced.
+
+**Contract items needing owner approval**
+
+1. Add optional `job_id` to the collect payload and worker request. Old servers reject the
+   field, so update the Python server before the worker.
+2. Accept checkpoint semantics: cancellation is observed within one provider request or
+   persistence stage, not immediately. Worst case is two provider timeouts plus the retry
+   pause (about 36 seconds) and one stage.
+3. Accept the partial-write policy above: stop at the next stage boundary, keep existing
+   upserts, leave state and source status unchanged, and require a rerun for completion.
+4. Allow the collector to read the owner-scoped `jobs` row at most once every 2 seconds
+   during a collect run.
+
+**Verification for the implementation task**
+
+- Fixture tests with a fake cancel flag: cancelled before fetch, after gate, before
+  persistence, and between persistence stages; assert no write, no state advance, and
+  counters returned.
+- Payload validation: accepts a positive `job_id`, rejects malformed values, and still
+  rejects unknown fields.
+- Worker tests with mocked fetch/Supabase: a cancelled response sets `cancelled`, records
+  counters, and never schedules a retry; no flag still sets `done`; pre-start cancellation
+  is unchanged. Extract the run/poll helpers so the worker can be tested without starting
+  `main()`.
+- Regression: dry-run CLI, normal collect, retry/lease behavior, and web export reads stay
+  unchanged. Automated tests never touch Supabase.
+
+**Out of scope:** immediate abort of an in-flight provider call, per-record cancellation,
+progress percentages and heartbeat, lease/retry redesign (package 4), clearing
+`cancel_requested` after a terminal state, and UI changes.
 
 ### 5. Prepare one approved source — repeat per source
 
