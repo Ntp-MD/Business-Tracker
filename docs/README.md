@@ -26,19 +26,13 @@ the remaining plan, post-cutover checks, and notes.
 Google owner sign-in and owner-only authorization are implemented locally. Deployment,
 Supabase Google-provider configuration, and end-to-end OAuth verification are pending.
 
-The AI analysis export (collector plan package 9) is implemented locally on 2026-11-14:
-the Items page can download filtered active rows as CSV plus a Markdown guide and prompt.
-It is not deployed and still needs owner review before the deploy approval.
-
-Cancellation during work (collector plan item 3) is also implemented locally on
-2026-11-14: collect jobs check the owner-scoped cancel flag at checkpoints and stop at a
-stage boundary without advancing collector state or source health. It needs a live cancel
-test and has not been deployed.
-
-| Plan | Status |
+| Plan | What is left |
 |---|---|
-| [plans/COLLECTOR-INTEGRATION-PLAN.md](plans/COLLECTOR-INTEGRATION-PLAN.md) | **Consolidated backlog and status.** Collector integration, open items, and the AI analysis export implemented locally |
-| [plans/USER-DASHBOARD-SETTINGS-PLAN.md](plans/USER-DASHBOARD-SETTINGS-PLAN.md) | **Implemented 2026-11-13.** User menu, Account section, public and mock states |
+| [plans/COLLECTOR-INTEGRATION-PLAN.md](plans/COLLECTOR-INTEGRATION-PLAN.md) | **Open collector work.** GDELT live sample and first write run, cancel control and live test, deploy, source-health gaps, mid-job progress, backup decision, Render, RLS history, monitoring, recurring schedule, next source |
+| [plans/USER-DASHBOARD-SETTINGS-PLAN.md](plans/USER-DASHBOARD-SETTINGS-PLAN.md) | **Implemented 2026-11-13.** Only the menu decisions remain: editing scope, public/mock confirmation, duplicate sign-out, deployment check |
+
+Local-only on 2026-11-14 (not deployed): the AI analysis export and cancellation
+checkpoints. See the collector plan for the exact next steps.
 
 ## Post-cutover
 
@@ -47,14 +41,13 @@ Migration completed 2026-11-11:
 - Vercel variants: `mockup` (fixtures), `prod` (writes), `live` (read-only, same Supabase) — see `docs/DEPLOY.md`
 - Phase 3/4 parity done: quick dates, page size, select-all, archive/terms search,
   `Refresh views` without a keyword
-- Monitor production through 2026-11-18
-- Render API still responds at `social-tracker-api.onrender.com`; owner action: disable it
-  in the Render dashboard (no credentials in this repo)
 - Rollback: git tag `pre-next-migration` and the previous Vercel deployment
+- Open ops actions (Render API, monitoring window, restore drill) are tracked in the
+  collector plan, not duplicated here.
 
-Collector plan phases: freeze scope → normalization/persistence → future adapters (GDELT/
-Bluesky if access checks pass) → Thailand Trends/channel feeds → recurring collection.
-Hacker News was removed on 2026-11-12.
+Collector progress: framework, persistence, and the GDELT adapter are implemented locally;
+the live sample and first write run are blocked by GDELT access and local credentials. The
+next source is undecided; Hacker News was removed on 2026-11-12.
 
 ## Reference input
 
