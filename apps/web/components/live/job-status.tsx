@@ -48,6 +48,10 @@ export function JobStatus({ jobId }: { jobId: number }) {
       : job.status === "queued"
         ? "Worker online — waiting for it to claim the job."
         : "";
+  const cancelHint =
+    job.status === "queued" || job.status === "running"
+      ? "Cancel from Settings → Recent collect jobs."
+      : "";
 
   return (
     <div
@@ -59,6 +63,7 @@ export function JobStatus({ jobId }: { jobId: number }) {
       {job.total > 0 ? ` · ${job.progress}/${job.total}` : ""}
       {job.error ? ` · ${job.error}` : ""}
       {hint ? <div>{hint}</div> : null}
+      {cancelHint ? <div>{cancelHint}</div> : null}
     </div>
   );
 }

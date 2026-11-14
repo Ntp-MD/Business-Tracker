@@ -104,17 +104,28 @@ export async function getItem(id: string): Promise<Item | null> {
 }
 
 export async function getSourceStatus(): Promise<
-  Record<string, { ok: boolean; message: string; at: string }>
+  Record<string, { ok: boolean; message: string; at: string; count: number }>
 > {
   const { data, error } = await supabaseAdmin()
     .from(sourceStatusTable())
-    .select("source,ok,error,checked_at");
+    .select("source,ok,error,checked_at,count");
   if (error) throw new Error(`source_status: ${error.message}`);
   return Object.fromEntries(
     (data ?? []).map(
-      (row: { source: string; ok: boolean; error: string | null; checked_at: string }) => [
+      (row: {
+        source: string;
+        ok: boolean;
+        error: string | null;
+        checked_at: string;
+        count: number | null;
+      }) => [
         row.source,
-        { ok: row.ok, message: row.error ?? "", at: row.checked_at },
+        {
+          ok: row.ok,
+          message: row.error ?? "",
+          at: row.checked_at,
+          count: row.count ?? 0,
+        },
       ],
     ),
   );

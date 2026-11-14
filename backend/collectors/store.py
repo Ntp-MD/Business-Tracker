@@ -62,6 +62,27 @@ def job_cancel_check(job_id: int, interval: float = 2.0) -> Callable[[], bool]:
     return check
 
 
+def job_progress(job_id: int, total: int = 4) -> Callable[[int], None]:
+    """Best-effort `jobs.progress` writer for the job status UI.
+
+    Uses the existing progress/total columns; failures never affect the run.
+    """
+
+    def report(step: int) -> None:
+        if not db.configured():
+            return
+        try:
+            db._request(
+                "PATCH",
+                f"jobs?id=eq.{int(job_id)}&user_id=eq.{quote(db.user_id())}",
+                {"progress": max(0, min(int(step), total)), "total": total},
+            )
+        except Exception:  # noqa: BLE001 - progress is best effort
+            return
+
+    return report
+
+
 def _check_cancel(cancel_check: Callable[[], bool] | None, counters: dict) -> None:
     if cancel_check is not None and cancel_check():
         raise CancelledRun(counters)

@@ -507,6 +507,25 @@ class StoreTests(unittest.TestCase):
         store.db._request = boom
         self.assertFalse(store.job_cancel_check(7, interval=0)())
 
+    def test_job_progress_writes_bounded_steps(self):
+        report = store.job_progress(7)
+        report(9)
+
+        method, path, payload, _ = self.calls[-1]
+        self.assertEqual(method, "PATCH")
+        self.assertIn("id=eq.7", path)
+        self.assertIn("user_id=eq.user-1", path)
+        self.assertEqual(payload, {"progress": 4, "total": 4})
+
+    def test_job_progress_survives_write_failure(self):
+        report = store.job_progress(7)
+
+        def boom(*_args, **_kwargs):
+            raise RuntimeError("offline")
+
+        store.db._request = boom
+        report(2)
+
 
 class DryRunCancellationTests(unittest.TestCase):
     def setUp(self):
@@ -524,7 +543,7 @@ class DryRunCancellationTests(unittest.TestCase):
         self.fetched.append(keyword)
         return [raw()]
 
-    def run_dry(self, cancel_check, directory):
+    def run_dry(self, cancel_check, directory, **kwargs):
         with contextlib.redirect_stdout(io.StringIO()):
             return dry_run.run(
                 "test_search",
@@ -533,6 +552,7 @@ class DryRunCancellationTests(unittest.TestCase):
                 pathlib.Path(directory),
                 0,
                 cancel_check=cancel_check,
+                **kwargs,
             )
 
     def test_cancel_before_fetch_skips_provider_and_report(self):
@@ -565,6 +585,15 @@ class DryRunCancellationTests(unittest.TestCase):
 
         self.assertFalse(summary["cancelled"])
         self.assertEqual(summary["counters"]["accepted"], 1)
+
+    def test_progress_reports_fetch_gate_and_done(self):
+        steps = []
+
+        with tempfile.TemporaryDirectory() as tmp:
+            summary = self.run_dry(lambda: False, tmp, progress=steps.append)
+
+        self.assertFalse(summary["cancelled"])
+        self.assertEqual(steps, [0, 1, 2, 4])
 
 
 if __name__ == "__main__":

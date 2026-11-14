@@ -67,8 +67,8 @@ export async function runJob(job: JobLike, attempts: number, deps: RunnerDeps): 
     await deps.patch(job.id, {
       status: "done",
       finished_at: new Date().toISOString(),
-      progress: 1,
-      total: 1,
+      progress: job.kind === "collect" ? 4 : 1,
+      total: job.kind === "collect" ? 4 : 1,
       error: out.errors?.length ? out.errors.join(" · ").slice(0, 500) : null,
       lease_owner: null,
       lease_until: null,

@@ -75,6 +75,22 @@ export async function collectProfile(id: string): Promise<void> {
   redirect(`/live/settings?collect=${keywords.length}`);
 }
 
+export async function cancelJob(form: FormData): Promise<void> {
+  assertWritable();
+  const id = Number(form.get("id"));
+  if (!Number.isInteger(id) || id < 1) redirect("/live/settings?error=job");
+  const { error } = await supabaseAdmin()
+    .from("jobs")
+    .update({ cancel_requested: true })
+    .eq("id", id)
+    .eq("user_id", userId())
+    .eq("kind", "collect")
+    .in("status", ["queued", "running"]);
+  if (error) throw new Error(error.message);
+  revalidatePath("/live/settings");
+  redirect(`/live/settings?cancel=${id}`);
+}
+
 type ImportItem = {
   keyword?: string;
   source?: string;

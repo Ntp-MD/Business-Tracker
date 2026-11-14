@@ -1379,3 +1379,9 @@ input[type="file"]::file-selector-button{
   white-space:pre-wrap;
   overflow-wrap:anywhere;
 }
+.job-error{
+  max-width:320px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}

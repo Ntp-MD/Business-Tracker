@@ -1,19 +1,36 @@
 import { isOwner } from "@/lib/auth/owner";
 import { getCounts } from "@/lib/data/counts";
+import { type CollectJob, listCollectJobs } from "@/lib/data/jobs";
 import { getSummary, sourceLabel } from "@/lib/data/live";
 import { createSupabaseServerClient } from "@/lib/supabase/ssr";
 
-import { collectProfile, createProfile, deleteProfile, importItems, pruneOld } from "./actions";
+import {
+  cancelJob,
+  collectProfile,
+  createProfile,
+  deleteProfile,
+  importItems,
+  pruneOld,
+} from "./actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ collect?: string }>;
+  searchParams: Promise<{ collect?: string; cancel?: string; error?: string }>;
 }) {
   const sp = await searchParams;
   const [summary, counts] = await Promise.all([getSummary(), getCounts()]);
+
+  let jobs: CollectJob[] = [];
+  let jobsUnavailable = false;
+  try {
+    jobs = await listCollectJobs(5);
+  } catch {
+    // The jobs migration may not be applied yet; keep the rest of Settings usable.
+    jobsUnavailable = true;
+  }
 
   let accountName = "—";
   let accountEmail = "—";
@@ -135,6 +152,64 @@ export default async function SettingsPage({
             Save profile
           </button>
         </form>
+      </div>
+
+      <div className="card" style={{ marginTop: 12 }}>
+        <div className="card-head">
+          <h3>Recent collect jobs</h3>
+          <span className="chart-note">Latest 5</span>
+        </div>
+        {sp.cancel ? (
+          <p className="account-note">
+            Cancellation requested for job #{sp.cancel}. The worker stops at its next checkpoint.
+          </p>
+        ) : null}
+        {sp.error === "job" ? <p className="status err">Invalid job id.</p> : null}
+        {jobsUnavailable ? (
+          <p className="status err">
+            Job history is unavailable right now. Check the jobs migration and Supabase connection.
+          </p>
+        ) : jobs.length ? (
+          <div className="tbl-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Job</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Progress</th>
+                  <th scope="col">Error</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {jobs.map((job) => (
+                  <tr key={job.id}>
+                    <td>#{job.id}</td>
+                    <td>{job.status}</td>
+                    <td>{job.total > 0 ? `${job.progress}/${job.total}` : "—"}</td>
+                    <td className="job-error" title={job.error ?? undefined}>
+                      {job.error ?? "—"}
+                    </td>
+                    <td>
+                      {job.status === "queued" || job.status === "running" ? (
+                        <form action={cancelJob}>
+                          <input type="hidden" name="id" value={job.id} />
+                          <button className="mini-btn danger" type="submit">
+                            Cancel
+                          </button>
+                        </form>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="empty">No collect jobs yet.</div>
+        )}
       </div>
 
       <div className="card" style={{ marginTop: 12 }}>

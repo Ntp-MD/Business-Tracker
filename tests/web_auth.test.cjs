@@ -212,3 +212,102 @@ test("password sign-in rejects non-owner accounts and clears the session", async
   await assert.rejects(signInWithPassword(form), /REDIRECT:\/live/);
   assert.equal(signedOut, 1);
 });
+
+test("cancelJob requests cancellation for the owner's active job", async () => {
+  process.env.SUPABASE_USER_ID = "owner-id";
+  const calls = [];
+  const chain = {
+    update: (body) => {
+      calls.push(["update", body]);
+      return chain;
+    },
+    eq: (column, value) => {
+      calls.push(["eq", column, value]);
+      return chain;
+    },
+    in: (column, values) => {
+      calls.push(["in", column, values]);
+      return { error: null };
+    },
+  };
+  const { cancelJob } = load("apps/web/app/live/settings/actions.ts", {
+    "next/cache": { revalidatePath: () => {} },
+    "next/navigation": {
+      redirect: (url) => {
+        throw new Error(`REDIRECT:${url}`);
+      },
+    },
+    "@/lib/data/jobs": { createCollectJob: async () => 1 },
+    "@/lib/supabase/server": {
+      supabaseAdmin: () => ({
+        from: (table) => {
+          calls.push(["from", table]);
+          return chain;
+        },
+      }),
+    },
+    "@/lib/variant": { assertWritable: () => {} },
+  });
+  const form = new FormData();
+  form.set("id", "12");
+  await assert.rejects(cancelJob(form), /REDIRECT:\/live\/settings\?cancel=12/);
+  assert.deepEqual(calls, [
+    ["from", "jobs"],
+    ["update", { cancel_requested: true }],
+    ["eq", "id", 12],
+    ["eq", "user_id", "owner-id"],
+    ["eq", "kind", "collect"],
+    ["in", "status", ["queued", "running"]],
+  ]);
+});
+
+test("cancelJob rejects invalid ids before touching the database", async () => {
+  const calls = [];
+  const { cancelJob } = load("apps/web/app/live/settings/actions.ts", {
+    "next/cache": { revalidatePath: () => {} },
+    "next/navigation": {
+      redirect: (url) => {
+        throw new Error(`REDIRECT:${url}`);
+      },
+    },
+    "@/lib/data/jobs": { createCollectJob: async () => 1 },
+    "@/lib/supabase/server": {
+      supabaseAdmin: () => ({
+        from: (table) => {
+          calls.push(table);
+          return {};
+        },
+      }),
+    },
+    "@/lib/variant": { assertWritable: () => {} },
+  });
+  const form = new FormData();
+  form.set("id", "not-a-number");
+  await assert.rejects(cancelJob(form), /REDIRECT:\/live\/settings\?error=job/);
+  assert.deepEqual(calls, []);
+});
+
+test("cancelJob is blocked on read-only deployments", async () => {
+  const { cancelJob } = load("apps/web/app/live/settings/actions.ts", {
+    "next/cache": { revalidatePath: () => {} },
+    "next/navigation": {
+      redirect: (url) => {
+        throw new Error(`REDIRECT:${url}`);
+      },
+    },
+    "@/lib/data/jobs": { createCollectJob: async () => 1 },
+    "@/lib/supabase/server": {
+      supabaseAdmin: () => {
+        throw new Error("should not touch the database");
+      },
+    },
+    "@/lib/variant": {
+      assertWritable: () => {
+        throw new Error("Read-only deployment: writes are disabled");
+      },
+    },
+  });
+  const form = new FormData();
+  form.set("id", "12");
+  await assert.rejects(cancelJob(form), /Read-only deployment/);
+});

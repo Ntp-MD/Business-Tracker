@@ -67,3 +67,26 @@ export async function getJob(id: number) {
     },
   };
 }
+
+export type CollectJob = {
+  id: number;
+  status: string;
+  progress: number;
+  total: number;
+  error: string | null;
+  created_at: string;
+};
+
+export async function listCollectJobs(limit = 5): Promise<CollectJob[]> {
+  const userId = process.env.SUPABASE_USER_ID;
+  if (!userId) return [];
+  const { data, error } = await supabaseAdmin()
+    .from("jobs")
+    .select("id,status,progress,total,error,created_at")
+    .eq("user_id", userId)
+    .eq("kind", "collect")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw new Error(error.message);
+  return (data ?? []) as CollectJob[];
+}

@@ -73,6 +73,8 @@ test("collect jobs send the job id and the write switch", async () => {
   assert.equal(requests[0].body.dry_run, false);
   assert.equal(requests[0].body.connector_id, "gdelt_doc");
   assert.equal(patches[0].body.status, "done");
+  assert.equal(patches[0].body.progress, 4);
+  assert.equal(patches[0].body.total, 4);
   assert.equal(patches[0].body.lease_owner, null);
 });
 

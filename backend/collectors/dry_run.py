@@ -74,6 +74,7 @@ def run(
     write: bool = False,
     item_keyword: str | None = None,
     cancel_check: Callable[[], bool] | None = None,
+    progress: Callable[[int], None] | None = None,
 ) -> dict:
     connector = get_connector(connector_id)
     if not connector.enabled:
@@ -105,17 +106,26 @@ def run(
         "counters": GateOutcome([], [], [], 0).counters(0),
         "cancelled": False,
     }
+
+    def mark(step: int) -> None:
+        if progress is not None:
+            progress(step)
+
+    mark(0)
     if cancel_check is not None and cancel_check():
         summary["cancelled"] = True
         print(json.dumps(summary, ensure_ascii=False))
         return summary
 
     fetched = adapter.fetch(keyword, limit, connector)
+    mark(1)
     outcome = gate(fetched, connector)
     counters = outcome.counters(len(fetched))
+    mark(2)
     if cancel_check is not None and cancel_check():
         summary["cancelled"] = True
     elif save_accepted is not None:
+        mark(3)
         try:
             counters = save_accepted(
                 connector,
@@ -127,6 +137,8 @@ def run(
         except CancelledRun as exc:
             counters = exc.counters or counters
             summary["cancelled"] = True
+    if not summary["cancelled"]:
+        mark(4)
     summary["counters"] = counters
 
     day = datetime.now(timezone.utc).strftime("%Y-%m-%d")

@@ -29,37 +29,40 @@ and its approval list. Status history lives here instead of a separate notes fil
 
 ### B. Finish and deploy the two local features
 
-3. **Cancellation — implemented at the collector and worker, no way to request it yet.**
-   The worker sends the claimed job id; the collector checks the owner-scoped
-   `jobs.cancel_requested` at checkpoints and stops at a stage boundary without advancing
-   `collector_state` or `source_status`; the worker marks the job `cancelled` and does not
-   retry (2026-11-14, fixture tests only).
-   Gap: no page, endpoint, or action writes `cancel_requested`; today it requires a manual
-   Supabase update. UI was out of scope for the first implementation.
-   Next: decide on a cancel control (small UI action or documented manual procedure), then
-   test a real cancel against a running worker.
+3. **Cancellation — implemented locally; live run not tested.**
+   Settings now lists the latest collect jobs and offers **Cancel** for queued or running
+   ones; that action sets `jobs.cancel_requested` for the owner's job. The worker sends the
+   claimed job id, the collector checks the flag at checkpoints and stops at a stage
+   boundary without advancing `collector_state` or `source_status`, and the worker marks
+   the job `cancelled` without retrying (2026-11-14, fixture tests only).
+   Next: run a live cancel with a worker and confirm the job turns `cancelled`, the row
+   stops progressing, and source health stays unchanged.
 
 4. **Deploy the local work — not deployed.**
-   The AI analysis export and cancellation checkpoints are local commits only. The export
-   is read-only; cancellation adds an optional `job_id` field to `/api/collect`.
+   The AI analysis export, the cancel control, source-health states, and job progress are
+   local commits only. The export is read-only; cancellation adds an optional `job_id`
+   field to `/api/collect` and uses the existing jobs columns.
    Next: owner approves push/deploy. Update the Python server before the worker because an
    old server rejects the new field. Smoke `/live/items` export (filters, empty result,
-   guide); the cancel smoke depends on the control decision in item 3.
+   guide), one Settings cancel, and the progress/health labels.
 
 ### C. Known gaps in shipped collector work
 
 5. **Source health is partial.**
-   [`sources/page.tsx`](../../apps/web/app/live/sources/page.tsx) lists only sources that
-   already have items and shows last OK/error time and message. It does not show configured
-   sources with zero items, distinct empty/blocked/rate-limited/parsing/stale states, or
-   accepted/rejected counts by reason.
-   Next: approve the health contract and implement the missing states and counts.
+   [`sources/page.tsx`](../../apps/web/app/live/sources/page.tsx) now lists configured
+   sources even with zero items and labels OK, empty, rate-limited, blocked, parsing, error,
+   not-run, and stale (older than 48 hours). The count is the last run's written records.
+   Still missing: accepted/rejected counts by reason and per-source coverage. Reject counts
+   need a read view or schema decision because `source_status` stores only the written count.
+   Next: decide whether reject counts are needed; if yes, approve the view and contract.
 
-6. **Mid-job progress is not implemented.**
-   The worker writes `progress: 1, total: 1` only when a job finishes; `worker_status` is a
-   worker-level heartbeat, not job progress. [`job-status.tsx`](../../apps/web/components/live/job-status.tsx)
-   can display progress but receives only the final value.
-   Next: approve a progress update contract if long runs need it.
+6. **Mid-job progress — implemented locally; live check pending.**
+   The collector PATCHes the owner-scoped `jobs.progress`/`total` at fetch, gate, and
+   persistence checkpoints (0–4/4); the worker closes finished collects at 4/4.
+   [`job-status.tsx`](../../apps/web/components/live/job-status.tsx) and the Settings list
+   display it.
+   Next: confirm the steps during a live run and adjust the checkpoint count if it feels
+   noisy.
 
 7. **Collector-table backup — not implemented by decision.**
    The JSON/CSV item exports do not include `collector_records`, links, or state; collector
@@ -102,23 +105,24 @@ and its approval list. Status history lives here instead of a separate notes fil
   report writer, job validation, and Supabase persistence with targeted upserts; repeat-run
   keyword union, metric refresh, archive/trash preservation, and failure state are tested.
 - **Job execution:** owner-scoped claim, lease expiry recovery, bounded retries,
-  schedule-key dedupe, and check-before-start cancellation. Mid-job progress is item 6;
-  checkpoint cancellation is item 3.
+  schedule-key dedupe, check-before-start cancellation, and checkpoint progress (item 6).
+  Checkpoint cancellation is item 3.
 - **GDELT adapter:** keyword scope, language/date/spam/metric gate, one throttle retry, and
   unit tests. Live sample remains item 1.
-- **Source health (basic):** source cards show the last status. The existing JSON/CSV
-  exports cover `items` only, not a collector backup (item 7).
+- **Source health:** configured sources with zero items and derived OK/empty/rate-limited/
+  blocked/parsing/error/stale labels (item 5). Reject counts remain item 5; the existing
+  JSON/CSV exports cover `items` only, not a collector backup (item 7).
 - **Recurring schedule (code):** support exists but is disabled; enabling it is item 11.
 - **AI analysis export:** shipped locally on 2026-11-14. The Items page exports active rows
   matching the current filters as CSV with `item_id`, keyword, source, title, author, URL,
   canonical URL, score, metric, views, published, collected, and export times, plus a
   Markdown guide and prompt (`/api/export/analysis`, `format=guide`). The cap is 10,000
   rows; the filename and `X-TrendRail-Export-*` headers state rows/total/truncation.
-  Selected rows, schema changes, and AI-provider calls are out of scope. Verification: 19
-  web tests, web typecheck, biome lint, and `npm run build:web`.
-- **Cancellation checkpoints:** shipped locally on 2026-11-14 (item 3). Verification: the
-  62-test Python suite (including the cancellation cases), 5 worker tests, worker
-  typecheck, worker build, and Python compile.
+  Selected rows, schema changes, and AI-provider calls are out of scope.
+- **Cancellation and job UI:** shipped locally on 2026-11-14. Settings lists the latest
+  collect jobs with a Cancel action; the collector stops at checkpoints and reports
+  progress. Verification: 65 Python tests, 32 Node tests (27 web including export, cancel,
+  and health; 5 worker), web/worker typecheck, worker build, and Python compile.
 - **User menu and account settings:** implemented 2026-11-13; its open decisions live
   in [USER-DASHBOARD-SETTINGS-PLAN.md](USER-DASHBOARD-SETTINGS-PLAN.md).
 
