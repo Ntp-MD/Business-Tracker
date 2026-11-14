@@ -29,7 +29,7 @@ and its approval list. Status history lives here instead of a separate notes fil
 
 ### B. Finish and deploy the two local features
 
-3. **Cancellation — implemented locally; live run not tested.**
+3. **Cancellation — implemented and deployed; live run not tested.**
    Settings now lists the latest collect jobs and offers **Cancel** for queued or running
    ones; that action sets `jobs.cancel_requested` for the owner's job. The worker sends the
    claimed job id, the collector checks the flag at checkpoints and stops at a stage
@@ -38,25 +38,26 @@ and its approval list. Status history lives here instead of a separate notes fil
    Next: run a live cancel with a worker and confirm the job turns `cancelled`, the row
    stops progressing, and source health stays unchanged.
 
-4. **Deploy the local work — not deployed.**
-   The AI analysis export, the cancel control, source-health states, and job progress are
-   local commits only. The export is read-only; cancellation adds an optional `job_id`
-   field to `/api/collect` and uses the existing jobs columns.
-   Next: owner approves push/deploy. Update the Python server before the worker because an
-   old server rejects the new field. Smoke `/live/items` export (filters, empty result,
-   guide), one Settings cancel, and the progress/health labels.
+4. **Deployment — web app deployed; worker code is local.**
+   Vercel deployed 2026-11-14. Live export smoke passed: 324-row CSV with the expected
+   header and `X-TrendRail-Export-*` metadata, header-only results for an empty keyword and
+   `source=gdelt`, and a guide reporting 19 matching SEO rows with the 10,000-row cap.
+   The Python server and worker run on the owner's PC, so restart them to pick up checkpoint
+   cancellation and progress.
+   Next: test a live cancel and watch the Settings progress column with the worker running.
 
 ### C. Known gaps in shipped collector work
 
-5. **Source health is partial.**
+5. **Source health is partial but deployed.**
    [`sources/page.tsx`](../../apps/web/app/live/sources/page.tsx) now lists configured
    sources even with zero items and labels OK, empty, rate-limited, blocked, parsing, error,
    not-run, and stale (older than 48 hours). The count is the last run's written records.
+   Live `/live/sources` shows the zero-item GDELT card as Not run.
    Still missing: accepted/rejected counts by reason and per-source coverage. Reject counts
    need a read view or schema decision because `source_status` stores only the written count.
    Next: decide whether reject counts are needed; if yes, approve the view and contract.
 
-6. **Mid-job progress — implemented locally; live check pending.**
+6. **Mid-job progress — implemented and deployed; live check pending.**
    The collector PATCHes the owner-scoped `jobs.progress`/`total` at fetch, gate, and
    persistence checkpoints (0–4/4); the worker closes finished collects at 4/4.
    [`job-status.tsx`](../../apps/web/components/live/job-status.tsx) and the Settings list
@@ -113,13 +114,14 @@ and its approval list. Status history lives here instead of a separate notes fil
   blocked/parsing/error/stale labels (item 5). Reject counts remain item 5; the existing
   JSON/CSV exports cover `items` only, not a collector backup (item 7).
 - **Recurring schedule (code):** support exists but is disabled; enabling it is item 11.
-- **AI analysis export:** shipped locally on 2026-11-14. The Items page exports active rows
-  matching the current filters as CSV with `item_id`, keyword, source, title, author, URL,
-  canonical URL, score, metric, views, published, collected, and export times, plus a
+- **AI analysis export:** shipped and deployed on 2026-11-14. The Items page exports active
+  rows matching the current filters as CSV with `item_id`, keyword, source, title, author,
+  URL, canonical URL, score, metric, views, published, collected, and export times, plus a
   Markdown guide and prompt (`/api/export/analysis`, `format=guide`). The cap is 10,000
-  rows; the filename and `X-TrendRail-Export-*` headers state rows/total/truncation.
+  rows; the filename and `X-TrendRail-Export-*` headers state rows/total/truncation. Live
+  smoke: 324-row CSV, empty and `source=gdelt` header-only results, 19-row SEO guide.
   Selected rows, schema changes, and AI-provider calls are out of scope.
-- **Cancellation and job UI:** shipped locally on 2026-11-14. Settings lists the latest
+- **Cancellation and job UI:** shipped and deployed on 2026-11-14. Settings lists the latest
   collect jobs with a Cancel action; the collector stops at checkpoints and reports
   progress. Verification: 65 Python tests, 32 Node tests (27 web including export, cancel,
   and health; 5 worker), web/worker typecheck, worker build, and Python compile.
