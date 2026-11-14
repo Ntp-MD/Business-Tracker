@@ -72,36 +72,29 @@ and its approval list. Status history lives here instead of a separate notes fil
 
 ### D. Owner and operations actions
 
-8. **Render API is still live.**
-   `https://social-tracker-api.onrender.com/` returned 200 on 2026-11-14 06:56 UTC
-   (`server: uvicorn`). Owner action: disable it in the Render dashboard; no credentials
-   are in this repo.
+8. **Render API is still live, under a different workspace.**
+   `https://social-tracker-api.onrender.com/` still returns 200. The provided Render API
+   key is valid but sees only the **My Workspace** team and its `Mod-Vite` service; it has
+   no access to `social-tracker-api`, so nothing was suspended. Owner action: switch to the
+   workspace that owns `social-tracker-api` and suspend it there (or create a scoped key
+   from that workspace). Do not suspend `Mod-Vite`.
 
-9. **RLS and tables probed; migration history still unverified.**
-   2026-11-14 service-role selects confirmed `collector_records`, `collector_item_links`,
-   `collector_state`, `source_status`, and the jobs lease/schedule/progress columns exist.
-   An anon-key probe returned 0 rows for `items`, `jobs`, `collector_records`,
-   `collector_item_links`, `collector_state`, `source_status`, and `profiles`, while
-   `live_items` and `live_source_status` returned rows. This checks the public boundary,
-   not every authenticated-owner policy or the applied migration list.
-   Next: check the dashboard or a database connection for migration history and owner
-   policies.
+9. **Monitoring is automated; backups and the restore drill are not available.**
+   The scheduled **Health** workflow checks prod and live every 30 minutes, opens or
+   updates a GitHub issue on failure, and closes it on recovery; the last recorded run
+   succeeded on 2026-11-14T02:53Z. A 2026-11-14 snapshot also showed live `/api/health`
+   `{"ok":true,"items":{"active":324,...}}`, prod `/live` → 307 `/login`, live `/live` 200
+   and `/live/settings` → 307 `/live`, mockup `/` 200 and `/live` → 307 `/`.
+   The Supabase dashboard shows **LAST BACKUP: No backups**, so the quarterly restore
+   drill cannot run until a backup exists (manual dump or a plan with backups).
+   Still open: finish the 2026-11-18 window and run the drill once a backup is available.
 
-10. **Monitoring is automated; the restore drill needs access.**
-    The scheduled **Health** workflow checks prod and live every 30 minutes, opens or
-    updates a GitHub issue on failure, and closes it on recovery; the last recorded run
-    succeeded on 2026-11-14T02:53Z. A 2026-11-14 snapshot also showed live `/api/health`
-    `{"ok":true,"items":{"active":324,...}}`, prod `/live` → 307 `/login`, live `/live` 200
-    and `/live/settings` → 307 `/live`, mockup `/` 200 and `/live` → 307 `/`.
-    Still open: keep the 2026-11-18 window and run the quarterly restore drill when
-    database/backup access is available.
-
-11. **Recurring collection is coded but disabled.**
+10. **Recurring collection is coded but disabled.**
     The worker supports `COLLECT_SCHEDULE_HOURS`, active-job dedupe, and schedule keys;
     the default is `0`. Decide the host, interval, concurrency, offline behavior, and
     whether per-run local reports must be retained before enabling it.
 
-12. **Next source and existing-source policy need an owner decision.**
+11. **Next source and existing-source policy need an owner decision.**
     GDELT is the only approved new source. Choose the next candidate and its order; decide
     whether Google News and the Playwright ad collectors keep their current behavior or
     follow a separately approved policy.
@@ -119,6 +112,13 @@ and its approval list. Status history lives here instead of a separate notes fil
 - **Source health:** configured sources with zero items, derived OK/empty/rate-limited/
   blocked/parsing/error/stale labels, and owner-only accepted/rejected counters in `prod`
   (item 5). The existing JSON/CSV exports cover `items` only, not a collector backup (item 7).
+- **RLS and migration history (2026-11-14):** RLS is enabled on `items`, `jobs`, `profiles`,
+  `source_status`, `worker_status`, and all three collector tables. The only policies are
+  authenticated `ALL` policies with `user_id = auth.uid()` for items, profiles, source_status,
+  keyword_stats, and the collector tables; jobs and worker_status have no policies (service
+  role only). Anon reads return 0 rows; live views return rows. The `supabase_migrations`
+  schema does not exist, so there is no CLI-tracked migration history; the repo tables exist
+  and were applied manually.
 - **Recurring schedule (code):** support exists but is disabled; enabling it is item 11.
 - **AI analysis export:** shipped and deployed on 2026-11-14. The Items page exports active
   rows matching the current filters as CSV with `item_id`, keyword, source, title, author,

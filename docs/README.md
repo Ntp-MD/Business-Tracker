@@ -28,7 +28,7 @@ Supabase Google-provider configuration, and end-to-end OAuth verification are pe
 
 | Plan | What is left |
 |---|---|
-| [plans/COLLECTOR-INTEGRATION-PLAN.md](plans/COLLECTOR-INTEGRATION-PLAN.md) | **Open collector work.** GDELT live sample and first write run, real-provider cancel/progress check, backup decision, Render, migration history, monitoring window, recurring schedule, next source |
+| [plans/COLLECTOR-INTEGRATION-PLAN.md](plans/COLLECTOR-INTEGRATION-PLAN.md) | **Open collector work.** GDELT live sample and first write run, real-provider cancel/progress check, backup decision, Render (different workspace), backups/restore drill, monitoring window, recurring schedule, next source |
 | [plans/USER-DASHBOARD-SETTINGS-PLAN.md](plans/USER-DASHBOARD-SETTINGS-PLAN.md) | **Implemented 2026-11-13.** Only the menu decisions remain: editing scope, public/mock confirmation, duplicate sign-out, deployment check |
 
 Deployed to Vercel on 2026-11-14: the AI analysis export, cancel control, source health
