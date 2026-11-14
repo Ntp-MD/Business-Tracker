@@ -173,6 +173,12 @@ Settings **Collect** button and the worker's recurring schedule. Records, keywor
 links and state upsert by stable keys; rejected records are never stored. See
 `backend/collectors/`.
 
+`20261114000000_items_lineage.sql` was applied on 2026-11-14: `items.keyword_key` is
+generated for every row and collector writes fill `items.record_id`. After restoring old
+data, run `python scripts/backfill_record_ids.py` to relink rows that predate it. The unique
+`(user_id, keyword_key, canonical_url)` index is intentionally still disabled: five legacy
+pairs use `Nvidia` and `nvidia` for the same URL and need a data decision first.
+
 ## Backups and retention
 
 - Supabase is the source of truth. Check Dashboard → Database → Backups for the plan's

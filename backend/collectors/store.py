@@ -138,7 +138,7 @@ def _existing_items(user_id: str, keyword: str, urls: list[str]) -> dict[str, di
     rows = (
         db._request(
             "GET",
-            "items?select=id,canonical_url,deleted_at"
+            "items?select=id,canonical_url,deleted_at,record_id"
             f"&user_id=eq.{quote(user_id)}"
             f"&keyword=eq.{quote(keyword)}"
             f"&canonical_url={_in_list(urls)}",
@@ -179,10 +179,13 @@ def _metric(record: CollectorRecord) -> str | None:
     return record.signal_unit if record.signal_unit in {"views", "plays", "likes"} else None
 
 
-def _item_row(record: CollectorRecord, user_id: str, keyword: str) -> dict:
+def _item_row(
+    record: CollectorRecord, user_id: str, keyword: str, record_id: str | None = None
+) -> dict:
     return {
         "user_id": user_id,
         "keyword": keyword,
+        "record_id": record_id,
         "source": record.source,
         "url": record.url,
         "canonical_url": record.canonical_url,
@@ -347,7 +350,10 @@ def _save_data(
     new_rows: dict[str, dict] = {}
     for record in records:
         if record.canonical_url not in existing_items:
-            new_rows.setdefault(record.canonical_url, _item_row(record, user, keyword))
+            new_rows.setdefault(
+                record.canonical_url,
+                _item_row(record, user, keyword, record_ids.get(record.source_item_id)),
+            )
     inserted_items = _post(
         "items",
         list(new_rows.values()),
@@ -363,6 +369,20 @@ def _save_data(
         user, keyword, [record for record in records if record.canonical_url not in trashed]
     )
     _check_cancel(cancel_check, stats)
+
+    # Existing items created before the lineage migration get their record link filled in.
+    for record in records:
+        if record.canonical_url in trashed:
+            continue
+        row = existing_items.get(record.canonical_url)
+        record_id = record_ids.get(record.source_item_id)
+        item_id = item_ids.get(record.canonical_url)
+        if row is not None and row.get("record_id") is None and record_id and item_id:
+            db._request(
+                "PATCH",
+                f"items?id=eq.{quote(item_id)}&record_id=is.null",
+                {"record_id": record_id},
+            )
 
     link_rows = []
     for record in records:

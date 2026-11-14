@@ -498,6 +498,7 @@ class StoreTests(unittest.TestCase):
         self.assertEqual(item_call[2][0]["metric"], "views")
         self.assertEqual(item_call[2][0]["body"], "")
         self.assertEqual(item_call[2][0]["score"], 10)
+        self.assertEqual(item_call[2][0]["record_id"], "rec-1001")
         self.assertEqual(result["written"], 1)
         self.assertEqual(result["inserted"], 1)
         self.assertEqual(result["updated"], 0)
@@ -521,7 +522,12 @@ class StoreTests(unittest.TestCase):
 
     def test_existing_item_refreshes_metric_columns_only(self):
         self.existing_items = [
-            {"id": "item-x", "canonical_url": "https://example.com/story", "deleted_at": None}
+            {
+                "id": "item-x",
+                "canonical_url": "https://example.com/story",
+                "deleted_at": None,
+                "record_id": "rec-old",
+            }
         ]
 
         self.save()
@@ -535,6 +541,26 @@ class StoreTests(unittest.TestCase):
         self.assertEqual(patches[0][2], {"score": 10, "metric": "views"})
         self.assertIn("canonical_url=in.(", patches[0][1])
         self.assertIn("deleted_at=is.null", patches[0][1])
+
+    def test_existing_item_without_record_id_gets_lineage(self):
+        self.existing_items = [
+            {
+                "id": "item-x",
+                "canonical_url": "https://example.com/story",
+                "deleted_at": None,
+                "record_id": None,
+            }
+        ]
+
+        self.save()
+
+        lineage = [
+            call
+            for call in self.calls
+            if call[0] == "PATCH" and call[2] == {"record_id": "rec-1001"}
+        ]
+        self.assertEqual(len(lineage), 1)
+        self.assertIn("record_id=is.null", lineage[0][1])
 
     def test_metric_refresh_batches_equal_values(self):
         outcome = gate(

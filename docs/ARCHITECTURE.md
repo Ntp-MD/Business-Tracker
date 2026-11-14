@@ -12,9 +12,13 @@ handler in `backend/api/`, services in `backend/services/`, and process state in
 `backend/runtime.py`, behavior unchanged (79 Python tests and a live endpoint smoke).
 `python -m backend.collectors.worker` now owns `collect` jobs and runs them in-process
 (live GNews job verified with no local API running); the Node worker keeps `fetch` /
-`refresh_views` and the recurring schedule. Still open: porting the remaining legacy
-sources onto the contract, and applying the `record_id` / `keyword_key` migration
-(`supabase/migrations/20261114000000_items_lineage.sql`, drafted but **not applied**).
+`refresh_views` and the recurring schedule. The `items_lineage` migration was **applied
+2026-11-14**: `keyword_key` is populated for every row (no keyword variants collide),
+`items.record_id` exists, the collector projection writes it on insert and repairs existing
+linked rows, and `scripts/backfill_record_ids.py` filled the 13 pre-existing links. The
+unique `(user_id, keyword_key, canonical_url)` index stays disabled: 5 legacy pairs use
+`Nvidia` and `nvidia` for the same URL, so that cleanup is an owner decision. Still open:
+porting the remaining legacy sources onto the contract.
 
 ## 1. Principles
 
@@ -100,13 +104,15 @@ services.
 
 **Serving (denormalized projection):** `items` stays the UI row: one row per
 `(user_id, keyword, canonical_url)` with edit/archive/trash state, unique already enforced.
-It is a projection, not a second source of truth. Add, in one append-only migration:
+It is a projection, not a second source of truth. The append-only migration
+`20261114000000_items_lineage.sql` is applied (2026-11-14):
 
 - `items.record_id uuid null references collector_records(id)` + index, so every projected
-  row carries lineage and reconciliation is a join, not a guess.
-- `items.keyword_key text` = NFC, trim, collapse spaces, lowercase; unique
-  `(user_id, keyword_key, canonical_url)`; keep `keyword` for display. Today `SEO` and
-  `seo` would become two rows.
+  row carries lineage and reconciliation is a join, not a guess. The collector projection
+  fills it on insert and repairs null lineage for linked rows on the next run.
+- `items.keyword_key text` generated (trim, collapse spaces, lowercase); keep `keyword` for
+  display. The unique `(user_id, keyword_key, canonical_url)` index is still commented out:
+  five legacy pairs use `Nvidia` and `nvidia` for the same URL and must be resolved first.
 - `items (user_id, keyword, published desc) where deleted_at is null` for date sorting.
 
 **One writer:** collector jobs write `collector_records` and `collector_item_links`, then
