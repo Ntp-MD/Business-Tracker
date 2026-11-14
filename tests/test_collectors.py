@@ -12,6 +12,7 @@ import types
 import unittest
 from datetime import datetime, timezone
 from unittest.mock import patch
+from urllib.parse import parse_qs, urlparse
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "backend"))
 
@@ -89,6 +90,21 @@ class QualityTests(unittest.TestCase):
         outcome = self.gate_one(raw(title="泰国创业公司生态更新消息"))
         self.assertEqual(outcome.rejected[0].reason, "unsupported_language")
 
+    def test_rejects_declared_language_outside_the_connector(self):
+        # Latin-script Serbian must not pass as English; the provider knows the language.
+        outcome = self.gate_one(
+            raw(title="Blic story about a young man", raw_source_ref={"language": "Serbian"})
+        )
+        self.assertEqual(outcome.rejected[0].reason, "unsupported_language")
+
+    def test_declared_english_language_wins_over_script_guess(self):
+        outcome = self.gate_one(raw(raw_source_ref={"language": "English"}))
+        self.assertEqual(outcome.accepted[0].language, "en")
+
+    def test_declared_thai_language_is_accepted(self):
+        outcome = self.gate_one(raw(title="ข่าวธุรกิจออนไลน์วันนี้", raw_source_ref={"language": "Thai"}))
+        self.assertEqual(outcome.accepted[0].language, "th")
+
     def test_rejects_spam(self):
         outcome = self.gate_one(raw(title="Casino bonus crypto giveaway today"))
         self.assertEqual(outcome.rejected[0].reason, "spam")
@@ -138,7 +154,7 @@ class GdeltAdapterTests(unittest.TestCase):
                 {"title": "missing url"},
             ]
         )
-        self.assertIn("query=Thailand", url)
+        self.assertIn("query=%22Thailand%22", url)
         self.assertIn("maxrecords=10", url)
         self.assertEqual(len(records), 1)
         record = records[0]
@@ -174,6 +190,18 @@ class GdeltAdapterTests(unittest.TestCase):
         self.assertEqual(len(outcome.accepted), 1)
         self.assertEqual(outcome.accepted[0].language, "en")
 
+    def test_query_is_a_sanitized_exact_phrase(self):
+        with patch("collectors.gdelt.fetch_json", return_value={"articles": []}) as fake:
+            gdelt.fetch('digital marketing" OR sourcelang:serbian', 5, self.connector)
+        query = parse_qs(urlparse(fake.call_args[0][0]).query)["query"][0]
+        self.assertEqual(query, '"digital marketing OR sourcelang:serbian"')
+
+    def test_single_word_query_requires_repeated_mentions(self):
+        with patch("collectors.gdelt.fetch_json", return_value={"articles": []}) as fake:
+            gdelt.fetch("SEO", 5, self.connector)
+        query = parse_qs(urlparse(fake.call_args[0][0]).query)["query"][0]
+        self.assertEqual(query, '"SEO" repeat2:"SEO"')
+
     def test_retries_a_throttle_once(self):
         with (
             patch(
@@ -186,6 +214,18 @@ class GdeltAdapterTests(unittest.TestCase):
         self.assertEqual(records, [])
         self.assertEqual(fake.call_count, 2)
         sleep.assert_called_once()
+
+    def test_retries_a_transient_transport_error_once(self):
+        with (
+            patch(
+                "collectors.gdelt.fetch_json",
+                side_effect=[TransportError("handshake operation timed out"), {"articles": []}],
+            ) as fake,
+            patch("collectors.gdelt.time.sleep"),
+        ):
+            records = gdelt.fetch("x", 1, self.connector)
+        self.assertEqual(records, [])
+        self.assertEqual(fake.call_count, 2)
 
 
 class ReportTests(unittest.TestCase):
@@ -322,6 +362,8 @@ class StoreTests(unittest.TestCase):
     def fake_request(self, method, path, payload=None, prefer="", **kwargs):
         self.calls.append((method, path, payload, prefer))
         table = path.split("?")[0]
+        if method == "PATCH":
+            return None
         if method == "POST" and table in self.fail_on:
             raise RuntimeError(f"boom: {table}")
         if method == "GET":
@@ -411,12 +453,26 @@ class StoreTests(unittest.TestCase):
         self.save()
 
         self.assertEqual(self.posts("items", "ignore-duplicates"), [])
-        projection = self.posts("items", "merge-duplicates")[0][0]
-        self.assertEqual(
-            set(projection), {"user_id", "keyword", "canonical_url", "score", "metric"}
+        self.assertEqual(self.posts("items"), [])
+        patches = [
+            call for call in self.calls if call[0] == "PATCH" and call[1].startswith("items?")
+        ]
+        self.assertEqual(len(patches), 1)
+        self.assertEqual(patches[0][2], {"score": 10, "metric": "views"})
+        self.assertIn("canonical_url=in.(", patches[0][1])
+        self.assertIn("deleted_at=is.null", patches[0][1])
+
+    def test_metric_refresh_batches_equal_values(self):
+        outcome = gate(
+            [raw(), raw(source_item_id="1002", url="https://example.com/second")],
+            TEST_CONNECTOR,
+            now=NOW,
         )
-        self.assertEqual(projection["score"], 10)
-        self.assertEqual(projection["metric"], "views")
+        store._update_items("user-1", "Thailand", outcome.accepted)
+        patches = [call for call in self.calls if call[0] == "PATCH"]
+        self.assertEqual(len(patches), 1)
+        self.assertIn("example.com%2Fstory", patches[0][1])
+        self.assertIn("example.com%2Fsecond", patches[0][1])
 
     def test_trashed_item_is_not_relinked_or_refreshed(self):
         self.existing_items = [
@@ -431,6 +487,7 @@ class StoreTests(unittest.TestCase):
 
         self.assertEqual(self.posts("collector_item_links"), [])
         self.assertEqual(self.posts("items"), [])
+        self.assertEqual([call for call in self.calls if call[0] == "PATCH"], [])
 
     def test_success_updates_source_status(self):
         self.save()

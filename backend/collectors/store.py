@@ -197,15 +197,24 @@ def _item_row(record: CollectorRecord, user_id: str, keyword: str) -> dict:
     }
 
 
-def _projection_row(record: CollectorRecord, user_id: str, keyword: str) -> dict:
-    # Only mutable metric columns: never rewrite body/author/channel/archive/trash.
-    return {
-        "user_id": user_id,
-        "keyword": keyword,
-        "canonical_url": record.canonical_url,
-        "score": int(record.numeric_signal or 0),
-        "metric": _metric(record),
-    }
+def _update_items(user: str, keyword: str, records: list[CollectorRecord]) -> None:
+    """Refresh only the mutable metric columns of existing items.
+
+    A partial upsert cannot work here: PostgREST validates the proposed row, and the
+    items NOT NULL columns (source, url, ...) would be missing. Group rows by their new
+    values and PATCH each group instead, so a run costs one request per distinct value.
+    """
+    groups: dict[tuple[int, str | None], list[str]] = {}
+    for record in records:
+        key = (int(record.numeric_signal or 0), _metric(record))
+        groups.setdefault(key, []).append(record.canonical_url)
+    for (score, metric), urls in groups.items():
+        db._request(
+            "PATCH",
+            f"items?user_id=eq.{quote(user)}&keyword=eq.{quote(keyword)}"
+            f"&deleted_at=is.null&canonical_url={_in_list(urls)}",
+            {"score": score, "metric": metric},
+        )
 
 
 def _write_state(
@@ -350,11 +359,9 @@ def _save_data(
     item_ids.update({row["canonical_url"]: row["id"] for row in inserted_items})
     _check_cancel(cancel_check, stats)
 
-    projection: dict[str, dict] = {}
-    for record in records:
-        if record.canonical_url not in trashed:
-            projection.setdefault(record.canonical_url, _projection_row(record, user, keyword))
-    _post("items", list(projection.values()), "user_id,keyword,canonical_url")
+    _update_items(
+        user, keyword, [record for record in records if record.canonical_url not in trashed]
+    )
     _check_cancel(cancel_check, stats)
 
     link_rows = []

@@ -48,6 +48,11 @@ CONTROL_CHARS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 HTML_TAG = re.compile(r"<[^>]+>")
 SPACE = re.compile(r"\s+")
 
+# Providers that declare the original language (GDELT: "English", "Serbian", ...) are
+# trusted over the title-script heuristic: Latin-script Serbian/French must not pass as
+# English. An unlisted declared language is rejected instead of guessed.
+PROVIDER_LANGUAGES = {"english": "en", "thai": "th"}
+
 
 def clean_text(value: object) -> str:
     text = html.unescape(str(value or ""))
@@ -87,6 +92,14 @@ def detect_language(text: str) -> str:
     if latin and latin >= max(1, other):
         return "en"
     return "other"
+
+
+def record_language(raw: RawRecord, title: str) -> str | None:
+    """Declared provider language as a code, else the title-script guess."""
+    declared = str(raw.raw_source_ref.get("language") or "").strip().lower()
+    if declared:
+        return PROVIDER_LANGUAGES.get(declared)
+    return detect_language(title)
 
 
 def parse_timestamp(value: str | None) -> datetime | None:
@@ -161,8 +174,8 @@ def gate(
             rejected.append(Rejection(raw, "out_of_window"))
             continue
 
-        language = detect_language(title)
-        if language not in connector.languages:
+        language = record_language(raw, title)
+        if language is None or language not in connector.languages:
             rejected.append(Rejection(raw, "unsupported_language"))
             continue
 

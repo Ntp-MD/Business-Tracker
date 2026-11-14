@@ -9,42 +9,41 @@ and its approval list. Status history lives here instead of a separate notes fil
 
 ### A. Finish the GDELT pathway
 
-1. **GDELT live sample — reachable but throttled; sample too small and noisy.**
-   Access changed on 2026-11-14: the endpoint now answers `200` intermittently from this
-   network instead of always failing. Evidence from that day:
-   - `SEO`, `timespan=1d`, `maxrecords=100`: `200` with **2** articles; both passed the
-     gate (`accepted: 2`) and the report was appended to
-     `data/reports/collector-gdelt_doc-2026-11-14.jsonl`. One is a Serbian story
-     (`blic.rs`, provider language `Serbian`) that the title-script heuristic labels
-     `en`; the other is an English marketing-agency post (`pctechmag.com`, Uganda).
-   - `SEO`, `timespan=3d`, `maxrecords=250`: `200` with **22** articles. Only about four
-     are topical (two syndications of "From Years Without SEO Enquiries…", one
-     DesignRush placement, one mobile-app-development post); the rest are Korean,
-     Japanese, Serbian, Bulgarian, and French stories, so the bare `SEO` token also
-     matches unrelated pages.
-   - Bursts return `429 Too Many Requests` with a plain-text body. Requests 10–90 s
-     apart failed; one after about three minutes succeeded, and a later one after four
-     minutes still failed. The single 6-second retry in `gdelt.py` did not clear the
-     throttle in any run.
-   Blocker: a one-day window yields about two records per keyword, far below the 50–100
-   record review this plan requires, and the relevant share is low. Owner decisions
-   needed: keep manual cleanup for noisy writes, widen the window, and/or filter on
-   relevance and the provider's `language` field (a quality-gate change).
-   Next: agree those rules, then capture and review a 50–100 record sample across the
-   owner's keywords before trusting writes.
+1. **GDELT live sample — quality rules shipped; live access now throttled by the provider.**
+   The owner approved filtering before writes (2026-11-14), so the adapter and gate changed:
+   the query is an exact phrase, one-word keywords also require `repeat2` (the article must
+   mention the token twice), the provider's declared `language` wins over the script guess
+   (only `en`/`th` pass; an unlisted declared language is rejected), the HTTP timeout is
+   30 s, and a transient transport error is retried once. `QUALITY_RULES_VERSION` is
+   `2026-11-14.1`.
+   Offline replay of the earlier live 22-record payload through the new gate: 14 rejected
+   `unsupported_language` (Korean, Japanese, Serbian, French, Bulgarian), 8 English left;
+   those 8 still include bare-token noise, which `repeat2` targets.
+   The same afternoon the provider returned `429 Too Many Requests` for every new query
+   from this network (identical URLs that had answered `200` earlier still worked for a
+   while, then stopped). Requests 10 s–13 min apart all failed, so this is a provider-side
+   throttle, not an app error.
+   Next: when GDELT answers again, capture a 50–100 record sample across the owner's
+   keywords with the new query and review it before trusting a live write.
 
-2. **First real collect run — not started; writes stay off.**
-   `.env.local` is present with `COLLECTOR_WRITE_ENABLED=0`. On 2026-11-14 the full
-   worker → API → collector path was exercised with a local slow fixture and writes
-   disabled: a cancel job stopped at 2/4 with "0 written", and a normal job finished 4/4.
-   The test jobs were deleted. Rechecked 2026-11-14: `collector_state` has no rows, no
-   collect job is queued, and `items` still holds 324 active rows, so no collector write
-   has ever run here. `/api/health` reported `worker: null`, so the local API and worker
-   also need starting.
-   Remaining: resolve item 1's quality rules, set `COLLECTOR_WRITE_ENABLED=1`, queue a
-   real GDELT **Collect**, review the first batch, then set it back to `0` to pause.
-   Known risk: GDELT relevance is not in the gate, so off-topic articles can reach
-   `items`; the 22-record sample above shows that this is likely without a filter.
+2. **First real collect run — write path verified; live provider fetch still throttled.**
+   Because the provider blocked new queries, the 2026-11-14 verification stubbed only the
+   HTTP transport with a payload captured from a live `200` earlier that day; adapter
+   mapping, gate, worker, API, and Supabase writes ran for real. Results:
+   - Job 9 (`SEO`, manual, max 100) finished `done` 4/4 in one attempt: `collector_records`
+     1 (en), `collector_item_links` 1, one `items` row for keyword `SEO`, `collector_state`
+     `last_status: ok` with `fetched 2 · accepted 1 · rejected unsupported_language 1 ·
+     written 1`, and `source_status` `gdelt ok count 1`.
+   - Deployed `live` sees it: `/api/health` went 324 → **325** active, and the anon views
+     `live_items` / `live_source_status` return the GDELT row.
+   - Job 10 was cancelled at 2/4 with "cancelled; 0 written; rerun is safe"; counters and
+     state did not change.
+   That first write exposed a real bug: the item metric refresh used a partial PostgREST
+   upsert that violates the `items` NOT NULL columns. It now refreshes `score`/`metric`
+   with grouped `PATCH` requests, and the tests cover it.
+   `COLLECTOR_WRITE_ENABLED=1` is set in `.env.local` after verification; set it to `0` to
+   pause writes. The local API and worker must be running for any collect.
+   Remaining: a live provider fetch and a first-batch review once GDELT stops throttling.
 
 ### B. Finish and deploy the two local features
 
@@ -54,7 +53,10 @@ and its approval list. Status history lives here instead of a separate notes fil
    claimed job id, the collector checks the flag at checkpoints and stops at a stage
    boundary without advancing `collector_state` or `source_status`, and the worker marks
    the job `cancelled` without retrying. The fixture run cancelled at 2/4 with "0 written".
-   Next: repeat with a real GDELT job once items 1–2 unblock.
+   Verified again 2026-11-14 through the real worker → API → Supabase job path (job 10,
+   captured payload because the provider throttled): 2/4, "cancelled; 0 written; rerun is
+   safe", attempts 1, and no `collector_state`/`source_status` change.
+   Next: repeat with a live provider fetch when GDELT answers.
 
 4. **Deployment — web app deployed; worker code is local.**
    Vercel deployed 2026-11-14. Live export smoke passed: 324-row CSV with the expected
@@ -62,7 +64,7 @@ and its approval list. Status history lives here instead of a separate notes fil
    `source=gdelt`, and a guide reporting 19 matching SEO rows with the 10,000-row cap.
    The Python server and worker run on the owner's PC, so restart them to pick up checkpoint
    cancellation, progress, and the Settings job list.
-   Next: real-provider cancel/progress check (blocked by items 1–2); otherwise deployment
+   Next: repeat the cancel/progress checks with a live provider fetch; otherwise deployment
    is complete.
 
 ### C. Known gaps in shipped collector work
@@ -74,15 +76,19 @@ and its approval list. Status history lives here instead of a separate notes fil
    the owner also sees latest-run accepted/rejected totals and reasons, summed across keyword
    scopes from `collector_state`; public `live` intentionally omits those owner-only counters.
    Counters appear after a write run; dry runs do not write `collector_state`.
-   Next: verify the counters with the first real write run.
+   Verified 2026-11-14 with the first write run: `source_status` shows `gdelt` `ok` with
+   `count: 1`, `collector_state` counters show accepted 1 and `unsupported_language` 1, and
+   the anon `live_source_status` view exposes the row (`ok`, count, checked-at).
+   Remaining: confirm the owner-only counters in `prod` after a live provider fetch.
 
 6. **Mid-job progress — implemented, deployed, and observed with a local fixture.**
    The collector PATCHes the owner-scoped `jobs.progress`/`total` at fetch, gate, and
    persistence checkpoints (0–4/4); the worker closes finished collects at 4/4.
    [`job-status.tsx`](../../apps/web/components/live/job-status.tsx) and the Settings list
    display it. The fixture run showed 0→2→4 for a completed dry run and 0→2 for a cancelled
-   run.
-   Next: observe a real GDELT run and adjust the checkpoint count if it feels noisy.
+   run; the 2026-11-14 job-path verification showed 0→2→3→4 for a completed collect and
+   0→2 for a cancelled one, so the four checkpoints are not noisy.
+   Next: observe a live provider run.
 
 7. **Collector-table backup — not implemented by decision.**
    The JSON/CSV item exports do not include `collector_records`, links, or state; collector
@@ -126,8 +132,10 @@ and its approval list. Status history lives here instead of a separate notes fil
 - **Job execution:** owner-scoped claim, lease expiry recovery, bounded retries,
   schedule-key dedupe, check-before-start cancellation, and checkpoint progress (item 6).
   Checkpoint cancellation is item 3.
-- **GDELT adapter:** keyword scope, language/date/spam/metric gate, one throttle retry, and
-  unit tests. Live sample remains item 1.
+- **GDELT adapter and quality rules (2026-11-14):** keyword scope; exact-phrase query with
+  `repeat2` for one-word keywords; provider-declared language wins (`en`/`th` only, an
+  unlisted declared language is rejected); date/spam/metric gate; 30 s timeout and one
+  transient retry. Covered by unit tests; the live sample remains item 1.
 - **Source health:** configured sources with zero items, derived OK/empty/rate-limited/
   blocked/parsing/error/stale labels, and owner-only accepted/rejected counters in `prod`
   (item 5). The existing JSON/CSV exports cover `items` only, not a collector backup (item 7).
@@ -152,12 +160,22 @@ and its approval list. Status history lives here instead of a separate notes fil
   counters; 5 worker), web/worker typecheck, worker build, Python compile, and an end-to-end
   fixture run with a real worker: cancelled at 2/4, normal done at 4/4, no writes, test jobs
   deleted.
+- **Collector write fix (2026-11-14):** the first write run exposed that the item metric
+  refresh used a partial PostgREST upsert, which violates the `items` NOT NULL columns
+  (`source`, `url`, ...). It now refreshes `score`/`metric` with one grouped `PATCH` per
+  distinct value pair, so a run costs a couple of requests; covered by `StoreTests`.
+- **Collector write-path verification (2026-11-14):** worker → local API → adapter → gate →
+  Supabase ran with a captured live GDELT payload because the provider throttled new
+  queries: job 9 `done` 4/4 (1 record, 1 link, 1 `items` row for `SEO`, `collector_state`
+  ok, `source_status` `gdelt ok count 1`), job 10 `cancelled` at 2/4 with no writes, and
+  deployed `live` moved 324 → 325 active items with the anon views returning the row.
+  `COLLECTOR_WRITE_ENABLED=1` in `.env.local`; 73 Python tests pass.
 - **Dry-run console encoding fix (2026-11-14):** `backend/collectors/dry_run.py` now
   switches stdout/stderr to UTF-8 with replacement before printing, so a Thai keyword or a
   non-Latin title cannot abort a run after its report or writes. The CLI previously crashed
   with `UnicodeEncodeError` on the Windows legacy code page while printing GDELT samples,
   and `/api/collect` printed the same summary from the server process. Covered by
-  `tests/test_collectors.py::DryRunCancellationTests` (66 Python tests pass).
+  `tests/test_collectors.py::DryRunCancellationTests`.
 - **User menu and account settings:** implemented 2026-11-13; its open decisions live
   in [USER-DASHBOARD-SETTINGS-PLAN.md](USER-DASHBOARD-SETTINGS-PLAN.md).
 
@@ -169,8 +187,9 @@ and its approval list. Status history lives here instead of a separate notes fil
 - Persistence: keywords union across runs; existing items refresh `score` and `metric`
   only; trashed items are skipped; quarantine stays a drop; a failed run records `error`
   and does not advance the cursor; same-day reports append; collectors are Supabase-only.
-- Quality: hard rejects and soft flags stay as implemented; the owner reviews a 50–100
-  record sample before writes.
+- Quality (updated 2026-11-14): exact-phrase queries, `repeat2` for one-word keywords, and
+  the provider-declared language (en/th only) run before the existing hard rejects and soft
+  flags. A 50–100 record live sample is still required before trusting a live write.
 
 ## Candidate sources
 

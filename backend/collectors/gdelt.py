@@ -15,17 +15,17 @@ API = "https://api.gdeltproject.org/api/v2/doc/doc"
 TIMESPAN = "1d"
 MAX_RECORDS = 250
 RETRY_SECONDS = 6
+TIMEOUT_SECONDS = 30  # the public endpoint is slow under load; 15 s times out
 
 
 def _fetch(url: str) -> dict:
     try:
-        return fetch_json(url)
-    except TransportError as exc:
-        # GDELT asks for one request every five seconds; retry a throttle once.
-        if "429" not in str(exc):
-            raise
+        return fetch_json(url, timeout=TIMEOUT_SECONDS)
+    except TransportError:
+        # GDELT throttles bursts and drops slow connections; one retry rides out both
+        # without masking a persistent failure.
         time.sleep(RETRY_SECONDS)
-        return fetch_json(url)
+        return fetch_json(url, timeout=TIMEOUT_SECONDS)
 
 
 def _seen(value: object) -> str | None:
@@ -36,10 +36,24 @@ def _seen(value: object) -> str | None:
     return parsed.replace(tzinfo=timezone.utc).isoformat()
 
 
+def _query(keyword: str) -> str:
+    """Exact-phrase search. Quotes inside the keyword are dropped so it cannot inject
+    GDELT operators (sourcelang:, domain:, ...) into the query.
+
+    A one-word keyword also uses GDELT's repeat operator so a page that merely mentions
+    the token once (site metadata, boilerplate) does not count as coverage.
+    """
+    phrase = " ".join(keyword.split()).replace('"', "")
+    query = f'"{phrase}"'
+    if " " not in phrase:
+        query += f' repeat2:"{phrase}"'
+    return query
+
+
 def fetch(keyword: str, limit: int, connector: Connector) -> list[RawRecord]:
     query = urllib.parse.urlencode(
         {
-            "query": keyword,
+            "query": _query(keyword),
             "mode": "artlist",
             "format": "json",
             "maxrecords": min(max(limit, 1), MAX_RECORDS),

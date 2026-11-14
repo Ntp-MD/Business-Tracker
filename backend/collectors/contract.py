@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
 
-QUALITY_RULES_VERSION = "2026-11-12.1"
+QUALITY_RULES_VERSION = "2026-11-14.1"
 
 
 def utc_now() -> datetime:
