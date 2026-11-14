@@ -47,6 +47,7 @@ from pathlib import Path
 import db
 from collectors import dry_run as collector_dry_run
 from collectors.job import validate_collect_payload
+from collectors.store import job_cancel_check
 
 ROOT = Path(__file__).resolve().parent.parent
 STATIC = ROOT / "legacy"
@@ -2435,6 +2436,9 @@ class Handler(BaseHTTPRequestHandler):
         elif parsed.path == "/api/collect":
             try:
                 payload = validate_collect_payload(body)
+                cancel_check = (
+                    job_cancel_check(payload["job_id"]) if payload.get("job_id") else None
+                )
                 result = collector_dry_run.run(
                     payload["connector_id"],
                     payload["scope"]["keyword"],
@@ -2442,6 +2446,7 @@ class Handler(BaseHTTPRequestHandler):
                     collector_dry_run.DEFAULT_REPORT_DIR,
                     0,
                     write=not payload["dry_run"],
+                    cancel_check=cancel_check,
                 )
             except (ValueError, RuntimeError, SystemExit, urllib.error.HTTPError) as exc:
                 _send_json(self, {"error": str(exc)}, 400)

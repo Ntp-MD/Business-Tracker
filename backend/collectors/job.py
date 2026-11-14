@@ -16,6 +16,7 @@ ALLOWED_FIELDS = {
     "dry_run",
     "max_records",
     "quality_rules_version",
+    "job_id",
 }
 ALLOWED_MODES = {"manual", "scheduled"}
 
@@ -64,7 +65,13 @@ def validate_collect_payload(
     if version is not None and str(version) != QUALITY_RULES_VERSION:
         raise ValueError(f"quality rules version mismatch: {version}")
 
-    return {
+    job_id = payload.get("job_id")
+    if job_id is not None:
+        # bool is an int subclass; reject it and non-positive ids.
+        if isinstance(job_id, bool) or not isinstance(job_id, int) or job_id < 1:
+            raise ValueError("job_id must be a positive integer")
+
+    result = {
         "connector_id": connector_id,
         "scope": {"keyword": keyword},
         "mode": mode,
@@ -72,3 +79,6 @@ def validate_collect_payload(
         "max_records": max_records,
         "quality_rules_version": QUALITY_RULES_VERSION,
     }
+    if job_id is not None:
+        result["job_id"] = job_id
+    return result

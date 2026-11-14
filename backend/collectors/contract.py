@@ -13,6 +13,14 @@ def utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+class CancelledRun(RuntimeError):
+    """A cancellation was observed at a checkpoint; nothing more may be written."""
+
+    def __init__(self, counters: dict[str, Any] | None = None):
+        super().__init__("collector run cancelled")
+        self.counters = counters or {}
+
+
 @dataclass
 class RawRecord:
     source: str

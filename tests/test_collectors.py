@@ -1,19 +1,22 @@
 """Collector quality-gate tests: fixtures only, no network, no database."""
 
+import contextlib
 import hashlib
+import io
 import json
 import os
 import pathlib
 import sys
 import tempfile
+import types
 import unittest
 from datetime import datetime, timezone
 from unittest.mock import patch
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "backend"))
 
-from collectors import gdelt, store
-from collectors.contract import QUALITY_RULES_VERSION, RawRecord
+from collectors import dry_run, gdelt, store
+from collectors.contract import QUALITY_RULES_VERSION, CancelledRun, RawRecord
 from collectors.dry_run import write_report
 from collectors.http import TransportError
 from collectors.job import validate_collect_payload
@@ -272,6 +275,22 @@ class JobPayloadTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.validate({**payload, "quality_rules_version": "2026-01-01.1"})
 
+    def test_accepts_positive_job_id(self):
+        payload = self.validate(
+            {"connector_id": "test_search", "scope": {"keyword": "x"}, "job_id": 42}
+        )
+        self.assertEqual(payload["job_id"], 42)
+
+    def test_rejects_bad_job_id(self):
+        base = {"connector_id": "test_search", "scope": {"keyword": "x"}}
+        for value in (0, -1, "42", True, 1.5):
+            with self.assertRaises(ValueError):
+                self.validate({**base, "job_id": value})
+
+    def test_job_id_is_optional(self):
+        payload = self.validate({"connector_id": "test_search", "scope": {"keyword": "x"}})
+        self.assertNotIn("job_id", payload)
+
 
 class StoreTests(unittest.TestCase):
     def setUp(self):
@@ -285,6 +304,7 @@ class StoreTests(unittest.TestCase):
         self.existing_records = []
         self.existing_items = []
         self.fail_on = set()
+        self.job_row = None
         os.environ[store.WRITE_ENV] = "1"
         store.db.configured = lambda: True
         store.db.user_id = lambda: "user-1"
@@ -305,6 +325,8 @@ class StoreTests(unittest.TestCase):
         if method == "POST" and table in self.fail_on:
             raise RuntimeError(f"boom: {table}")
         if method == "GET":
+            if table == "jobs":
+                return [self.job_row] if self.job_row else []
             if table == "collector_records":
                 return self.existing_records
             if table == "items":
@@ -322,10 +344,14 @@ class StoreTests(unittest.TestCase):
             ]
         return None
 
-    def save(self):
+    def save(self, cancel_check=None):
         outcome = gate([raw()], TEST_CONNECTOR, now=NOW)
         return store.save_accepted(
-            TEST_CONNECTOR, "Thailand", outcome.accepted, outcome.counters(1)
+            TEST_CONNECTOR,
+            "Thailand",
+            outcome.accepted,
+            outcome.counters(1),
+            cancel_check=cancel_check,
         )
 
     def posts(self, table, resolution=""):
@@ -423,6 +449,122 @@ class StoreTests(unittest.TestCase):
         self.assertEqual(state["last_status"], "error")
         self.assertNotIn("cursor", state)
         self.assertNotIn("counters", state)
+
+    @staticmethod
+    def cancel_after(allowed):
+        calls = {"count": 0}
+
+        def check():
+            calls["count"] += 1
+            return calls["count"] > allowed
+
+        return check
+
+    def test_cancel_before_persist_writes_nothing(self):
+        with self.assertRaises(CancelledRun) as raised:
+            self.save(cancel_check=lambda: True)
+
+        self.assertEqual([call for call in self.calls if call[0] == "POST"], [])
+        self.assertEqual(raised.exception.counters["written"], 0)
+
+    def test_cancel_after_records_stops_before_items(self):
+        with self.assertRaises(CancelledRun) as raised:
+            self.save(cancel_check=self.cancel_after(1))
+
+        paths = [call[1].split("?")[0] for call in self.calls if call[0] == "POST"]
+        self.assertEqual(paths, ["collector_records"])
+        self.assertEqual(raised.exception.counters["written"], 1)
+
+    def test_cancel_after_all_writes_skips_health_state(self):
+        with self.assertRaises(CancelledRun):
+            self.save(cancel_check=self.cancel_after(4))
+
+        paths = [call[1].split("?")[0] for call in self.calls if call[0] == "POST"]
+        self.assertIn("collector_item_links", paths)
+        self.assertNotIn("collector_state", paths)
+        self.assertNotIn("source_status", paths)
+
+    def test_job_cancel_check_reads_owner_scoped_row(self):
+        self.job_row = {"cancel_requested": True}
+
+        self.assertTrue(store.job_cancel_check(7, interval=0)())
+
+        path = next(call[1] for call in self.calls if call[1].startswith("jobs?"))
+        self.assertIn("id=eq.7", path)
+        self.assertIn("user_id=eq.user-1", path)
+
+    def test_job_cancel_check_throttles_and_survives_failures(self):
+        self.job_row = {"cancel_requested": False}
+        check = store.job_cancel_check(7)
+        self.assertFalse(check())
+        self.job_row = {"cancel_requested": True}
+        self.assertFalse(check())
+        self.assertEqual(len([call for call in self.calls if call[1].startswith("jobs?")]), 1)
+
+        def boom(*_args, **_kwargs):
+            raise RuntimeError("offline")
+
+        store.db._request = boom
+        self.assertFalse(store.job_cancel_check(7, interval=0)())
+
+
+class DryRunCancellationTests(unittest.TestCase):
+    def setUp(self):
+        self.fetched = []
+        self.orig_adapters = dry_run.ADAPTERS
+        self.orig_connector = dry_run.get_connector
+        dry_run.ADAPTERS = {"test_search": types.SimpleNamespace(fetch=self.fetch)}
+        dry_run.get_connector = lambda _connector_id: TEST_CONNECTOR
+
+    def tearDown(self):
+        dry_run.ADAPTERS = self.orig_adapters
+        dry_run.get_connector = self.orig_connector
+
+    def fetch(self, keyword, _limit, _connector):
+        self.fetched.append(keyword)
+        return [raw()]
+
+    def run_dry(self, cancel_check, directory):
+        with contextlib.redirect_stdout(io.StringIO()):
+            return dry_run.run(
+                "test_search",
+                "Thailand",
+                5,
+                pathlib.Path(directory),
+                0,
+                cancel_check=cancel_check,
+            )
+
+    def test_cancel_before_fetch_skips_provider_and_report(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            summary = self.run_dry(lambda: True, tmp)
+            files = list(pathlib.Path(tmp).iterdir())
+
+        self.assertTrue(summary["cancelled"])
+        self.assertEqual(self.fetched, [])
+        self.assertEqual(summary["counters"]["fetched"], 0)
+        self.assertEqual(files, [])
+
+    def test_cancel_after_gate_keeps_counters_and_report(self):
+        checks = iter([False, True])
+
+        with tempfile.TemporaryDirectory() as tmp:
+            summary = self.run_dry(lambda: next(checks), tmp)
+            files = list(pathlib.Path(tmp).iterdir())
+            report_lines = len(files[0].read_text(encoding="utf-8").splitlines()) if files else 0
+
+        self.assertTrue(summary["cancelled"])
+        self.assertEqual(self.fetched, ["Thailand"])
+        self.assertEqual(summary["counters"]["accepted"], 1)
+        self.assertEqual(len(files), 1)
+        self.assertEqual(report_lines, 1)
+
+    def test_no_cancel_returns_normal_summary(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            summary = self.run_dry(lambda: False, tmp)
+
+        self.assertFalse(summary["cancelled"])
+        self.assertEqual(summary["counters"]["accepted"], 1)
 
 
 if __name__ == "__main__":

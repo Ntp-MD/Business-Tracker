@@ -5,6 +5,8 @@
  * Run: node --env-file=../../.env.local dist/index.js
  * Requires: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_USER_ID, LOCAL_API.
  */
+import { type JobLike, runJob } from "./job-runner.js";
+
 const SUPABASE_URL = (process.env.SUPABASE_URL ?? "").replace(/\/$/, "");
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
 const USER_ID = process.env.SUPABASE_USER_ID ?? "";
@@ -18,9 +20,7 @@ const COLLECTOR_WRITES = ["1", "true", "yes"].includes(
 );
 const WORKER_ID = `${process.env.COMPUTERNAME ?? "worker"}-${process.pid}`;
 
-type Job = {
-  id: number;
-  kind: string;
+type Job = JobLike & {
   attempts?: number;
   payload: {
     q?: string;
@@ -101,57 +101,6 @@ async function patch(id: number, body: Record<string, unknown>): Promise<void> {
   });
 }
 
-async function run(job: Job, attempts: number): Promise<void> {
-  const payload = job.payload ?? {};
-  const body = job.kind === "collect" ? { ...payload, dry_run: !COLLECTOR_WRITES } : payload;
-  try {
-    const endpoint =
-      job.kind === "refresh_views"
-        ? "/api/refresh-stats"
-        : job.kind === "fetch"
-          ? "/api/fetch"
-          : job.kind === "collect"
-            ? "/api/collect"
-            : null;
-    if (!endpoint) throw new Error(`unknown job kind: ${job.kind}`);
-    const res = await fetch(`${API}${endpoint}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) throw new Error(`fetch ${res.status}: ${(await res.text()).slice(0, 200)}`);
-    const out = (await res.json()) as { added?: number; duplicates?: number; errors?: string[] };
-    await patch(job.id, {
-      status: "done",
-      finished_at: new Date().toISOString(),
-      progress: 1,
-      total: 1,
-      error: out.errors?.length ? out.errors.join(" · ").slice(0, 500) : null,
-      lease_owner: null,
-      lease_until: null,
-    });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    if (attempts < MAX_ATTEMPTS) {
-      await patch(job.id, {
-        status: "queued",
-        started_at: null,
-        error: message.slice(0, 500),
-        lease_owner: null,
-        lease_until: null,
-      });
-      return;
-    }
-    await patch(job.id, {
-      status: "error",
-      finished_at: new Date().toISOString(),
-      error: message.slice(0, 500),
-      lease_owner: null,
-      lease_until: null,
-    });
-  }
-}
-
 let lastScheduleCheck = 0;
 
 async function scheduleCollect(): Promise<void> {
@@ -217,7 +166,13 @@ async function tick(): Promise<void> {
     });
     return;
   }
-  await run(job, job.attempts ?? 1);
+  await runJob(job, job.attempts ?? 1, {
+    fetch,
+    patch,
+    api: API,
+    collectorWrites: COLLECTOR_WRITES,
+    maxAttempts: MAX_ATTEMPTS,
+  });
 }
 
 async function main(): Promise<void> {

@@ -11,6 +11,8 @@ only, trashed items are never relinked, and the first link keyword is kept.
 from __future__ import annotations
 
 import os
+import time
+from collections.abc import Callable
 from urllib.parse import quote
 
 try:  # running as `python backend/server.py` or importing `collectors.*`
@@ -18,7 +20,7 @@ try:  # running as `python backend/server.py` or importing `collectors.*`
 except ModuleNotFoundError:  # running as `python -m backend.collectors.dry_run`
     from backend import db
 
-from .contract import CollectorRecord, utc_now
+from .contract import CancelledRun, CollectorRecord, utc_now
 from .registry import Connector
 
 WRITE_ENV = "COLLECTOR_WRITE_ENABLED"
@@ -26,6 +28,43 @@ WRITE_ENV = "COLLECTOR_WRITE_ENABLED"
 
 def writes_enabled() -> bool:
     return (os.environ.get(WRITE_ENV) or "0").strip().lower() in {"1", "true", "yes"}
+
+
+def job_cancel_check(job_id: int, interval: float = 2.0) -> Callable[[], bool]:
+    """Owner-scoped `jobs.cancel_requested` reader, throttled to one query per interval.
+
+    Polling failures return the last known value: cancellation must not break a run, and
+    the run's own writes surface Supabase problems.
+    """
+    last = {"at": 0.0, "cancelled": False}
+
+    def check() -> bool:
+        now = time.monotonic()
+        if now - last["at"] < interval:
+            return last["cancelled"]
+        last["at"] = now
+        if not db.configured():
+            return False
+        try:
+            rows = (
+                db._request(
+                    "GET",
+                    f"jobs?select=cancel_requested&id=eq.{int(job_id)}"
+                    f"&user_id=eq.{quote(db.user_id())}",
+                )
+                or []
+            )
+        except Exception:  # noqa: BLE001 - see docstring
+            return last["cancelled"]
+        last["cancelled"] = bool(rows and rows[0].get("cancel_requested"))
+        return last["cancelled"]
+
+    return check
+
+
+def _check_cancel(cancel_check: Callable[[], bool] | None, counters: dict) -> None:
+    if cancel_check is not None and cancel_check():
+        raise CancelledRun(counters)
 
 
 def scope_key(keyword: str) -> str:
@@ -214,6 +253,7 @@ def save_accepted(
     records: list[CollectorRecord],
     counters: dict,
     cursor: dict | None = None,
+    cancel_check: Callable[[], bool] | None = None,
 ) -> dict:
     if not writes_enabled():
         raise RuntimeError(f"collector writes disabled (set {WRITE_ENV}=1)")
@@ -223,13 +263,16 @@ def save_accepted(
     user = db.user_id()
     now = utc_now().isoformat()
     try:
-        written = _save_data(connector, keyword, records, counters, user)
+        written = _save_data(connector, keyword, records, counters, user, cancel_check)
+    except CancelledRun:
+        raise
     except Exception as exc:  # noqa: BLE001 - record the failure, then re-raise
         try:
             _write_outcome(connector, keyword, now, ok=False, error=str(exc)[:500])
         except Exception:  # noqa: BLE001 - status is best effort; keep the real error
             pass
         raise
+    _check_cancel(cancel_check, written)
     _write_outcome(connector, keyword, now, ok=True, counters=written, cursor=cursor or {})
     return written
 
@@ -240,21 +283,31 @@ def _save_data(
     records: list[CollectorRecord],
     counters: dict,
     user: str,
+    cancel_check: Callable[[], bool] | None = None,
 ) -> dict:
     ids = [record.source_item_id for record in records]
     existing_records = _existing_records(user, connector, ids) if ids else {}
+    stats = {
+        **counters,
+        "written": 0,
+        "inserted": len(records) - len(existing_records),
+        "updated": len(existing_records),
+    }
 
     record_rows = []
     for record in records:
         prior = existing_records.get(record.source_item_id, [])
         keywords = list(dict.fromkeys([*prior, keyword]))
         record_rows.append(_record_row(record, user, keywords))
+    _check_cancel(cancel_check, stats)
     saved_records = _post(
         "collector_records",
         record_rows,
         "user_id,source,source_item_id",
         "id,source_item_id",
     )
+    stats["written"] = len(saved_records)
+    _check_cancel(cancel_check, stats)
     record_ids = {row["source_item_id"]: row["id"] for row in saved_records}
 
     urls = list({record.canonical_url for record in records})
@@ -274,12 +327,14 @@ def _save_data(
     )
     item_ids = {url: row["id"] for url, row in existing_items.items()}
     item_ids.update({row["canonical_url"]: row["id"] for row in inserted_items})
+    _check_cancel(cancel_check, stats)
 
     projection: dict[str, dict] = {}
     for record in records:
         if record.canonical_url not in trashed:
             projection.setdefault(record.canonical_url, _projection_row(record, user, keyword))
     _post("items", list(projection.values()), "user_id,keyword,canonical_url")
+    _check_cancel(cancel_check, stats)
 
     link_rows = []
     for record in records:
@@ -300,13 +355,7 @@ def _save_data(
     # ignore-duplicates keeps the first keyword that linked the item
     _post("collector_item_links", link_rows, "record_id,item_id", resolution="ignore-duplicates")
 
-    written = {
-        **counters,
-        "written": len(saved_records),
-        "inserted": len(records) - len(existing_records),
-        "updated": len(existing_records),
-    }
-    return written
+    return stats
 
 
 def load_state(connector_id: str, keyword: str) -> dict | None:

@@ -30,6 +30,11 @@ The AI analysis export (collector plan package 9) is implemented locally on 2026
 the Items page can download filtered active rows as CSV plus a Markdown guide and prompt.
 It is not deployed and still needs owner review before the deploy approval.
 
+Cancellation during work (collector plan item 3) is also implemented locally on
+2026-11-14: collect jobs check the owner-scoped cancel flag at checkpoints and stop at a
+stage boundary without advancing collector state or source health. It needs a live cancel
+test and has not been deployed.
+
 | Plan | Status |
 |---|---|
 | [plans/COLLECTOR-INTEGRATION-PLAN.md](plans/COLLECTOR-INTEGRATION-PLAN.md) | **Consolidated backlog and status.** Collector integration, open items, and the AI analysis export implemented locally |

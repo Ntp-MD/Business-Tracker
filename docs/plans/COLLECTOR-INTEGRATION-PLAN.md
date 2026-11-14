@@ -13,14 +13,15 @@ instead of a separate notes file.
 Rechecked 2026-11-14: the local checks in `AGENTS.md` pass. GDELT still returns `HTTP 429`
 from this network, `data/reports/` does not exist (so no dry-run sample has been saved
 here), there is no `.env.local` and no worker process in this checkout, and the retired
-Render API still answers. Rows 1, 2, 5, and 8 below carry that evidence. Row 6 changed:
-package 9 was implemented locally on 2026-11-14.
+Render API still answers. Rows 1, 2, 5, and 8 below carry that evidence. Rows 3 and 6
+changed: cancellation during work and the AI analysis export were implemented locally on
+2026-11-14.
 
 | # | Open item | Status | Next action |
 |---|---|---|---|
 | 1 | Live GDELT sample | **Blocked.** Every request from this network returns `HTTP 429 Too Many Requests`; rechecked 2026-11-14 and it is unchanged after the 2026-11-13 record. Mapping, gate, and one-retry behavior are covered by unit tests only. | Retry `python -m backend.collectors.dry_run --connector gdelt_doc --keyword SEO --show-sample 20` from a network GDELT does not throttle. Review the sample before trusting writes. |
 | 2 | First real collect run | **Not run, and not runnable as noted.** `COLLECTOR_WRITE_ENABLED=1` was recorded in a local `.env.local` (not committed), but on 2026-11-14 that file is absent from this checkout and no worker process is running. | Owner restores `.env.local` with real Supabase credentials, starts the worker, then uses **Collect** in Settings or waits for the 24-hour schedule. Set `COLLECTOR_WRITE_ENABLED=0` to pause. |
-| 3 | Cancellation during work | **Design proposed 2026-11-14; not implemented.** The worker checks `cancel_requested` once before starting, and the collector keeps running if the request is dropped. See [Cancellation during work](#cancellation-during-work--design-proposed-2026-11-14). | Owner approves the additive payload field and partial-write policy; implementation is a separate task. |
+| 3 | Cancellation during work | **Implemented locally 2026-11-14; not deployed.** The worker sends the claimed job id; the collector checks the owner-scoped cancel flag at checkpoints and stops at stage boundaries without advancing collector state or source health; the worker marks the job `cancelled` and does not retry. No schema change. See [Cancellation during work](#cancellation-during-work--implemented-locally-2026-11-14). | Owner reviews the contract items and tests a live cancel; deploy only with approval. |
 | 4 | Versioned backup of collector tables | **Not implemented by decision.** Existing JSON/CSV item export remains the backup; collector rows are reproducible from the source. | Revisit only if the owner wants collector records, links, and state restorable. |
 | 5 | Render API | **Still live.** `https://social-tracker-api.onrender.com/` returned 200 again on 2026-11-14 06:56 UTC (`server: uvicorn`). | Disable it in the Render dashboard (owner; no credentials in this repo). |
 | 6 | AI export (package 9) | **Implemented locally 2026-11-14.** The Items page offers active rows matching the current filters as CSV, plus a Markdown guide and sample prompt. No schema or API-contract change; selected rows, imported AI results, and automatic provider calls remain out of scope. | Owner reviews the files; deploy only with the approval required by `AGENTS.md`. |
@@ -177,33 +178,33 @@ and disposable data; record its results separately from the local test suite.
 work, cancellation, and restart without live services. Worker typecheck passes. Lease
 or job schema changes require separate approval before implementation or application.
 
-### Cancellation during work — design proposed 2026-11-14
+### Cancellation during work — implemented locally 2026-11-14
 
-Status: **proposed, not implemented.** This is status item 3. No API, collector, worker,
-or schema change is authorized until the owner approves the contract items below.
+Status: **implemented locally 2026-11-14; not deployed.** This is status item 3. The
+owner's "continue" instruction was treated as approval of the contract items below for a
+local implementation; review them before deployment, and revert if any is unwanted. Only
+the additive payload field affects the API contract. No schema change was made.
 
-**Current behavior.** `apps/worker/src/index.ts` checks `jobs.cancel_requested` once,
-after claiming and before calling `POST /api/collect`. A running request is never checked
-again. Dropping the HTTP request would not stop `backend/collectors/dry_run.py`, and
-`backend/collectors/store.py` could still write records, items, links, state, and source
-status. The job row allows the terminal status `cancelled`.
+**Before this change.** `apps/worker/src/index.ts` checked `jobs.cancel_requested` once,
+after claiming and before calling `POST /api/collect`. A running request was never checked
+again, and dropping the HTTP request would not stop the collector.
 
-**Proposed first version: cooperative checkpoints in the collector.**
+**Implemented: cooperative checkpoints in the collector.**
 
 1. The worker adds the claimed `job_id` (positive integer) to the collect payload it sends
    to `/api/collect`. The strict validator in `backend/collectors/job.py` accepts that
    optional field; all other unknown fields stay rejected.
-2. `/api/collect` passes a `cancel_check` callback into the dry run. The callback reads
-   the owner-scoped `jobs` row by `id` and `user_id` and returns `cancel_requested`. It is
-   throttled to at most one query every 2 seconds and returns false when Supabase is not
-   configured, so the CLI and dry runs keep working.
+2. `/api/collect` passes a `cancel_check` callback into the dry run. `store.job_cancel_check`
+   reads the owner-scoped `jobs` row by `id` and `user_id` and returns `cancel_requested`.
+   It is throttled to at most one query every 2 seconds, returns false when Supabase is not
+   configured, and keeps the last value if a poll fails.
 3. The collector checks cancellation before the provider fetch, after the quality gate,
-   before persistence, and between persistence stages. Cancellation applies at the next
-   checkpoint, not mid-HTTP and not mid-request.
+   before the first write, after each persistence stage, and before writing success state.
+   Cancellation applies at the next checkpoint, not mid-HTTP and not mid-request.
 4. If cancelled before persistence, nothing is written. If cancelled during persistence,
    the current table write finishes and the remaining stages stop. In both cases the run
-   returns its counters without advancing `collector_state` or `source_status`, because a
-   cancelled run is not a source success or failure.
+   returns its counters as `CancelledRun` and does not advance `collector_state` or
+   `source_status`, because a cancelled run is not a source success or failure.
 5. The worker treats a `{cancelled: true, counters}` response as terminal: it sets the job
    to `cancelled` with a short `error` note (for example "cancelled; 12 written; rerun is
    safe") and does not retry it. A cancellation requested before start keeps the existing
@@ -222,31 +223,36 @@ exist without their item/link stage; a rerun completes them. Archived and trashe
 are never relinked or overwritten by this path. The job row, not source health, records the
 cancelled outcome; `collector_state.cursor` is not advanced.
 
-**Contract items needing owner approval**
+**Contract items applied**
 
-1. Add optional `job_id` to the collect payload and worker request. Old servers reject the
-   field, so update the Python server before the worker.
-2. Accept checkpoint semantics: cancellation is observed within one provider request or
+1. Optional `job_id` in the collect payload and worker request. Old servers reject the
+   field, so the Python server must be updated before the worker in any deployment.
+2. Checkpoint semantics: cancellation is observed within one provider request or
    persistence stage, not immediately. Worst case is two provider timeouts plus the retry
    pause (about 36 seconds) and one stage.
-3. Accept the partial-write policy above: stop at the next stage boundary, keep existing
-   upserts, leave state and source status unchanged, and require a rerun for completion.
-4. Allow the collector to read the owner-scoped `jobs` row at most once every 2 seconds
-   during a collect run.
+3. The partial-write policy above: stop at the next stage boundary, keep existing upserts,
+   leave state and source status unchanged, and require a rerun for completion.
+4. The collector reads the owner-scoped `jobs` row at most once every 2 seconds during a
+   collect run.
 
-**Verification for the implementation task**
+**Files changed:** `backend/collectors/contract.py` (`CancelledRun`),
+`backend/collectors/store.py` (checkpoints, `job_cancel_check`),
+`backend/collectors/dry_run.py` (cancel callback and cancelled summary),
+`backend/collectors/job.py` (optional `job_id`), `backend/server.py` (pass the check),
+`apps/worker/src/job-runner.ts` (new, testable runner), `apps/worker/src/index.ts`
+(uses the runner), `tests/test_collectors.py`, `tests/worker_jobs.test.cjs`, and the CI
+test command.
 
-- Fixture tests with a fake cancel flag: cancelled before fetch, after gate, before
-  persistence, and between persistence stages; assert no write, no state advance, and
-  counters returned.
-- Payload validation: accepts a positive `job_id`, rejects malformed values, and still
-  rejects unknown fields.
-- Worker tests with mocked fetch/Supabase: a cancelled response sets `cancelled`, records
-  counters, and never schedules a retry; no flag still sets `done`; pre-start cancellation
-  is unchanged. Extract the run/poll helpers so the worker can be tested without starting
-  `main()`.
-- Regression: dry-run CLI, normal collect, retry/lease behavior, and web export reads stay
-  unchanged. Automated tests never touch Supabase.
+**Verification (2026-11-14)**
+
+- `python -m unittest discover -s tests` → 62 passed, including cancellation before
+  fetch, after gate, before records, after records, after all writes, payload validation,
+  owner scoping, throttle, and poll-failure cases. Fixtures only; no Supabase.
+- `node --test tests/worker_jobs.test.cjs` → 5 passed: job id and write switch, dry-run
+  switch, cancelled terminal state, retry/error limits, and non-collect payloads.
+- `npm run typecheck` and `npm run build:worker` pass; `python -m py_compile` passes.
+- Not run: a live cancel against Supabase/worker (no `.env.local` or worker here), and
+  deployment.
 
 **Out of scope:** immediate abort of an in-flight provider call, per-record cancellation,
 progress percentages and heartbeat, lease/retry redesign (package 4), clearing

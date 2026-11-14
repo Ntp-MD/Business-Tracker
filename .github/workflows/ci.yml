@@ -47,8 +47,8 @@ jobs:
       - name: Web typecheck
         run: npx tsc --noEmit -p apps/web/tsconfig.json
 
-      - name: Web auth tests
-        run: node --test tests/web_auth.test.cjs
+      - name: Web and worker tests
+        run: node --test tests/web_auth.test.cjs tests/web_export.test.cjs tests/worker_jobs.test.cjs
 
       - name: Worker typecheck
         run: npm run typecheck

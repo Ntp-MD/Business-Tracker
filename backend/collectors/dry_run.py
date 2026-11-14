@@ -6,11 +6,12 @@ import argparse
 import hashlib
 import json
 import sys
+from collections.abc import Callable
 from datetime import datetime, timezone
 from pathlib import Path
 
 from . import gdelt
-from .contract import QUALITY_RULES_VERSION, utc_now
+from .contract import QUALITY_RULES_VERSION, CancelledRun, GateOutcome, utc_now
 from .quality import gate
 from .registry import get_connector
 
@@ -72,6 +73,7 @@ def run(
     *,
     write: bool = False,
     item_keyword: str | None = None,
+    cancel_check: Callable[[], bool] | None = None,
 ) -> dict:
     connector = get_connector(connector_id)
     if not connector.enabled:
@@ -91,13 +93,7 @@ def run(
             raise SystemExit("collector writes disabled (set COLLECTOR_WRITE_ENABLED=1)")
         save_accepted = save
 
-    fetched = adapter.fetch(keyword, limit, connector)
-    outcome = gate(fetched, connector)
-    counters = outcome.counters(len(fetched))
     projection_keyword = item_keyword or keyword
-    if save_accepted is not None:
-        counters = save_accepted(connector, projection_keyword, outcome.accepted, counters)
-
     summary = {
         "connector_id": connector.connector_id,
         "source": connector.source,
@@ -106,8 +102,33 @@ def run(
         "dry_run": not write,
         "quality_rules_version": QUALITY_RULES_VERSION,
         "at": utc_now().isoformat(),
-        "counters": counters,
+        "counters": GateOutcome([], [], [], 0).counters(0),
+        "cancelled": False,
     }
+    if cancel_check is not None and cancel_check():
+        summary["cancelled"] = True
+        print(json.dumps(summary, ensure_ascii=False))
+        return summary
+
+    fetched = adapter.fetch(keyword, limit, connector)
+    outcome = gate(fetched, connector)
+    counters = outcome.counters(len(fetched))
+    if cancel_check is not None and cancel_check():
+        summary["cancelled"] = True
+    elif save_accepted is not None:
+        try:
+            counters = save_accepted(
+                connector,
+                projection_keyword,
+                outcome.accepted,
+                counters,
+                cancel_check=cancel_check,
+            )
+        except CancelledRun as exc:
+            counters = exc.counters or counters
+            summary["cancelled"] = True
+    summary["counters"] = counters
+
     day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     write_report(report_dir / f"collector-{connector_id}-{day}.jsonl", outcome)
     print(json.dumps(summary, ensure_ascii=False))
