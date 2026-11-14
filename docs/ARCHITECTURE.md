@@ -151,9 +151,9 @@ time is needed; the current design overwrites mutable metrics and keeps no histo
 - Suspend the old Render API; it runs the legacy image with a service key and is not needed.
 - Run the worker as an OS service or scheduled task with restart, single instance. The job
   lease already prevents double execution.
-- Monitoring: the GitHub schedule is best-effort (observed ~7 h gaps, not 30 min). Either
-  accept that, add an external uptime check, or relax `check_health.py` so a stopped
-  local worker is a warning, not a failure that opens issues.
+- Monitoring: the GitHub schedule is best-effort (observed ~7 h gaps, not 30 min); accept
+  that or add an external uptime check. `check_health.py` now treats a stopped local worker
+  as a warning, not a failure, while endpoint failures still open the issue (2026-11-14).
 - Backups: schedule a `pg_dump` (weekly) to private storage and run a restore drill. This
   is the only blocking gap for the security/health checklist.
 - Add the build SHA and deployed variant to `/api/health` so a check can tell which commit

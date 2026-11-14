@@ -4,11 +4,11 @@ import { aggregateCollectorStats, type SourceStats } from "@/lib/data/collector-
 import { itemsTable, sourceStatusTable } from "@/lib/data/read-tables";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import type { Item } from "@/lib/types";
+import { isWritable } from "@/lib/variant";
 
 /** Columns the list/table renders; `body` is only read by the editor detail page. */
 const ITEM_LIST_COLUMNS =
   "id,keyword,source,url,canonical_url,title,author,channel_url,score,metric,views,published,asset_path,archived_at,deleted_at,created_at,updated_at";
-import { isWritable } from "@/lib/variant";
 
 export type ItemState = "active" | "archived" | "trash";
 export type SortKey = "score" | "published" | "created_at" | "source" | "title";

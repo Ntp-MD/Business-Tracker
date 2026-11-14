@@ -18,6 +18,11 @@ DEFAULT_URLS = (
 
 
 def check(url: str) -> None:
+    """Fail on an unhealthy endpoint; a stopped local worker is a warning.
+
+    The worker runs on the owner's PC and is expected to be offline sometimes, so it must
+    not open a GitHub issue by itself. A failed fetch or ok=false still fails.
+    """
     with urllib.request.urlopen(url, timeout=30) as response:
         data = json.load(response)
 
@@ -26,9 +31,9 @@ def check(url: str) -> None:
 
     worker = data.get("worker")
     if worker is None and "trendrail.vercel.app" in url:
-        raise RuntimeError("worker status missing")
-    if worker and worker.get("stale"):
-        raise RuntimeError(f"worker stale last_seen={worker.get('lastSeen')}")
+        print(f"warning {url}: worker status missing (local worker offline?)")
+    elif worker and worker.get("stale"):
+        print(f"warning {url}: worker stale last_seen={worker.get('lastSeen')}")
 
     print(json.dumps({"url": url, "ok": True, "worker": worker}))
 

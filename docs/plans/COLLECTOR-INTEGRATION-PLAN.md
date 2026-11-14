@@ -123,9 +123,10 @@ and its approval list. Status history lives here instead of a separate notes fil
    The scheduled **Health** workflow is configured every 30 minutes, but GitHub ran it
    about every 7 hours on 2026-11-13/14 (observed runs 01:44Z, 09:00Z, 17:18Z, 22:44Z,
    02:53Z, 09:45Z), so treat the interval as best-effort. It opens or updates a GitHub
-   issue on failure and closes it on recovery. The check fails while the local worker is
-   stale, so an owner PC that is off will raise the issue; decide whether that is intended
-   or whether the worker should be a warning. A 2026-11-14 snapshot showed prod `/live` →
+   issue on failure and closes it on recovery. Since 2026-11-14 a stale or missing local
+   worker is a warning in the check output, not a failure: the worker runs on the owner's
+   PC and is expected to be off sometimes. A failed fetch or `ok=false` still fails and
+   opens the issue. A 2026-11-14 snapshot showed prod `/live` →
    307 `/login`, live `/live` 200 and `/live/settings` → 307 `/live`, mockup `/` 200 and
    `/live` → 307 `/`; live `/api/health` has since moved to 333 active items.
    The Supabase dashboard shows **LAST BACKUP: No backups**, so the quarterly restore
