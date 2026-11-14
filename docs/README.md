@@ -12,6 +12,7 @@ the remaining plan, post-cutover checks, and notes.
 | [DEPLOY.md](DEPLOY.md) | Vercel, Render, local worker, env vars |
 | [PRIVACY.md](PRIVACY.md) | PDPA notice, cookie inventory, owner review checklist |
 | [DESIGN.md](DESIGN.md) | Visual language and design system |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Target topology, module split, data model, performance, serving, phased roadmap (proposal) |
 | [Favicon (120×120 PNG)](brand/trendrail-favicon-120.png) | Square train-and-rail mark for Next.js and legacy pages |
 | [Favicon square master](brand/trendrail-favicon-square.png) | 1254×1254 source artwork |
 | [Logo master](brand/logo-master.png) | Source artwork for the header logo used by the web and legacy apps |
@@ -72,6 +73,7 @@ undecided; Hacker News was removed on 2026-11-12.
 ```
 docs/
   README.md
+  ARCHITECTURE.md
   DB.md
   DEPLOY.md
   DESIGN.md
