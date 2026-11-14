@@ -9,24 +9,42 @@ and its approval list. Status history lives here instead of a separate notes fil
 
 ### A. Finish the GDELT pathway
 
-1. **GDELT live sample — blocked.**
-   Every request from this network returns `HTTP 429 Too Many Requests` (rechecked
-   2026-11-14). No sample has been saved: `data/reports/` does not exist here. Mapping,
-   gate, and one-retry behavior are covered by unit tests only.
-   Next: run
-   `python -m backend.collectors.dry_run --connector gdelt_doc --keyword SEO --limit 100 --show-sample 100`
-   from a network GDELT accepts, then review the records for relevance, language, and
-   spam before trusting writes.
+1. **GDELT live sample — reachable but throttled; sample too small and noisy.**
+   Access changed on 2026-11-14: the endpoint now answers `200` intermittently from this
+   network instead of always failing. Evidence from that day:
+   - `SEO`, `timespan=1d`, `maxrecords=100`: `200` with **2** articles; both passed the
+     gate (`accepted: 2`) and the report was appended to
+     `data/reports/collector-gdelt_doc-2026-11-14.jsonl`. One is a Serbian story
+     (`blic.rs`, provider language `Serbian`) that the title-script heuristic labels
+     `en`; the other is an English marketing-agency post (`pctechmag.com`, Uganda).
+   - `SEO`, `timespan=3d`, `maxrecords=250`: `200` with **22** articles. Only about four
+     are topical (two syndications of "From Years Without SEO Enquiries…", one
+     DesignRush placement, one mobile-app-development post); the rest are Korean,
+     Japanese, Serbian, Bulgarian, and French stories, so the bare `SEO` token also
+     matches unrelated pages.
+   - Bursts return `429 Too Many Requests` with a plain-text body. Requests 10–90 s
+     apart failed; one after about three minutes succeeded, and a later one after four
+     minutes still failed. The single 6-second retry in `gdelt.py` did not clear the
+     throttle in any run.
+   Blocker: a one-day window yields about two records per keyword, far below the 50–100
+   record review this plan requires, and the relevant share is low. Owner decisions
+   needed: keep manual cleanup for noisy writes, widen the window, and/or filter on
+   relevance and the provider's `language` field (a quality-gate change).
+   Next: agree those rules, then capture and review a 50–100 record sample across the
+   owner's keywords before trusting writes.
 
-2. **First real collect run — pipeline verified; real GDELT run still blocked.**
-   `.env.local` is now present with `COLLECTOR_WRITE_ENABLED=0`. On 2026-11-14 the full
+2. **First real collect run — not started; writes stay off.**
+   `.env.local` is present with `COLLECTOR_WRITE_ENABLED=0`. On 2026-11-14 the full
    worker → API → collector path was exercised with a local slow fixture and writes
    disabled: a cancel job stopped at 2/4 with "0 written", and a normal job finished 4/4.
-   The test jobs were deleted.
-   Remaining: set `COLLECTOR_WRITE_ENABLED=1`, queue a real GDELT **Collect**, review the
-   first batch, then set it back to `0` to pause. This still needs GDELT access (item 1).
-   Known risk: GDELT relevance is not in the gate, so off-topic English articles can reach
-   `items`; trash what does not fit.
+   The test jobs were deleted. Rechecked 2026-11-14: `collector_state` has no rows, no
+   collect job is queued, and `items` still holds 324 active rows, so no collector write
+   has ever run here. `/api/health` reported `worker: null`, so the local API and worker
+   also need starting.
+   Remaining: resolve item 1's quality rules, set `COLLECTOR_WRITE_ENABLED=1`, queue a
+   real GDELT **Collect**, review the first batch, then set it back to `0` to pause.
+   Known risk: GDELT relevance is not in the gate, so off-topic articles can reach
+   `items`; the 22-record sample above shows that this is likely without a filter.
 
 ### B. Finish and deploy the two local features
 
@@ -36,7 +54,7 @@ and its approval list. Status history lives here instead of a separate notes fil
    claimed job id, the collector checks the flag at checkpoints and stops at a stage
    boundary without advancing `collector_state` or `source_status`, and the worker marks
    the job `cancelled` without retrying. The fixture run cancelled at 2/4 with "0 written".
-   Next: repeat with a real GDELT job once item 1 works.
+   Next: repeat with a real GDELT job once items 1–2 unblock.
 
 4. **Deployment — web app deployed; worker code is local.**
    Vercel deployed 2026-11-14. Live export smoke passed: 324-row CSV with the expected
@@ -44,7 +62,8 @@ and its approval list. Status history lives here instead of a separate notes fil
    `source=gdelt`, and a guide reporting 19 matching SEO rows with the 10,000-row cap.
    The Python server and worker run on the owner's PC, so restart them to pick up checkpoint
    cancellation, progress, and the Settings job list.
-   Next: real-provider cancel/progress check; otherwise deployment is complete.
+   Next: real-provider cancel/progress check (blocked by items 1–2); otherwise deployment
+   is complete.
 
 ### C. Known gaps in shipped collector work
 
@@ -133,6 +152,12 @@ and its approval list. Status history lives here instead of a separate notes fil
   counters; 5 worker), web/worker typecheck, worker build, Python compile, and an end-to-end
   fixture run with a real worker: cancelled at 2/4, normal done at 4/4, no writes, test jobs
   deleted.
+- **Dry-run console encoding fix (2026-11-14):** `backend/collectors/dry_run.py` now
+  switches stdout/stderr to UTF-8 with replacement before printing, so a Thai keyword or a
+  non-Latin title cannot abort a run after its report or writes. The CLI previously crashed
+  with `UnicodeEncodeError` on the Windows legacy code page while printing GDELT samples,
+  and `/api/collect` printed the same summary from the server process. Covered by
+  `tests/test_collectors.py::DryRunCancellationTests` (66 Python tests pass).
 - **User menu and account settings:** implemented 2026-11-13; its open decisions live
   in [USER-DASHBOARD-SETTINGS-PLAN.md](USER-DASHBOARD-SETTINGS-PLAN.md).
 

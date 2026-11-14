@@ -595,6 +595,19 @@ class DryRunCancellationTests(unittest.TestCase):
         self.assertFalse(summary["cancelled"])
         self.assertEqual(steps, [0, 1, 2, 4])
 
+    def test_legacy_console_code_page_does_not_abort_output(self):
+        # Windows consoles/logs default to cp1252; a Thai keyword must still print.
+        raw = io.BytesIO()
+        stream = io.TextIOWrapper(raw, encoding="cp1252")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            with contextlib.redirect_stdout(stream):
+                summary = dry_run.run("test_search", "ค้นหา", 5, pathlib.Path(tmp), 1)
+            stream.flush()
+
+        self.assertEqual(summary["keyword"], "ค้นหา")
+        self.assertIn("ค้นหา", raw.getvalue().decode("utf-8"))
+
 
 if __name__ == "__main__":
     unittest.main()

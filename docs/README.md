@@ -28,14 +28,15 @@ Supabase Google-provider configuration, and end-to-end OAuth verification are pe
 
 | Plan | What is left |
 |---|---|
-| [plans/COLLECTOR-INTEGRATION-PLAN.md](plans/COLLECTOR-INTEGRATION-PLAN.md) | **Open collector work.** GDELT live sample and first write run, real-provider cancel/progress check, backup decision, Render (different workspace), backups/restore drill, monitoring window, recurring schedule, next source |
+| [plans/COLLECTOR-INTEGRATION-PLAN.md](plans/COLLECTOR-INTEGRATION-PLAN.md) | **Open collector work.** GDELT answers intermittently; the 1-day sample is 2 records and the 3-day sample is 22 with low relevance, so writes stay off pending a relevance/language decision. Then: real-provider cancel/progress, Render (different workspace), backups/restore drill, monitoring window, recurring schedule, next source |
 | [plans/USER-DASHBOARD-SETTINGS-PLAN.md](plans/USER-DASHBOARD-SETTINGS-PLAN.md) | **Implemented 2026-11-13.** Only the menu decisions remain: editing scope, public/mock confirmation, duplicate sign-out, deployment check |
 
 Deployed to Vercel on 2026-11-14: the AI analysis export, cancel control, source health
 (including owner-only reject counters), and job progress. The live export smoke passed, and
-the worker pipeline was exercised with a local fixture (cancel at 2/4, normal at 4/4). A real
-GDELT run still needs the provider to stop throttling. See the collector plan for the exact
-next steps.
+the worker pipeline was exercised with a local fixture (cancel at 2/4, normal at 4/4). GDELT
+now answers intermittently, but the samples are too small and noisy for the review the plan
+requires, so collector writes remain disabled. See the collector plan for the exact next
+steps.
 
 ## Post-cutover
 
@@ -49,8 +50,9 @@ Migration completed 2026-11-11:
   collector plan, not duplicated here.
 
 Collector progress: framework, persistence, and the GDELT adapter are implemented locally;
-the live sample and first write run are blocked by GDELT access and local credentials. The
-next source is undecided; Hacker News was removed on 2026-11-12.
+local credentials are now present, GDELT access is intermittent, and the sample review is
+open (see the collector plan). The next source is undecided; Hacker News was removed on
+2026-11-12.
 
 ## Reference input
 

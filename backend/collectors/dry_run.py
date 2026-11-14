@@ -76,6 +76,7 @@ def run(
     cancel_check: Callable[[], bool] | None = None,
     progress: Callable[[int], None] | None = None,
 ) -> dict:
+    _utf8_stdio()
     connector = get_connector(connector_id)
     if not connector.enabled:
         raise SystemExit(f"connector disabled: {connector_id}")
@@ -150,6 +151,17 @@ def run(
             f"sample: {record.source_item_id} | {record.language} | {record.title} | {record.canonical_url}"
         )
     return summary
+
+
+def _utf8_stdio() -> None:
+    """Windows consoles and redirected logs default to a legacy code page.
+
+    GDELT returns titles and keywords in any script; printing a Thai keyword or a
+    Serbian title must not abort a run after its writes have already happened.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
 
 
 def main(argv: list[str] | None = None) -> int:
