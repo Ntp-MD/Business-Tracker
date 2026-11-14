@@ -12,7 +12,9 @@ handler in `backend/api/`, services in `backend/services/`, and process state in
 `backend/runtime.py`, behavior unchanged (79 Python tests and a live endpoint smoke).
 `python -m backend.collectors.worker` now owns `collect` jobs and runs them in-process
 (live GNews job verified with no local API running); the Node worker keeps `fetch` /
-`refresh_views` and the recurring schedule. The `items_lineage` migration was **applied
+`refresh_views`. Auto search/collect was removed by owner decision on 2026-11-14: the
+schedule code, `COLLECT_SCHEDULE_HOURS`, and the `scheduled` job mode are gone, so every
+collection comes from an explicit action. The `items_lineage` migration was **applied
 2026-11-14**: `keyword_key` is populated for every row (no keyword variants collide),
 `items.record_id` exists, the collector projection writes it on insert and repairs existing
 linked rows, and `scripts/backfill_record_ids.py` filled the 13 pre-existing links. The
@@ -156,7 +158,8 @@ time is needed; the current design overwrites mutable metrics and keeps no histo
   anon + views + GET only, `mockup` is fixtures with no secrets.
 - Suspend the old Render API; it runs the legacy image with a service key and is not needed.
 - Run the worker as an OS service or scheduled task with restart, single instance. The job
-  lease already prevents double execution.
+  lease already prevents double execution. Collections are manual-only: keep the worker
+  running only when you intend to collect, or leave it running with nothing queued.
 - Monitoring: the GitHub schedule is best-effort (observed ~7 h gaps, not 30 min); accept
   that or add an external uptime check. `check_health.py` now treats a stopped local worker
   as a warning, not a failure, while endpoint failures still open the issue (2026-11-14).
@@ -204,5 +207,6 @@ migration review and a backup first.
 1. Archive/trash ownership: keep it on the `items` projection (current) or move it to the
    keyword link. Keeping it on `items` is simpler and the recommendation.
 2. Keyword matching: casefold for uniqueness while preserving display text.
-3. Worker host: always-on PC service vs. scheduled manual runs.
+3. Worker host: always-on PC service vs. started only for a manual collection (no
+   auto-run either way).
 4. Monitoring: warn vs. fail on a stopped worker, and whether to add an external checker.

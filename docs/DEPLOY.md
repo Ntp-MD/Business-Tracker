@@ -155,8 +155,10 @@ The UI writes `jobs` rows; two local workers claim them by kind.
 3. `python backend/server.py` — legacy collectors + API on `127.0.0.1:8000`; needed for the
    legacy fetch/refresh jobs and the legacy static UI, not for collector jobs.
 4. `npm run build -w apps/worker`, then
-   `node --env-file=.env.local apps/worker/dist/index.js` — handles `fetch` and
-   `refresh_views` jobs plus the recurring schedule; it no longer claims `collect` jobs.
+   `node --env-file=.env.local apps/worker/dist/index.js` — handles manual `fetch` and
+   `refresh_views` jobs only; it never claims `collect` jobs or creates jobs on a timer.
+   Collections are **manual-only** (owner decision 2026-11-14): no auto search, no auto
+   collect.
 
 If a worker is offline its jobs stay `queued` and the UI says so. TikTok / FB Ads / TikTok
 Ads also need a logged-in session: `python backend/pw_login.py <platform>`.
@@ -168,8 +170,8 @@ The collector framework and schema are installed. Enabled keyword connectors: `g
 other connectors stay disabled. Apply `20261113000000_collector_sources.sql` before enabling
 GDELT/GNews writes.
 `COLLECTOR_WRITE_ENABLED` stays 0 until a dry-run sample is reviewed; set it to 1 only then.
-`COLLECT_CONNECTORS` (comma-separated registry ids, default `gnews_search`) drives both the
-Settings **Collect** button and the worker's recurring schedule. Records, keyword items,
+`COLLECT_CONNECTORS` (comma-separated registry ids, default `gnews_search`) drives the
+Settings **Collect** button; nothing runs on a timer. Records, keyword items,
 links and state upsert by stable keys; rejected records are never stored. See
 `backend/collectors/`.
 

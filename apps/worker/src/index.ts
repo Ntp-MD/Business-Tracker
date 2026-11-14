@@ -14,11 +14,6 @@ const API = (process.env.LOCAL_API ?? "http://127.0.0.1:8000").replace(/\/$/, ""
 const POLL_MS = Number(process.env.WORKER_POLL_MS ?? 3000);
 const LEASE_MS = Number(process.env.WORKER_LEASE_MS ?? 3_600_000);
 const MAX_ATTEMPTS = Number(process.env.WORKER_MAX_ATTEMPTS ?? 3);
-const SCHEDULE_HOURS = Number(process.env.COLLECT_SCHEDULE_HOURS ?? 0);
-const CONNECTORS = (process.env.COLLECT_CONNECTORS ?? "gnews_search")
-  .split(",")
-  .map((value) => value.trim())
-  .filter(Boolean);
 const COLLECTOR_WRITES = ["1", "true", "yes"].includes(
   (process.env.COLLECTOR_WRITE_ENABLED ?? "0").toLowerCase(),
 );
@@ -107,56 +102,12 @@ async function patch(id: number, body: Record<string, unknown>): Promise<void> {
   });
 }
 
-let lastScheduleCheck = 0;
-
-async function scheduleCollect(): Promise<void> {
-  if (!SCHEDULE_HOURS) return;
-  if (Date.now() - lastScheduleCheck < 60_000) return;
-  lastScheduleCheck = Date.now();
-
-  const active = await fetch(
-    `${SUPABASE_URL}/rest/v1/jobs?status=in.(queued,running)&kind=eq.collect&user_id=eq.${USER_ID}&select=id&limit=1`,
-    { headers: headers() },
-  );
-  if (((await active.json()) as unknown[]).length) return;
-
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/profiles?select=keywords&user_id=eq.${USER_ID}`,
-    { headers: headers() },
-  );
-  const profiles = (await res.json()) as { keywords?: string[] }[];
-  const keywords = [
-    ...new Set(profiles.flatMap((profile) => profile.keywords ?? []).filter(Boolean)),
-  ];
-  if (!keywords.length) return;
-
-  const window = Math.floor(Date.now() / (SCHEDULE_HOURS * 3_600_000));
-  const rows = keywords.flatMap((keyword) =>
-    CONNECTORS.map((connector) => ({
-      user_id: USER_ID,
-      kind: "collect",
-      payload: {
-        connector_id: connector,
-        scope: { keyword },
-        mode: "scheduled",
-        dry_run: true,
-        max_records: 50,
-      },
-      schedule_key: `${connector}:${window}:${keyword}`,
-    })),
-  );
-  // The schedule_key index is partial, so ignore a duplicate-key response instead of
-  // using on_conflict.
-  await fetch(`${SUPABASE_URL}/rest/v1/jobs`, {
-    method: "POST",
-    headers: headers(),
-    body: JSON.stringify(rows),
-  });
-}
-
+/**
+ * Collections are manual-only by owner decision (2026-11-14): this worker never creates
+ * jobs or fetches on a timer. Jobs come from the UI or an explicit script.
+ */
 async function tick(): Promise<void> {
   await heartbeat();
-  await scheduleCollect();
   const job = await claim();
   if (!job) return;
 

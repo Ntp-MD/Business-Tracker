@@ -35,9 +35,8 @@ and its approval list. Status history lives here instead of a separate notes fil
    `gnews ok count 8`, `collector_state` ok, and deployed `live` moved 325 → **333**
    active items. Relevance matched the existing behavior: several Thai SEO/marketing
    stories plus some name matches ("Seo Ye Ji", "Seo Kang Joon") that the owner can trash.
-   The Settings **Collect** button and the recurring schedule now read `COLLECT_CONNECTORS`
-   (default `gnews_search`, see `.env.example`), so a GDELT restore only needs
-   `gnews_search,gdelt_doc` there.
+   The Settings **Collect** button reads `COLLECT_CONNECTORS` (default `gnews_search`, see
+   `.env.example`), so a GDELT restore only needs `gnews_search,gdelt_doc` there.
    The earlier GDELT write-path check stubbed only the HTTP transport with a payload
    captured from a live `200`, because that provider blocked new queries; adapter mapping,
    gate, worker, API, and Supabase writes ran for real. Results:
@@ -133,10 +132,12 @@ and its approval list. Status history lives here instead of a separate notes fil
    drill cannot run until a backup exists (manual dump or a plan with backups).
    Still open: finish the 2026-11-18 window and run the drill once a backup is available.
 
-10. **Recurring collection is coded but disabled.**
-    The worker supports `COLLECT_SCHEDULE_HOURS`, active-job dedupe, and schedule keys;
-    the default is `0`. Decide the host, interval, concurrency, offline behavior, and
-    whether per-run local reports must be retained before enabling it.
+10. **Recurring/auto collection removed by owner decision (2026-11-14).**
+    There is no auto search or auto collect: the schedule code, `COLLECT_SCHEDULE_HOURS`,
+    and the `scheduled` job mode were deleted. Every run comes from an explicit UI
+    **Collect**, API call, or script, and the worker only claims jobs that already exist.
+    The unused `schedule_key` column stays in the schema; the local reports stay under the
+    ignored `data/reports/` when a manual run happens.
 
 11. **Next source and existing-source policy need an owner decision.**
     GDELT is the only approved new source. Choose the next candidate and its order; decide
@@ -152,8 +153,8 @@ and its approval list. Status history lives here instead of a separate notes fil
   report writer, job validation, and Supabase persistence with targeted upserts; repeat-run
   keyword union, metric refresh, archive/trash preservation, and failure state are tested.
 - **Job execution:** owner-scoped claim, lease expiry recovery, bounded retries,
-  schedule-key dedupe, check-before-start cancellation, and checkpoint progress (item 6).
-  Checkpoint cancellation is item 3.
+  check-before-start cancellation, and checkpoint progress (item 6). Schedule-key dedupe
+  exists but is unused since auto collection was removed. Checkpoint cancellation is item 3.
 - **GDELT adapter and quality rules (2026-11-14):** keyword scope; exact-phrase query with
   `repeat2` for one-word keywords; provider-declared language wins (`en`/`th` only, an
   unlisted declared language is rejected); date/spam/metric gate; 30 s timeout and one
@@ -168,7 +169,9 @@ and its approval list. Status history lives here instead of a separate notes fil
   role only). Anon reads return 0 rows; live views return rows. The `supabase_migrations`
   schema does not exist, so there is no CLI-tracked migration history; the repo tables exist
   and were applied manually.
-- **Recurring schedule (code):** support exists but is disabled; enabling it is item 11.
+- **Recurring/auto collection (removed 2026-11-14):** schedule code, env, and the
+  `scheduled` job mode were deleted by owner decision; the worker only processes explicit
+  jobs created by the UI, an API call, or a script.
 - **AI analysis export:** shipped and deployed on 2026-11-14. The Items page exports active
   rows matching the current filters as CSV with `item_id`, keyword, source, title, author,
   URL, canonical URL, score, metric, views, published, collected, and export times, plus a
@@ -189,7 +192,7 @@ and its approval list. Status history lives here instead of a separate notes fil
   adapters are registered. 79 Python tests, including new GNews mapping/limit/dedupe/XML
   tests; the live collect in item 2 used this pipeline.
 - **Collect connector list (2026-11-14):** `COLLECT_CONNECTORS` (default `gnews_search`)
-  drives both the Settings **Collect** button and the worker's recurring schedule; the
+  drives the Settings **Collect** button (collections are manual-only); the
   hard-coded `gdelt_doc` is gone, so restoring GDELT is one env value.
 - **Serving quick wins (2026-11-14):** the Items list selects explicit columns (no `body`)
   and `/api/health` is an explicit dynamic route with a 30 s CDN cache.

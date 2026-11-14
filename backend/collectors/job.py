@@ -18,7 +18,8 @@ ALLOWED_FIELDS = {
     "quality_rules_version",
     "job_id",
 }
-ALLOWED_MODES = {"manual", "scheduled"}
+# Collections are manual-only (owner decision 2026-11-14): no scheduled or auto runs.
+ALLOWED_MODES = {"manual"}
 
 
 def validate_collect_payload(

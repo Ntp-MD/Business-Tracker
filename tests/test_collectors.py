@@ -373,6 +373,8 @@ class JobPayloadTests(unittest.TestCase):
             {"connector_id": "test_search", "scope": {"keyword": "x"}, "max_records": 0},
             {"connector_id": "test_search", "scope": {"keyword": "x"}, "max_records": 101},
             {"connector_id": "test_search", "scope": {"keyword": "x"}, "mode": "cron"},
+            # Collections are manual-only; the scheduled mode was removed 2026-11-14.
+            {"connector_id": "test_search", "scope": {"keyword": "x"}, "mode": "scheduled"},
             {"connector_id": "test_search", "scope": {}},
         ):
             with self.assertRaises(ValueError):
