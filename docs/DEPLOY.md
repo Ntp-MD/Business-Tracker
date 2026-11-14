@@ -177,6 +177,11 @@ links and state upsert by stable keys; rejected records are never stored. See
 
 - Supabase is the source of truth. Check Dashboard → Database → Backups for the plan's
   retention window, and take a manual export before schema changes.
+- Logical backup: `python scripts/backup_supabase.py` writes every app table as paginated
+  JSON plus `manifest.json` (row counts, bytes, sha256) under the ignored
+  `data/backups/backup-<UTC>/`. It is a PostgREST export — rows only; schema comes from
+  `supabase/migrations` and Storage objects are not included. First run 2026-11-14:
+  337 items, 13 collector records, 13 links, 18 keyword-stats rows. Never commit the output.
 - Exports: `GET /api/export` on the Python API, or All Items → Export CSV in prod.
 - Active and archived items are kept until deleted. Trash auto-purges after 7 days
   (`TRASH_RETENTION_DAYS`); "Delete forever" is immediate and unrecoverable.
