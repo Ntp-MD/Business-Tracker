@@ -27,14 +27,8 @@ const ITEMS = [
   { href: "/live/archive", label: "Archive", icon: "M3 4h18v5H3zM5 9v10h14V9M10 13h4" },
 ];
 
-const LOCKED = [
-  { label: "CRM / Leads" },
-  { label: "Competitors" },
-  { label: "Content Calendar" },
-  { label: "Tasks" },
-  { label: "Reports" },
-  { label: "Goal Tracker" },
-];
+// Only the two roadmap menus stay as locked teasers (owner decision 2026-11-14).
+const LOCKED = [{ label: "Content Calendar" }, { label: "Reports" }];
 
 export function Sidebar({
   counts,
