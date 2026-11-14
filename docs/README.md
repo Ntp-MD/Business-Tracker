@@ -1,6 +1,6 @@
 # TrendRail docs
 
-Last updated: 2026-11-13. Code is the source of truth; this folder tracks active reference,
+Last updated: 2026-11-14. Code is the source of truth; this folder tracks active reference,
 the remaining plan, post-cutover checks, and notes.
 
 ## Current reference
@@ -26,9 +26,13 @@ the remaining plan, post-cutover checks, and notes.
 Google owner sign-in and owner-only authorization are implemented locally. Deployment,
 Supabase Google-provider configuration, and end-to-end OAuth verification are pending.
 
+The AI analysis export (collector plan package 9) is implemented locally on 2026-11-14:
+the Items page can download filtered active rows as CSV plus a Markdown guide and prompt.
+It is not deployed and still needs owner review before the deploy approval.
+
 | Plan | Status |
 |---|---|
-| [plans/COLLECTOR-INTEGRATION-PLAN.md](plans/COLLECTOR-INTEGRATION-PLAN.md) | **Consolidated backlog and status.** Collector integration, open items, and the proposed AI analysis export |
+| [plans/COLLECTOR-INTEGRATION-PLAN.md](plans/COLLECTOR-INTEGRATION-PLAN.md) | **Consolidated backlog and status.** Collector integration, open items, and the AI analysis export implemented locally |
 | [plans/USER-DASHBOARD-SETTINGS-PLAN.md](plans/USER-DASHBOARD-SETTINGS-PLAN.md) | **Implemented 2026-11-13.** User menu, Account section, public and mock states |
 
 ## Post-cutover

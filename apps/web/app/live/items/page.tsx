@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { ItemRows } from "@/components/live/item-rows";
 import { JobStatus } from "@/components/live/job-status";
+import { ANALYSIS_PROMPT } from "@/lib/data/analysis-export";
 import { queryItems, type SortKey } from "@/lib/data/items-query";
 import { getSummary, sourceLabel } from "@/lib/data/live";
 import { isWritable } from "@/lib/variant";
@@ -94,6 +95,8 @@ export default async function ItemsPage({
     exportParams.set(key, value);
   }
   const exportHref = `/api/export/items${exportParams.size ? `?${exportParams}` : ""}`;
+  const analysisHref = `/api/export/analysis${exportParams.size ? `?${exportParams}` : ""}`;
+  const guideHref = `${analysisHref}${exportParams.size ? "&" : "?"}format=guide`;
 
   return (
     <section className="page active" id="page-items">
@@ -254,6 +257,27 @@ export default async function ItemsPage({
             </a>
           </div>
         </div>
+
+        <details className="analysis-panel">
+          <summary className="btn btn-ghost">Export for AI analysis</summary>
+          <p>
+            Downloads every active item matching these filters as CSV, plus a Markdown guide and
+            prompt for your own AI tool. TrendRail does not send data anywhere.
+          </p>
+          <div className="row-actions">
+            <a className="btn btn-ghost" href={analysisHref}>
+              Dataset CSV
+            </a>
+            <a className="btn btn-ghost" href={guideHref}>
+              Guide + prompt (Markdown)
+            </a>
+          </div>
+          <p className="analysis-note">
+            Checkbox selection is not included; use the filters to narrow the scope. Dates filter
+            the stored published value.
+          </p>
+          <pre>{ANALYSIS_PROMPT}</pre>
+        </details>
 
         <form action={bulkArchive}>
           <div className="tbl-scroll">

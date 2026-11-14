@@ -76,8 +76,10 @@ test("prod allows the configured owner only and preserves variant boundaries", a
   process.env.APP_VARIANT = "live";
   assert.equal((await proxy(request("https://example.test/live"))).status, 200);
   assert.equal((await proxy(request("https://example.test/live/items", "POST"))).status, 403);
+  assert.equal((await proxy(request("https://example.test/api/export/analysis"))).status, 200);
   process.env.APP_VARIANT = "mockup";
   assert.equal((await proxy(request("https://example.test/api/export"))).status, 307);
+  assert.equal((await proxy(request("https://example.test/api/export/analysis"))).status, 307);
 });
 
 test("invite mode allows listed emails only", async () => {

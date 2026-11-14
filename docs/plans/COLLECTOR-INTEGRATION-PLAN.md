@@ -1,25 +1,31 @@
 ﻿# TrendRail collector integration and remaining work
 
-Updated: 2026-11-13. This is the active backlog and implementation plan. Work on one
+Updated: 2026-11-14. This is the active backlog and implementation plan. Work on one
 bounded task at a time; finish its verification before starting another. An unchecked
 task is not authorization to change the source list, schema, API contract, deployment,
 business policy, or other items requiring approval under [AGENTS.md](../../AGENTS.md).
 
-## Status — 2026-11-13
+## Status — 2026-11-14
 
 Packages 1–7 are implemented and pushed. This table is the status record; keep it here
 instead of a separate notes file.
 
+Rechecked 2026-11-14: the local checks in `AGENTS.md` pass. GDELT still returns `HTTP 429`
+from this network, `data/reports/` does not exist (so no dry-run sample has been saved
+here), there is no `.env.local` and no worker process in this checkout, and the retired
+Render API still answers. Rows 1, 2, 5, and 8 below carry that evidence. Row 6 changed:
+package 9 was implemented locally on 2026-11-14.
+
 | # | Open item | Status | Next action |
 |---|---|---|---|
-| 1 | Live GDELT sample | **Blocked.** Every request from this network returns `HTTP 429 Too Many Requests`, even after 5 minutes. Mapping, gate, and one-retry behavior are covered by unit tests only. | Retry `python -m backend.collectors.dry_run --connector gdelt_doc --keyword SEO --show-sample 20` when GDELT responds. Review the sample before trusting writes. |
-| 2 | First real collect run | **Not run.** `COLLECTOR_WRITE_ENABLED=1` is set in the local `.env.local` (not committed), but no collect job has executed. | Start the worker, then use **Collect** in Settings or wait for the 24-hour schedule. Set `COLLECTOR_WRITE_ENABLED=0` to pause. |
+| 1 | Live GDELT sample | **Blocked.** Every request from this network returns `HTTP 429 Too Many Requests`; rechecked 2026-11-14 and it is unchanged after the 2026-11-13 record. Mapping, gate, and one-retry behavior are covered by unit tests only. | Retry `python -m backend.collectors.dry_run --connector gdelt_doc --keyword SEO --show-sample 20` from a network GDELT does not throttle. Review the sample before trusting writes. |
+| 2 | First real collect run | **Not run, and not runnable as noted.** `COLLECTOR_WRITE_ENABLED=1` was recorded in a local `.env.local` (not committed), but on 2026-11-14 that file is absent from this checkout and no worker process is running. | Owner restores `.env.local` with real Supabase credentials, starts the worker, then uses **Collect** in Settings or waits for the 24-hour schedule. Set `COLLECTOR_WRITE_ENABLED=0` to pause. |
 | 3 | Cancellation during work | **Not implemented.** The worker checks `cancel_requested` only before a job starts. | Needs a collector/API change; separate scope. |
 | 4 | Versioned backup of collector tables | **Not implemented by decision.** Existing JSON/CSV item export remains the backup; collector rows are reproducible from the source. | Revisit only if the owner wants collector records, links, and state restorable. |
-| 5 | Render API | **Still live.** `https://social-tracker-api.onrender.com/` returned 200 on 2026-11-13. | Disable it in the Render dashboard (owner; no credentials in this repo). |
-| 6 | AI export (package 9) | **Proposed.** No output format or sharing policy approved. | Confirm scope and format before implementation. |
+| 5 | Render API | **Still live.** `https://social-tracker-api.onrender.com/` returned 200 again on 2026-11-14 06:56 UTC (`server: uvicorn`). | Disable it in the Render dashboard (owner; no credentials in this repo). |
+| 6 | AI export (package 9) | **Implemented locally 2026-11-14.** The Items page offers active rows matching the current filters as CSV, plus a Markdown guide and sample prompt. No schema or API-contract change; selected rows, imported AI results, and automatic provider calls remain out of scope. | Owner reviews the files; deploy only with the approval required by `AGENTS.md`. |
 | 7 | Live RLS and migration history | **Unverified.** PostgREST with the service role bypasses RLS and cannot read migration history. | Check the Supabase dashboard or a database connection when needed. |
-| 8 | Monitoring window and restore drill | **Not due yet.** Monitor production through 2026-11-18; run the restore drill when scheduled. | Owner/ops follow-up. |
+| 8 | Monitoring window and restore drill | **In progress.** 2026-11-14 snapshot: `live /api/health` returned `{"ok":true,"items":{"active":324,"archived":0,"trash":0},"worker":null}`; prod `/live` → 307 `/login`; live `/live` 200 and `/live/settings` → 307 `/live`; mockup `/` 200 and `/live` → 307 `/`. Worker heartbeat is `null`, so keep the 2026-11-18 window open and run the restore drill when scheduled. | Owner/ops follow-up. |
 
 ### Decisions taken (2026-11-13)
 
@@ -227,7 +233,20 @@ activation require the approvals in `AGENTS.md`.
 **Acceptance:** record date, result, and any owner action without changing deployment
 settings or deleting data without approval.
 
-### 9. Export a dataset for analysis with the user's AI — proposed
+### 9. Export a dataset for analysis with the user's AI — implemented locally 2026-11-14
+
+**Status:** first release implemented on 2026-11-14; not deployed. The Items page has an
+**Export for AI analysis** panel. `GET /api/export/analysis` returns the active rows that
+match the current Items filters (keyword, source, published `from`/`to`, sort, direction)
+as CSV with `item_id`, keyword, source, title, author, URL, canonical URL, score, metric,
+views, published, collected, and export times. `GET /api/export/analysis?format=guide`
+returns a Markdown guide with the scope, date basis, field/unit definitions, known limits,
+completeness wording, and a sample prompt. Row count, total, and truncation are also in
+`X-TrendRail-Export-*` headers, and the CSV filename states its row count. The cap is
+10,000 rows per file. Selected rows, schema changes, and AI-provider integration remain
+out of scope. Verification: `node --test tests/web_auth.test.cjs tests/web_export.test.cjs`
+(19 tests, fixtures only), web typecheck, biome lint, and `npm run build:web` pass.
+Deployment still needs the approval in `AGENTS.md`.
 
 **Goal:** let a user export an explicitly scoped dataset and a guide, then use both
 in their own AI tool and trace findings back to source items. This work can use the
