@@ -1,8 +1,10 @@
 import "server-only";
 
+import { aggregateCollectorStats, type SourceStats } from "@/lib/data/collector-stats";
 import { itemsTable, sourceStatusTable } from "@/lib/data/read-tables";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import type { Item } from "@/lib/types";
+import { isWritable } from "@/lib/variant";
 
 export type ItemState = "active" | "archived" | "trash";
 export type SortKey = "score" | "published" | "created_at" | "source" | "title";
@@ -129,4 +131,17 @@ export async function getSourceStatus(): Promise<
       ],
     ),
   );
+}
+
+/** Owner-only accepted/rejected totals; public live intentionally omits them. */
+export async function getCollectorStats(): Promise<Record<string, SourceStats>> {
+  if (!isWritable()) return {};
+  const userId = process.env.SUPABASE_USER_ID;
+  if (!userId) return {};
+  const { data, error } = await supabaseAdmin()
+    .from("collector_state")
+    .select("connector_id,counters")
+    .eq("user_id", userId);
+  if (error) return {};
+  return aggregateCollectorStats((data ?? []) as { connector_id: string; counters: unknown }[]);
 }

@@ -18,52 +18,52 @@ and its approval list. Status history lives here instead of a separate notes fil
    from a network GDELT accepts, then review the records for relevance, language, and
    spam before trusting writes.
 
-2. **First real collect run — not run and not runnable here.**
-   `COLLECTOR_WRITE_ENABLED=1` was recorded in a local `.env.local`, but that file is
-   absent from this checkout and no worker process is running (2026-11-14).
-   Next: owner restores `.env.local` with real Supabase credentials, starts the API and
-   worker, queues one profile **Collect** job, and reviews the first batch. Set
-   `COLLECTOR_WRITE_ENABLED=0` to pause writes.
-   Known risk: GDELT relevance is not in the gate, so off-topic English articles can
-   reach `items`; trash what does not fit.
+2. **First real collect run — pipeline verified; real GDELT run still blocked.**
+   `.env.local` is now present with `COLLECTOR_WRITE_ENABLED=0`. On 2026-11-14 the full
+   worker → API → collector path was exercised with a local slow fixture and writes
+   disabled: a cancel job stopped at 2/4 with "0 written", and a normal job finished 4/4.
+   The test jobs were deleted.
+   Remaining: set `COLLECTOR_WRITE_ENABLED=1`, queue a real GDELT **Collect**, review the
+   first batch, then set it back to `0` to pause. This still needs GDELT access (item 1).
+   Known risk: GDELT relevance is not in the gate, so off-topic English articles can reach
+   `items`; trash what does not fit.
 
 ### B. Finish and deploy the two local features
 
-3. **Cancellation — implemented and deployed; live run not tested.**
-   Settings now lists the latest collect jobs and offers **Cancel** for queued or running
-   ones; that action sets `jobs.cancel_requested` for the owner's job. The worker sends the
+3. **Cancellation — implemented, deployed, and exercised end-to-end with a local fixture.**
+   Settings lists the latest collect jobs and offers **Cancel** for queued or running ones;
+   that action sets `jobs.cancel_requested` for the owner's job. The worker sends the
    claimed job id, the collector checks the flag at checkpoints and stops at a stage
    boundary without advancing `collector_state` or `source_status`, and the worker marks
-   the job `cancelled` without retrying (2026-11-14, fixture tests only).
-   Next: run a live cancel with a worker and confirm the job turns `cancelled`, the row
-   stops progressing, and source health stays unchanged.
+   the job `cancelled` without retrying. The fixture run cancelled at 2/4 with "0 written".
+   Next: repeat with a real GDELT job once item 1 works.
 
 4. **Deployment — web app deployed; worker code is local.**
    Vercel deployed 2026-11-14. Live export smoke passed: 324-row CSV with the expected
    header and `X-TrendRail-Export-*` metadata, header-only results for an empty keyword and
    `source=gdelt`, and a guide reporting 19 matching SEO rows with the 10,000-row cap.
    The Python server and worker run on the owner's PC, so restart them to pick up checkpoint
-   cancellation and progress.
-   Next: test a live cancel and watch the Settings progress column with the worker running.
+   cancellation, progress, and the Settings job list.
+   Next: real-provider cancel/progress check; otherwise deployment is complete.
 
 ### C. Known gaps in shipped collector work
 
-5. **Source health is partial but deployed.**
-   [`sources/page.tsx`](../../apps/web/app/live/sources/page.tsx) now lists configured
-   sources even with zero items and labels OK, empty, rate-limited, blocked, parsing, error,
-   not-run, and stale (older than 48 hours). The count is the last run's written records.
-   Live `/live/sources` shows the zero-item GDELT card as Not run.
-   Still missing: accepted/rejected counts by reason and per-source coverage. Reject counts
-   need a read view or schema decision because `source_status` stores only the written count.
-   Next: decide whether reject counts are needed; if yes, approve the view and contract.
+5. **Source health — implemented and deployed.**
+   [`sources/page.tsx`](../../apps/web/app/live/sources/page.tsx) lists configured sources
+   even with zero items and labels OK, empty, rate-limited, blocked, parsing, error, not-run,
+   and stale (older than 48 hours). The count is the last run's written records. In `prod`
+   the owner also sees latest-run accepted/rejected totals and reasons, summed across keyword
+   scopes from `collector_state`; public `live` intentionally omits those owner-only counters.
+   Counters appear after a write run; dry runs do not write `collector_state`.
+   Next: verify the counters with the first real write run.
 
-6. **Mid-job progress — implemented and deployed; live check pending.**
+6. **Mid-job progress — implemented, deployed, and observed with a local fixture.**
    The collector PATCHes the owner-scoped `jobs.progress`/`total` at fetch, gate, and
    persistence checkpoints (0–4/4); the worker closes finished collects at 4/4.
    [`job-status.tsx`](../../apps/web/components/live/job-status.tsx) and the Settings list
-   display it.
-   Next: confirm the steps during a live run and adjust the checkpoint count if it feels
-   noisy.
+   display it. The fixture run showed 0→2→4 for a completed dry run and 0→2 for a cancelled
+   run.
+   Next: observe a real GDELT run and adjust the checkpoint count if it feels noisy.
 
 7. **Collector-table backup — not implemented by decision.**
    The JSON/CSV item exports do not include `collector_records`, links, or state; collector
@@ -110,9 +110,9 @@ and its approval list. Status history lives here instead of a separate notes fil
   Checkpoint cancellation is item 3.
 - **GDELT adapter:** keyword scope, language/date/spam/metric gate, one throttle retry, and
   unit tests. Live sample remains item 1.
-- **Source health:** configured sources with zero items and derived OK/empty/rate-limited/
-  blocked/parsing/error/stale labels (item 5). Reject counts remain item 5; the existing
-  JSON/CSV exports cover `items` only, not a collector backup (item 7).
+- **Source health:** configured sources with zero items, derived OK/empty/rate-limited/
+  blocked/parsing/error/stale labels, and owner-only accepted/rejected counters in `prod`
+  (item 5). The existing JSON/CSV exports cover `items` only, not a collector backup (item 7).
 - **Recurring schedule (code):** support exists but is disabled; enabling it is item 11.
 - **AI analysis export:** shipped and deployed on 2026-11-14. The Items page exports active
   rows matching the current filters as CSV with `item_id`, keyword, source, title, author,
@@ -122,9 +122,11 @@ and its approval list. Status history lives here instead of a separate notes fil
   smoke: 324-row CSV, empty and `source=gdelt` header-only results, 19-row SEO guide.
   Selected rows, schema changes, and AI-provider calls are out of scope.
 - **Cancellation and job UI:** shipped and deployed on 2026-11-14. Settings lists the latest
-  collect jobs with a Cancel action; the collector stops at checkpoints and reports
-  progress. Verification: 65 Python tests, 32 Node tests (27 web including export, cancel,
-  and health; 5 worker), web/worker typecheck, worker build, and Python compile.
+  collect jobs with a Cancel action; the collector stops at checkpoints and reports progress.
+  Verification: 65 Python tests, 35 Node tests (30 web including export, cancel, health, and
+  counters; 5 worker), web/worker typecheck, worker build, Python compile, and an end-to-end
+  fixture run with a real worker: cancelled at 2/4, normal done at 4/4, no writes, test jobs
+  deleted.
 - **User menu and account settings:** implemented 2026-11-13; its open decisions live
   in [USER-DASHBOARD-SETTINGS-PLAN.md](USER-DASHBOARD-SETTINGS-PLAN.md).
 

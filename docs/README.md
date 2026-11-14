@@ -28,13 +28,14 @@ Supabase Google-provider configuration, and end-to-end OAuth verification are pe
 
 | Plan | What is left |
 |---|---|
-| [plans/COLLECTOR-INTEGRATION-PLAN.md](plans/COLLECTOR-INTEGRATION-PLAN.md) | **Open collector work.** GDELT live sample and first write run, live cancel test, deploy, source reject counts, backup decision, Render, RLS history, monitoring, recurring schedule, next source |
+| [plans/COLLECTOR-INTEGRATION-PLAN.md](plans/COLLECTOR-INTEGRATION-PLAN.md) | **Open collector work.** GDELT live sample and first write run, real-provider cancel/progress check, backup decision, Render, RLS history, monitoring, recurring schedule, next source |
 | [plans/USER-DASHBOARD-SETTINGS-PLAN.md](plans/USER-DASHBOARD-SETTINGS-PLAN.md) | **Implemented 2026-11-13.** Only the menu decisions remain: editing scope, public/mock confirmation, duplicate sign-out, deployment check |
 
-Local features deployed to Vercel on 2026-11-14: the AI analysis export, cancel control,
-source-health labels, and job progress. The export passed a live smoke; a live cancel and
-progress check still need the worker running. See the collector plan for the exact next
-steps.
+Deployed to Vercel on 2026-11-14: the AI analysis export, cancel control, source health
+(including owner-only reject counters), and job progress. The live export smoke passed, and
+the worker pipeline was exercised with a local fixture (cancel at 2/4, normal at 4/4). A real
+GDELT run still needs the provider to stop throttling. See the collector plan for the exact
+next steps.
 
 ## Post-cutover
 
