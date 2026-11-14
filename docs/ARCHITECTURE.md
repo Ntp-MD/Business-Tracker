@@ -10,7 +10,8 @@ the UI and worker, the Items list uses an explicit column projection, and `/api/
 has a short CDN cache. **Phase 1 is done:** `server.py` went 2,682 → 94 lines with the
 handler in `backend/api/`, services in `backend/services/`, and process state in
 `backend/runtime.py`, behavior unchanged (79 Python tests and a live endpoint smoke).
-Still open: the Python worker and the `record_id` / `keyword_key` migration.
+Still open: the Python worker and applying the `record_id` / `keyword_key` migration
+(`supabase/migrations/20261114000000_items_lineage.sql`, drafted but **not applied**).
 
 ## 1. Principles
 
