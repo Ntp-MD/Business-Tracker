@@ -77,11 +77,13 @@ and its approval list. Status history lives here instead of a separate notes fil
    (`server: uvicorn`). Owner action: disable it in the Render dashboard; no credentials
    are in this repo.
 
-9. **RLS probed; migration history still unverified.**
-   2026-11-14 anon-key probe: `items`, `jobs`, `collector_records`,
-   `collector_item_links`, `collector_state`, `source_status`, and `profiles` returned 0
-   rows, while `live_items` and `live_source_status` returned rows. This checks the public
-   boundary, not every authenticated-owner policy or the applied migration list.
+9. **RLS and tables probed; migration history still unverified.**
+   2026-11-14 service-role selects confirmed `collector_records`, `collector_item_links`,
+   `collector_state`, `source_status`, and the jobs lease/schedule/progress columns exist.
+   An anon-key probe returned 0 rows for `items`, `jobs`, `collector_records`,
+   `collector_item_links`, `collector_state`, `source_status`, and `profiles`, while
+   `live_items` and `live_source_status` returned rows. This checks the public boundary,
+   not every authenticated-owner policy or the applied migration list.
    Next: check the dashboard or a database connection for migration history and owner
    policies.
 
